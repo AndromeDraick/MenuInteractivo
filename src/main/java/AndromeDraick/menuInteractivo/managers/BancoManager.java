@@ -1,7 +1,7 @@
 package AndromeDraick.menuInteractivo.managers;
 
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
-import AndromeDraick.menuInteractivo.modelos.Banco;
+import AndromeDraick.menuInteractivo.model.Banco;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,114 +1,93 @@
 package AndromeDraick.menuInteractivo.comandos;
 
-import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import AndromeDraick.menuInteractivo.managers.ReinoManager;
+import AndromeDraick.menuInteractivo.model.Reino;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 public class ComandosReino implements CommandExecutor {
+    private final ReinoManager reinoManager;
 
-    private final MenuInteractivo plugin;
-    private final GestorBaseDeDatos db;
-
-    public ComandosReino(MenuInteractivo plugin) {
-        this.plugin = plugin;
-        this.db = plugin.getGestorBaseDeDatos();
-        plugin.getCommand("rnmi").setExecutor(this);
+    public ComandosReino(GestorBaseDeDatos db) {
+        this.reinoManager = new ReinoManager(db);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Este comando solo puede ser usado por jugadores.");
+            sender.sendMessage("Solo jugadores pueden usar este comando.");
             return true;
         }
-
-        Player jugador = (Player) sender;
-        UUID uuid = jugador.getUniqueId();
-
-        if (args.length == 0) {
-            jugador.sendMessage(ChatColor.YELLOW + "Usa /rnmi ayuda para ver los comandos disponibles.");
-            return true;
+        Player player = (Player) sender;
+        if (args.length < 1) {
+            player.sendMessage("Uso: /rnmi <crear|unir|salir|eliminar|listar>");
+            return false;
         }
-
-        switch (args[0].toLowerCase()) {
+        String sub = args[0].toLowerCase();
+        switch (sub) {
             case "crear":
-                if (!jugador.hasPermission("bmi.comandos.crear.reino")) {
-                    jugador.sendMessage(ChatColor.RED + "No tienes permiso para crear un reino.");
-                    return true;
+                if (args.length < 3) {
+                    player.sendMessage("Uso: /rnmi crear <etiqueta> <nombre>");
+                    return false;
                 }
-
-                if (args.length < 3 || !args[1].equalsIgnoreCase("reino")) {
-                    jugador.sendMessage(ChatColor.RED + "Uso correcto: /rnmi crear reino <Nombre> <Etiqueta>");
-                    return true;
-                }
-
-                String nombre = args[2];
-                String etiqueta = args[3].toLowerCase();
-
-                try {
-                    PreparedStatement ps = db.getConexion().prepareStatement("INSERT INTO reinos (etiqueta, nombre, uuid_rey) VALUES (?, ?, ?)");
-                    ps.setString(1, etiqueta);
-                    ps.setString(2, nombre);
-                    ps.setString(3, uuid.toString());
-                    ps.executeUpdate();
-
-                    PreparedStatement ps2 = db.getConexion().prepareStatement("INSERT INTO jugadores_reino (uuid, etiqueta_reino) VALUES (?, ?)");
-                    ps2.setString(1, uuid.toString());
-                    ps2.setString(2, etiqueta);
-                    ps2.executeUpdate();
-
-                    jugador.sendMessage(ChatColor.GREEN + "Has fundado el Reino " + nombre + " con la etiqueta " + etiqueta + ".");
-                } catch (SQLException e) {
-                    jugador.sendMessage(ChatColor.RED + "Error: Esa etiqueta ya está en uso o ocurrió un problema.");
+                if (reinoManager.crearReino(args[1], args[2], player.getUniqueId())) {
+                    player.sendMessage("Reino creado: " + args[2]);
+                } else {
+                    player.sendMessage("Error al crear reino.");
                 }
                 break;
-
-            case "unirse":
-                if (args.length < 3 || !args[1].equalsIgnoreCase("reino")) {
-                    jugador.sendMessage(ChatColor.RED + "Uso correcto: /rnmi unirse reino <Nombre o Etiqueta>");
-                    return true;
+            case "unir":
+                if (args.length < 2) {
+                    player.sendMessage("Uso: /rnmi unir <etiqueta>");
+                    return false;
                 }
-
-                String identificador = args[2].toLowerCase();
-
-                try {
-                    PreparedStatement ps = db.getConexion().prepareStatement("SELECT etiqueta FROM reinos WHERE etiqueta = ? OR nombre = ?");
-                    ps.setString(1, identificador);
-                    ps.setString(2, identificador);
-                    ResultSet rs = ps.executeQuery();
-
-                    if (rs.next()) {
-                        String etiquetaFinal = rs.getString("etiqueta");
-
-                        PreparedStatement ps2 = db.getConexion().prepareStatement("INSERT OR REPLACE INTO jugadores_reino (uuid, etiqueta_reino) VALUES (?, ?)");
-                        ps2.setString(1, uuid.toString());
-                        ps2.setString(2, etiquetaFinal);
-                        ps2.executeUpdate();
-
-                        jugador.sendMessage(ChatColor.GREEN + "Te has unido al Reino " + etiquetaFinal + ".");
-                    } else {
-                        jugador.sendMessage(ChatColor.RED + "Ese reino no existe.");
+                if (reinoManager.unirReino(player.getUniqueId(), args[1])) {
+                    player.sendMessage("Te has unido al reino " + args[1]);
+                } else {
+                    player.sendMessage("Error al unirte al reino.");
+                }
+                break;
+            case "salir":
+                if (args.length < 2) {
+                    player.sendMessage("Uso: /rnmi salir <etiqueta>");
+                    return false;
+                }
+                if (reinoManager.salirReino(player.getUniqueId(), args[1])) {
+                    player.sendMessage("Has salido del reino " + args[1]);
+                } else {
+                    player.sendMessage("Error al salir del reino.");
+                }
+                break;
+            case "eliminar":
+                if (args.length < 2) {
+                    player.sendMessage("Uso: /rnmi eliminar <etiqueta>");
+                    return false;
+                }
+                if (reinoManager.eliminarReino(args[1])) {
+                    player.sendMessage("Reino eliminado: " + args[1]);
+                } else {
+                    player.sendMessage("Error al eliminar reino.");
+                }
+                break;
+            case "listar":
+                List<Reino> reinos = reinoManager.listarReinos();
+                if (reinos.isEmpty()) {
+                    player.sendMessage("No hay reinos.");
+                } else {
+                    player.sendMessage("Reinos disponibles:");
+                    for (Reino r : reinos) {
+                        player.sendMessage("- " + r.getEtiqueta() + ": " + r.getNombre());
                     }
-                } catch (SQLException e) {
-                    jugador.sendMessage(ChatColor.RED + "Error al intentar unirse al reino.");
                 }
                 break;
-
             default:
-                jugador.sendMessage(ChatColor.YELLOW + "Comando no reconocido. Usa /rnmi ayuda para más información.");
-                break;
+                player.sendMessage("Subcomando desconocido.");
         }
-
         return true;
     }
 }

@@ -1,52 +1,35 @@
 package AndromeDraick.menuInteractivo.managers;
 
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
-import AndromeDraick.menuInteractivo.modelos.Reino;
-
+import AndromeDraick.menuInteractivo.model.Reino;
 import java.util.List;
 import java.util.UUID;
 
 public class ReinoManager {
-
     private final GestorBaseDeDatos db;
 
     public ReinoManager(GestorBaseDeDatos db) {
         this.db = db;
     }
 
-    public boolean crearReino(Reino reino) {
-        return db.insertarReino(reino);
+    public boolean crearReino(String etiqueta, String nombre, UUID reyUUID) {
+        return db.crearReino(etiqueta, nombre, reyUUID);
     }
 
-    public Reino obtenerReinoDeJugador(UUID uuidJugador) {
-        return db.obtenerReinoDeJugador(uuidJugador);
+    public List<Reino> listarReinos() {
+        return db.listarReinos();
     }
 
-    public Reino obtenerReinoPorEtiqueta(String etiqueta) {
-        return db.obtenerReinoPorEtiqueta(etiqueta);
+    public boolean eliminarReino(String etiqueta) {
+        return db.eliminarReino(etiqueta);
     }
 
-    public List<UUID> obtenerMiembros(String etiquetaReino) {
-        return db.obtenerMiembrosDeReino(etiquetaReino);
+    public boolean unirReino(UUID jugadorUUID, String etiquetaReino) {
+        return db.unirJugadorReino(jugadorUUID, etiquetaReino);
     }
 
-    public boolean transferirLiderazgo(UUID uuidActualRey, UUID nuevoRey) {
-        return db.transferirLiderazgo(uuidActualRey, nuevoRey);
-    }
-
-    public boolean eliminarReino(String etiquetaReino) {
-        return db.eliminarReino(etiquetaReino);
-    }
-
-    public boolean agregarMiembro(UUID uuidJugador, String etiquetaReino, String rol) {
-        return db.agregarJugadorAReino(uuidJugador, etiquetaReino, rol);
-    }
-
-    public boolean cambiarRol(UUID uuidJugador, String nuevoRol) {
-        return db.cambiarRolJugador(uuidJugador, nuevoRol);
-    }
-
-    public boolean quitarMiembro(UUID uuidJugador) {
-        return db.eliminarJugadorDeReino(uuidJugador);
+    public boolean salirReino(UUID jugadorUUID, String etiquetaReino) {
+        return db.salirJugadorReino(jugadorUUID, etiquetaReino);
     }
 }
+

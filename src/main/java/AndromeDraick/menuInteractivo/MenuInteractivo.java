@@ -1,6 +1,8 @@
 package AndromeDraick.menuInteractivo;
 
 import AndromeDraick.menuInteractivo.comandos.Comandos;
+import AndromeDraick.menuInteractivo.comandos.ComandosBanco;
+import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.listeners.BancoMenuListener;
@@ -61,6 +63,8 @@ public final class MenuInteractivo extends JavaPlugin {
         Comandos comandos = new Comandos();
         getCommand("menu").setExecutor(comandos);
         getCommand("tmi").setExecutor(comandos);
+        getCommand("rnmi").setExecutor(new ComandosReino(gestorBD));
+        getCommand("bmi").setExecutor(new ComandosBanco(gestorBD));
 
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
         getServer().getPluginManager().registerEvents(new BancoMenuListener(this), this);

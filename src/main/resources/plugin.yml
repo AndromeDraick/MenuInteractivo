@@ -14,3 +14,9 @@ commands:
     permission: menuinteractivo.usar
     permission-message: No tienes permiso.
     tab-completer: AndromeDraick.menuInteractivo.comandos.Comandos
+  rnmi:
+    description: Comandos de reinos
+    usage: /<command>
+  bmi:
+    description: Comandos de bancos
+    usage: /<command>

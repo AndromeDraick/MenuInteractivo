@@ -3,12 +3,13 @@ package AndromeDraick.menuInteractivo.database;
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import java.sql.*;
+import java.util.UUID;
+
 
 import java.io.File;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class GestorBaseDeDatos {
 
@@ -107,6 +108,161 @@ public class GestorBaseDeDatos {
             ps.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().warning("Error al guardar jugador: " + e.getMessage());
+        }
+    }
+
+    public boolean crearReino(String etiqueta, String nombre, UUID reyUUID) {
+        String sql = "INSERT INTO reinos (etiqueta, nombre, uuid_rey) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, etiqueta);
+            ps.setString(2, nombre);
+            ps.setString(3, reyUUID.toString());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Reino> listarReinos() {
+        List<Reino> reinos = new ArrayList<>();
+        String sql = "SELECT etiqueta, nombre, uuid_rey FROM reinos";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                reinos.add(new Reino(
+                        rs.getString("etiqueta"),
+                        rs.getString("nombre"),
+                        UUID.fromString(rs.getString("uuid_rey"))
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return reinos;
+    }
+
+    /**
+     * Elimina un reino por su etiqueta.
+     */
+    public boolean eliminarReino(String etiqueta) {
+        String sql = "DELETE FROM reinos WHERE etiqueta = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, etiqueta);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Asocia un jugador a un reino.
+     */
+    public boolean unirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
+        String sql = "INSERT INTO jugadores_reino (uuid_jugador, etiqueta_reino) VALUES (?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ps.setString(2, etiquetaReino);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Elimina la pertenencia de un jugador a un reino.
+     */
+    public boolean salirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
+        String sql = "DELETE FROM jugadores_reino WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ps.setString(2, etiquetaReino);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // MÉTODOS DE GESTIÓN DE BANCOS:
+
+    /**
+     * Deposita monto en un banco.
+     */
+    public boolean depositarEnBanco(String etiquetaBanco, double monto) {
+        String sql = "UPDATE bancos SET fondos = fondos + ? WHERE etiqueta = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setDouble(1, monto);
+            ps.setString(2, etiquetaBanco);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Retira monto de un banco, comprobando saldo suficiente.
+     */
+    public boolean retirarDeBanco(String etiquetaBanco, double monto) {
+        String sql = "UPDATE bancos SET fondos = fondos - ? WHERE etiqueta = ? AND fondos >= ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setDouble(1, monto);
+            ps.setString(2, etiquetaBanco);
+            ps.setDouble(3, monto);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene el saldo actual de un banco.
+     */
+    public double obtenerSaldoBanco(String etiquetaBanco) {
+        String sql = "SELECT fondos FROM bancos WHERE etiqueta = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, etiquetaBanco);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("fondos");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Agrega un socio a un banco.
+     */
+    public boolean agregarSocioBanco(String etiquetaBanco, UUID jugadorUUID) {
+        String sql = "INSERT INTO jugadores_banco (uuid_jugador, etiqueta_banco) VALUES (?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ps.setString(2, etiquetaBanco);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Expulsa a un socio de un banco.
+     */
+    public boolean quitarSocioBanco(String etiquetaBanco, UUID jugadorUUID) {
+        String sql = "DELETE FROM jugadores_banco WHERE uuid_jugador = ? AND etiqueta_banco = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ps.setString(2, etiquetaBanco);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

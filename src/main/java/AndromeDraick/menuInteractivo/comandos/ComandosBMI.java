@@ -2,7 +2,7 @@ package AndromeDraick.menuInteractivo.comandos;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
-import org.bukkit.Bukkit;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,13 +11,14 @@ import org.bukkit.entity.Player;
 
 public class ComandosBMI implements CommandExecutor {
 
-    private final MenuInteractivo plugin;
     private final GestorBaseDeDatos db;
+    private final Economy economia;
 
     public ComandosBMI(MenuInteractivo plugin) {
-        this.plugin = plugin;
-        this.db = plugin.getGestorBaseDeDatos();
-        plugin.getCommand("bmi").setExecutor(this);
+        this.db = plugin.getBaseDeDatos();           // antes: getGestorBaseDeDatos()
+        this.economia = plugin.getEconomia();
+        // El registro del executor lo debes hacer solo en onEnable():
+        // plugin.getCommand("bmi").setExecutor(this);
     }
 
     @Override
@@ -39,7 +40,7 @@ public class ComandosBMI implements CommandExecutor {
                     jugador.sendMessage(ChatColor.RED + "Uso correcto: /bmi crear banco <Nombre> <Etiqueta>");
                     return true;
                 }
-                // Aquí va la lógica para crear un banco pendiente de aprobación
+                // Lógica pendiente de creación (inserta en tu tabla de solicitudes)
                 jugador.sendMessage(ChatColor.GREEN + "Solicitud de creación de banco enviada.");
                 break;
 
@@ -47,28 +48,32 @@ public class ComandosBMI implements CommandExecutor {
                 if (args.length == 2) {
                     // /bmi banco <etiqueta>
                     jugador.sendMessage(ChatColor.YELLOW + "Abriendo menú del banco " + args[1]);
-                    // Abrir menú individual del banco
+                    // Aquí abres tu GUI de banco...
                 } else if (args.length == 3 && args[1].equalsIgnoreCase("cuenta")) {
                     // /bmi banco cuenta <etiqueta>
-                    double saldo = db.obtenerFondosBanco(args[2]);
-                    if (saldo == -1) {
-                        jugador.sendMessage(ChatColor.RED + "El banco con etiqueta " + args[2] + " no existe o no está aprobado.");
+                    double saldo = db.obtenerSaldoBanco(args[2]);  // antes: obtenerFondosBanco
+                    if (saldo < 0) {
+                        jugador.sendMessage(ChatColor.RED +
+                                "El banco con etiqueta " + args[2] + " no existe o no está aprobado.");
                     } else {
-                        jugador.sendMessage(ChatColor.GREEN + "El banco " + args[2] + " tiene $" + saldo + " en fondos.");
+                        jugador.sendMessage(ChatColor.GREEN +
+                                "El banco " + args[2] + " tiene $" + saldo + " en fondos.");
                     }
                 } else {
-                    jugador.sendMessage(ChatColor.RED + "Uso correcto: /bmi banco <etiqueta> o /bmi banco cuenta <etiqueta>");
+                    jugador.sendMessage(ChatColor.RED +
+                            "Uso correcto: /bmi banco <etiqueta> o /bmi banco cuenta <etiqueta>");
                 }
                 break;
 
             case "bancos":
-                // Abrir menú de bancos aceptados por el reino del jugador
+                // /bmi bancos
                 jugador.sendMessage(ChatColor.GREEN + "Mostrando bancos disponibles de tu reino...");
                 break;
 
             case "mibanco":
                 if (args.length < 3) {
-                    jugador.sendMessage(ChatColor.RED + "Uso correcto: /bmi mibanco <imprimir|vender|quemar> <cantidad>");
+                    jugador.sendMessage(ChatColor.RED +
+                            "Uso correcto: /bmi mibanco <imprimir|vender|quemar> <cantidad>");
                     return true;
                 }
                 String accion = args[1].toLowerCase();
@@ -80,6 +85,8 @@ public class ComandosBMI implements CommandExecutor {
                     return true;
                 }
 
+                // necesitas implementar en GestorBaseDeDatos:
+                // public String obtenerBancoDeJugador(UUID jugadorUUID)
                 String etiquetaBanco = db.obtenerBancoDeJugador(jugador.getUniqueId());
                 if (etiquetaBanco == null) {
                     jugador.sendMessage(ChatColor.RED + "No estás vinculado a ningún banco.");
@@ -88,30 +95,54 @@ public class ComandosBMI implements CommandExecutor {
 
                 switch (accion) {
                     case "imprimir":
-                        db.actualizarFondosBanco(etiquetaBanco, cantidad);
-                        jugador.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " monedas para el banco " + etiquetaBanco);
-                        break;
-                    case "vender":
-                        if (plugin.getEconomia().getBalance(jugador) >= cantidad) {
-                            plugin.getEconomia().withdrawPlayer(jugador, cantidad);
-                            db.actualizarFondosBanco(etiquetaBanco, cantidad);
-                            jugador.sendMessage(ChatColor.GREEN + "Convertiste $" + cantidad + " en moneda del banco " + etiquetaBanco);
+                        // imprimir = aumentar fondos del banco
+                        if (db.depositarEnBanco(etiquetaBanco, cantidad)) {
+                            jugador.sendMessage(ChatColor.GREEN +
+                                    "Se imprimieron " + cantidad + " monedas para el banco " + etiquetaBanco);
                         } else {
-                            jugador.sendMessage(ChatColor.RED + "No tienes suficiente dinero para vender esa cantidad.");
+                            jugador.sendMessage(ChatColor.RED +
+                                    "Error al imprimir moneda en el banco.");
                         }
                         break;
-                    case "quemar":
-                        db.actualizarFondosBanco(etiquetaBanco, -cantidad);
-                        jugador.sendMessage(ChatColor.YELLOW + "Has quemado " + cantidad + " monedas del banco " + etiquetaBanco);
+
+                    case "vender":
+                        // vender = jugador da saldo al banco
+                        if (economia.getBalance(jugador) >= cantidad) {
+                            economia.withdrawPlayer(jugador, cantidad);
+                            if (db.depositarEnBanco(etiquetaBanco, cantidad)) {
+                                jugador.sendMessage(ChatColor.GREEN +
+                                        "Convertiste $" + cantidad + " en moneda del banco " + etiquetaBanco);
+                            } else {
+                                jugador.sendMessage(ChatColor.RED +
+                                        "Error al acreditar fondos al banco.");
+                            }
+                        } else {
+                            jugador.sendMessage(ChatColor.RED +
+                                    "No tienes suficiente dinero para vender esa cantidad.");
+                        }
                         break;
+
+                    case "quemar":
+                        // quemar = retirar fondos del banco
+                        if (db.retirarDeBanco(etiquetaBanco, cantidad)) {
+                            jugador.sendMessage(ChatColor.YELLOW +
+                                    "Has quemado " + cantidad + " monedas del banco " + etiquetaBanco);
+                        } else {
+                            jugador.sendMessage(ChatColor.RED +
+                                    "Error al quemar moneda o fondos insuficientes en el banco.");
+                        }
+                        break;
+
                     default:
-                        jugador.sendMessage(ChatColor.RED + "Acción no reconocida. Usa imprimir, vender o quemar.");
+                        jugador.sendMessage(ChatColor.RED +
+                                "Acción no reconocida. Usa imprimir, vender o quemar.");
                         break;
                 }
                 break;
 
             default:
-                jugador.sendMessage(ChatColor.YELLOW + "Comando no reconocido. Usa /bmi ayuda para más información.");
+                jugador.sendMessage(ChatColor.YELLOW +
+                        "Comando no reconocido. Usa /bmi ayuda para más información.");
                 break;
         }
 

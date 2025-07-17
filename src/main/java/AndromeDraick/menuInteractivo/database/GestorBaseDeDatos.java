@@ -204,6 +204,18 @@ public class GestorBaseDeDatos {
         }
     }
 
+    public String obtenerBancoDeJugador(UUID jugadorUUID) {
+        String sql = "SELECT etiqueta_banco FROM jugadores_banco WHERE uuid_jugador = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getString("etiqueta_banco");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Retira monto de un banco, comprobando saldo suficiente.
      */

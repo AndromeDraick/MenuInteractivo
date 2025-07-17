@@ -1,0 +1,10 @@
+# config_basededatos.yml
+
+tipo: sqlite  # Opciones: sqlite o mysql
+
+mysql:
+  host: localhost
+  puerto: 3306
+  base: menu_interactivo
+  usuario: root
+  contraseña: ''

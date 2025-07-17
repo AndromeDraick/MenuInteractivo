@@ -216,6 +216,25 @@ public class GestorBaseDeDatos {
         return null;
     }
 
+    public boolean insertarBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario) {
+        String sql = """
+            INSERT INTO bancos
+              (etiqueta, nombre, reino, propietario_uuid, fondos, estado)
+            VALUES
+              (?, ?, ?, ?, 0, 'pendiente')
+            """;
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, etiqueta);
+            ps.setString(2, nombre);
+            ps.setString(3, reinoEtiqueta);
+            ps.setString(4, propietario.toString());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Retira monto de un banco, comprobando saldo suficiente.
      */

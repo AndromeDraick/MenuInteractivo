@@ -1,11 +1,11 @@
 package AndromeDraick.menuInteractivo.managers;
 
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
-import AndromeDraick.menuInteractivo.model.Banco;
-
-import java.util.List;
 import java.util.UUID;
 
+/**
+ * Encapsula operaciones de banco usando GestorBaseDeDatos.
+ */
 public class BancoManager {
 
     private final GestorBaseDeDatos db;
@@ -14,27 +14,57 @@ public class BancoManager {
         this.db = db;
     }
 
-    public boolean crearBanco(Banco banco) {
-        return db.insertarBanco(banco);
+    /**
+     * Crea un nuevo banco.
+     * Nota: debes añadir en GestorBaseDeDatos un método:
+     * public boolean insertarBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario)
+     */
+    public boolean crearBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario) {
+        return db.insertarBanco(etiqueta, nombre, reinoEtiqueta, propietario);
     }
 
-    public boolean actualizarFondos(String etiquetaBanco, double cantidad, boolean depositar) {
-        return db.actualizarFondosBanco(etiquetaBanco, cantidad, depositar);
+    /**
+     * Deposita monto en el banco.
+     * (GestorBaseDeDatos#depositarEnBanco ya existe) :contentReference[oaicite:0]{index=0}
+     */
+    public boolean depositar(String etiquetaBanco, double monto) {
+        return db.depositarEnBanco(etiquetaBanco, monto);
     }
 
-    public boolean cambiarEstado(String etiquetaBanco, String nuevoEstado) {
-        return db.actualizarEstadoBanco(etiquetaBanco, nuevoEstado);
+    /**
+     * Retira monto del banco, si hay fondos suficientes.
+     * (GestorBaseDeDatos#retirarDeBanco ya existe) :contentReference[oaicite:1]{index=1}
+     */
+    public boolean retirar(String etiquetaBanco, double monto) {
+        return db.retirarDeBanco(etiquetaBanco, monto);
     }
 
-    public Banco obtenerBanco(String etiqueta) {
-        return db.obtenerBancoPorEtiqueta(etiqueta);
+    /**
+     * Devuelve el saldo actual del banco.
+     * (GestorBaseDeDatos#obtenerSaldoBanco ya existe) :contentReference[oaicite:2]{index=2}
+     */
+    public double obtenerSaldo(String etiquetaBanco) {
+        return db.obtenerSaldoBanco(etiquetaBanco);
     }
 
-    public List<Banco> obtenerBancosDeReino(String etiquetaReino) {
-        return db.obtenerBancosDeReino(etiquetaReino);
+    /**
+     * Añade un socio al banco.
+     * (GestorBaseDeDatos#agregarSocioBanco ya existe) :contentReference[oaicite:3]{index=3}
+     */
+    public boolean agregarSocio(String etiquetaBanco, UUID jugadorUUID) {
+        return db.agregarSocioBanco(etiquetaBanco, jugadorUUID);
     }
 
-    public List<Banco> obtenerBancosPendientes(String etiquetaReino) {
-        return db.obtenerBancosPendientes(etiquetaReino);
+    /**
+     * Quita un socio del banco.
+     * (GestorBaseDeDatos#quitarSocioBanco ya existe) :contentReference[oaicite:4]{index=4}
+     */
+    public boolean quitarSocio(String etiquetaBanco, UUID jugadorUUID) {
+        return db.quitarSocioBanco(etiquetaBanco, jugadorUUID);
     }
+
+    // Si en el futuro añades estos métodos en GestorBaseDeDatos, podrías reactivar:
+    // public Banco obtenerBanco(String etiqueta) { … }
+    // public List<Banco> obtenerBancosDeReino(String etiquetaReino) { … }
+    // public List<Banco> obtenerBancosPendientes(String etiquetaReino) { … }
 }

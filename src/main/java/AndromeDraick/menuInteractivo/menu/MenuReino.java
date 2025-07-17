@@ -58,7 +58,7 @@ public class MenuReino {
         Player jugador = (Player) event.getWhoClicked();
         int slot = event.getRawSlot();
         MenuInteractivo plugin = MenuInteractivo.getInstancia();
-        GestorBaseDeDatos db = plugin.getGestorBaseDeDatos();
+        GestorBaseDeDatos db = plugin.getBaseDeDatos();
 
         switch (slot) {
             case 11:

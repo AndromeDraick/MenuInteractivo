@@ -1,91 +1,156 @@
 package AndromeDraick.menuInteractivo.comandos;
 
-import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
+import AndromeDraick.menuInteractivo.managers.BancoManager;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 import java.util.UUID;
 
 public class ComandosBanco implements CommandExecutor {
-    private final GestorBaseDeDatos db;
 
-    public ComandosBanco(GestorBaseDeDatos db) {
-        this.db = db;
+    private final BancoManager bancoManager;
+    private final Economy economia;
+
+    public ComandosBanco(BancoManager bancoManager, Economy economia) {
+        this.bancoManager = bancoManager;
+        this.economia = economia;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Solo jugadores pueden usar este comando.");
+            sender.sendMessage("Solo para jugadores.");
             return true;
         }
-        Player player = (Player) sender;
-        if (args.length < 1) {
-            player.sendMessage("Uso: /bmi <crear|depositar|retirar|saldo|invitar|expulsar>");
-            return false;
+        Player p = (Player) sender;
+        if (args.length == 0) {
+            return ayuda(p);
         }
-        String sub = args[0].toLowerCase();
-        switch (sub) {
-            case "depositar":
-                if (args.length < 3) {
-                    player.sendMessage("Uso: /bmi depositar <etiquetaBanco> <monto>");
-                    return false;
+
+        switch (args[0].toLowerCase()) {
+            case "crear":
+                // /bmi crear banco <Nombre> <Etiqueta>
+                if (args.length < 4 || !args[1].equalsIgnoreCase("banco")) {
+                    p.sendMessage(ChatColor.RED + "Uso: /bmi crear banco <Nombre> <Etiqueta>");
+                    return true;
                 }
-                double montoDep = Double.parseDouble(args[2]);
-                if (db.depositarEnBanco(args[1], montoDep)) {
-                    player.sendMessage("Has depositado " + montoDep + " en " + args[1]);
+                String nombre = args[2], etiqueta = args[3];
+                if (bancoManager.crearBanco(etiqueta, nombre, obtenerReino(p), p.getUniqueId())) {
+                    p.sendMessage(ChatColor.GREEN + "Banco '" + nombre + "' solicitado con etiqueta " + etiqueta);
                 } else {
-                    player.sendMessage("Error al depositar.");
+                    p.sendMessage(ChatColor.RED + "Error al crear solicitud de banco.");
                 }
                 break;
-            case "retirar":
-                if (args.length < 3) {
-                    player.sendMessage("Uso: /bmi retirar <etiquetaBanco> <monto>");
-                    return false;
+
+            case "pendientes":
+                // /bmi pendientes
+                List<String> pendientes = bancoManager.obtenerBancosPendientes(obtenerReino(p));
+                p.sendMessage(ChatColor.GOLD + "Solicitudes pendientes:");
+                pendientes.forEach(et -> p.sendMessage(" - " + et));
+                break;
+
+            case "aprobar":
+            case "rechazar":
+                // /bmi aprobar <Etiqueta>
+                if (args.length != 2) {
+                    p.sendMessage(ChatColor.RED + "Uso: /bmi " + args[0] + " <Etiqueta>");
+                    return true;
                 }
-                double montoRet = Double.parseDouble(args[2]);
-                if (db.retirarDeBanco(args[1], montoRet)) {
-                    player.sendMessage("Has retirado " + montoRet + " de " + args[1]);
+                String estado = args[0].equalsIgnoreCase("aprobar") ? "aprobado" : "rechazado";
+                if (bancoManager.actualizarEstado(args[1], estado)) {
+                    p.sendMessage(ChatColor.GREEN + "Banco " + args[1] + " " + estado);
                 } else {
-                    player.sendMessage("Error al retirar o saldo insuficiente.");
+                    p.sendMessage(ChatColor.RED + "No se pudo actualizar estado.");
                 }
                 break;
+
+            case "listar":
+                // /bmi listar
+                bancoManager.obtenerBancosDeReino(obtenerReino(p)).forEach(b -> {
+                    p.sendMessage(ChatColor.AQUA + b.getEtiqueta() +
+                            ChatColor.GRAY + " (" + b.getEstado() + ")");
+                });
+                break;
+
+            case "unir":
+            case "salir":
+                // /bmi unir <Etiqueta> | /bmi salir <Etiqueta>
+                if (args.length != 2) {
+                    p.sendMessage(ChatColor.RED + "Uso: /bmi " + args[0] + " <Etiqueta>");
+                    return true;
+                }
+                boolean ok = args[0].equalsIgnoreCase("unir")
+                        ? bancoManager.agregarSocio(args[1], p.getUniqueId())
+                        : bancoManager.quitarSocio(args[1], p.getUniqueId());
+                p.sendMessage(ok
+                        ? ChatColor.GREEN + (args[0].equalsIgnoreCase("unir") ? "Te uniste a " : "Saliste de ") + args[1]
+                        : ChatColor.RED + "Error al ejecutar la acción.");
+                break;
+
             case "saldo":
-                if (args.length < 2) {
-                    player.sendMessage("Uso: /bmi saldo <etiquetaBanco>");
-                    return false;
+                // /bmi saldo <Etiqueta>
+                if (args.length != 2) {
+                    p.sendMessage(ChatColor.RED + "Uso: /bmi saldo <Etiqueta>");
+                    return true;
                 }
-                double saldo = db.obtenerSaldoBanco(args[1]);
-                player.sendMessage("Saldo de " + args[1] + ": " + saldo);
+                double saldo = bancoManager.obtenerSaldo(args[1]);
+                p.sendMessage(ChatColor.YELLOW + "Saldo de " + args[1] + ": $" + saldo);
                 break;
-            case "invitar":
-                if (args.length < 3) {
-                    player.sendMessage("Uso: /bmi invitar <etiquetaBanco> <jugador>");
-                    return false;
+
+            case "depositar":
+            case "retirar":
+                // /bmi depositar|retirar <Etiqueta> <Monto>
+                if (args.length != 3) {
+                    p.sendMessage(ChatColor.RED + "Uso: /bmi " + args[0] + " <Etiqueta> <Monto>");
+                    return true;
                 }
-                Player target = player.getServer().getPlayer(args[2]);
-                if (target != null && db.agregarSocioBanco(args[1], target.getUniqueId())) {
-                    player.sendMessage("Has invitado a " + target.getName() + " al banco " + args[1]);
+                String tag = args[1];
+                double monto;
+                try { monto = Double.parseDouble(args[2]); }
+                catch (NumberFormatException e) {
+                    p.sendMessage(ChatColor.RED + "Monto inválido."); return true;
+                }
+                boolean resultado;
+                if (args[0].equalsIgnoreCase("depositar")) {
+                    if (economia.getBalance(p) < monto) {
+                        p.sendMessage(ChatColor.RED + "No tienes suficiente dinero.");
+                        return true;
+                    }
+                    economia.withdrawPlayer(p, monto);
+                    resultado = bancoManager.depositar(tag, monto);
                 } else {
-                    player.sendMessage("Error al invitar o jugador no encontrado.");
+                    resultado = bancoManager.retirar(tag, monto);
                 }
+                p.sendMessage(resultado
+                        ? ChatColor.GREEN + "Operación completada."
+                        : ChatColor.RED + "Error en la operación.");
                 break;
-            case "expulsar":
-                if (args.length < 3) {
-                    player.sendMessage("Uso: /bmi expulsar <etiquetaBanco> <jugador>");
-                    return false;
-                }
-                Player objetivo = player.getServer().getPlayer(args[2]);
-                if (objetivo != null && db.quitarSocioBanco(args[1], objetivo.getUniqueId())) {
-                    player.sendMessage("Has expulsado a " + objetivo.getName() + " de " + args[1]);
-                } else {
-                    player.sendMessage("Error al expulsar o jugador no encontrado.");
-                }
-                break;
+
             default:
-                player.sendMessage("Subcomando desconocido.");
+                return ayuda(p);
         }
         return true;
+    }
+
+    private boolean ayuda(Player p) {
+        p.sendMessage(ChatColor.GOLD + "–– Comandos de Banco ––");
+        p.sendMessage("/bmi crear banco <Nombre> <Etiqueta>");
+        p.sendMessage("/bmi pendientes");
+        p.sendMessage("/bmi aprobar|rechazar <Etiqueta>");
+        p.sendMessage("/bmi listar");
+        p.sendMessage("/bmi unir|salir <Etiqueta>");
+        p.sendMessage("/bmi saldo <Etiqueta>");
+        p.sendMessage("/bmi depositar|retirar <Etiqueta> <Monto>");
+        return true;
+    }
+
+    // Extrae del jugador su reino (usa tu método de GestorBaseDeDatos)
+    private String obtenerReino(Player p) {
+        return bancoManager.getDb().obtenerReinoJugador(p.getUniqueId());
     }
 }

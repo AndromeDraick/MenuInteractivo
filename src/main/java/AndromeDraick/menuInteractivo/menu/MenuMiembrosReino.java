@@ -20,7 +20,7 @@ public class MenuMiembrosReino {
 
     public static void abrir(Player jugador) {
         MenuInteractivo plugin = MenuInteractivo.getInstancia();
-        GestorBaseDeDatos db = plugin.getGestorBaseDeDatos();
+        GestorBaseDeDatos db = plugin.getBaseDeDatos();
 
         String reino = db.obtenerReinoJugador(jugador.getUniqueId());
         if (reino == null) {

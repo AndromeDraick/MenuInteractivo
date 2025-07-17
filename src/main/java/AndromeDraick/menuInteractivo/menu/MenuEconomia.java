@@ -18,7 +18,7 @@ public class MenuEconomia {
 
     public static void abrir(Player jugador) {
         MenuInteractivo plugin = MenuInteractivo.getInstancia();
-        GestorBaseDeDatos db = plugin.getGestorBaseDeDatos();
+        GestorBaseDeDatos db = plugin.getBaseDeDatos();
 
         Inventory menu = Bukkit.createInventory(null, 27, ChatColor.GOLD + "Economía del Reino");
 

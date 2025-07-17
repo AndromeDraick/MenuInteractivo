@@ -6,6 +6,7 @@ import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.listeners.BancoMenuListener;
+import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.menu.EventosMenu;
 import AndromeDraick.menuInteractivo.menu.MenuTrabajos;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
@@ -67,7 +68,12 @@ public final class MenuInteractivo extends JavaPlugin {
 
         // Registrar comandos de reinos y bancos
         getCommand("rnmi").setExecutor(new ComandosReino(baseDeDatos));
-        getCommand("bmi").setExecutor(new ComandosBanco(baseDeDatos));
+
+
+        BancoManager bancoManager = new BancoManager(baseDeDatos);
+        getCommand("bmi").setExecutor(new ComandosBanco(bancoManager, getEconomia()));
+        getServer().getPluginManager().registerEvents(new BancoMenuListener(bancoManager), this);
+
 
         // Registrar eventos de menú y banco
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);

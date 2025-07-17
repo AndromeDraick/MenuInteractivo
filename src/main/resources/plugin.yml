@@ -1,22 +1,47 @@
 name: MenuInteractivo
-version: '1.0.0.10-SNAPSHOT'
+version: '1.0.0.11-SNAPSHOT'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
-api-version: '1.21'
+api-version: '1.21.1'
 folia-supported: true
+
+
+
 commands:
   menu:
     description: Abre el menú interactivo
     usage: /menu
+
   tmi:
-    usage: /tmi <comprar|vender> <item> <cantidad>
     description: Sistema de tienda personalizada
-    aliases: [ tienda, shop ]
+    usage: /tmi <comprar|vender> <item> <cantidad>
+    aliases: [tienda, shop]
     permission: menuinteractivo.usar
-    permission-message: No tienes permiso.
+    permission-message: No tienes permiso para usar la tienda.
     tab-completer: AndromeDraick.menuInteractivo.comandos.Comandos
+
   rnmi:
     description: Comandos de reinos
-    usage: /<command>
+    usage: /rnmi <crear|unir|salir|eliminar|listar|info> [args]
+    permission: menuinteractivo.reino
+    permission-message: No tienes permiso para gestionar reinos.
+    tab-completer: AndromeDraick.menuInteractivo.comandos.ComandosReino
+
   bmi:
     description: Comandos de bancos
-    usage: /<command>
+    usage: /bmi <crear|pendientes|aprobar|rechazar|listar|unir|salir|saldo|depositar|retirar|banco|ayuda> [args]
+    permission: menuinteractivo.banco
+    permission-message: No tienes permiso para gestionar bancos.
+    tab-completer: AndromeDraick.menuInteractivo.comandos.ComandosBMI
+
+permissions:
+  menuinteractivo.usar:
+    description: Permite usar el sistema de tienda personalizada.
+    default: true
+
+  menuinteractivo.reino:
+    description: Permite crear y gestionar reinos.
+    default: op
+
+  menuinteractivo.banco:
+    description: Permite crear y gestionar bancos.
+    default: op

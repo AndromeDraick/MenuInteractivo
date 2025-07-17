@@ -49,7 +49,7 @@ public class MenuListaBancos {
 
     private String obtenerReinoJugador(Player jugador) {
         try {
-            PreparedStatement ps = plugin.getGestorBaseDeDatos().getConexion().prepareStatement(
+            PreparedStatement ps = plugin.getBaseDeDatos().getConexion().prepareStatement(
                     "SELECT etiqueta_reino FROM jugadores_reino WHERE uuid = ?"
             );
             ps.setString(1, jugador.getUniqueId().toString());
@@ -64,7 +64,7 @@ public class MenuListaBancos {
     private List<String> obtenerBancosAceptados(String etiquetaReino) {
         List<String> bancos = new ArrayList<>();
         try {
-            PreparedStatement ps = plugin.getGestorBaseDeDatos().getConexion().prepareStatement(
+            PreparedStatement ps = plugin.getBaseDeDatos().getConexion().prepareStatement(
                     "SELECT etiqueta FROM bancos WHERE reino_etiqueta = ? AND estado = 'aceptado'"
             );
             ps.setString(1, etiquetaReino);

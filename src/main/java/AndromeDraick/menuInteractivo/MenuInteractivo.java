@@ -5,7 +5,6 @@ import AndromeDraick.menuInteractivo.comandos.ComandosBMI;
 import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
-import AndromeDraick.menuInteractivo.listeners.BancoMenuListener;
 import AndromeDraick.menuInteractivo.menu.EventosMenu;
 import AndromeDraick.menuInteractivo.menu.MenuBancos;
 import AndromeDraick.menuInteractivo.menu.MenuTrabajos;
@@ -73,7 +72,6 @@ public final class MenuInteractivo extends JavaPlugin {
 
         // 9) Listeners
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
-        Bukkit.getPluginManager().registerEvents(new BancoMenuListener(this), this);
         Bukkit.getPluginManager().registerEvents(new MenuTrabajos.TrabajoJoinListener(), this);
 
         this.menuBancos = new MenuBancos(this);

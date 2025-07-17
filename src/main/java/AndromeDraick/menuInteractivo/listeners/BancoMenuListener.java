@@ -15,7 +15,7 @@ public class BancoMenuListener implements Listener {
     }
 
     @EventHandler
-    public void alClicInventario(InventoryClickEvent e) {
-        menuBancos.manejarClick(e);
+    public void onInventoryClick(InventoryClickEvent event) {
+        menuBancos.onInventoryClick(event);
     }
 }

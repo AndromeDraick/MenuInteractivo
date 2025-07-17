@@ -72,7 +72,7 @@ public final class MenuInteractivo extends JavaPlugin {
 
         BancoManager bancoManager = new BancoManager(baseDeDatos);
         getCommand("bmi").setExecutor(new ComandosBanco(bancoManager, getEconomia()));
-        getServer().getPluginManager().registerEvents(new BancoMenuListener(bancoManager), this);
+        getServer().getPluginManager().registerEvents(new BancoMenuListener(this), this);
 
 
         // Registrar eventos de menú y banco

@@ -59,13 +59,16 @@ public final class MenuInteractivo extends JavaPlugin {
 
         baseDeDatos = new GestorBaseDeDatos(this); // Se conecta automáticamente en el constructor
 
-        // Registrar comandos y eventos
+        // Registrar comandos del menú y tienda
         Comandos comandos = new Comandos();
         getCommand("menu").setExecutor(comandos);
         getCommand("tmi").setExecutor(comandos);
-        getCommand("rnmi").setExecutor(new ComandosReino(gestorBD));
-        getCommand("bmi").setExecutor(new ComandosBanco(gestorBD));
 
+        // Registrar comandos de reinos y bancos
+        getCommand("rnmi").setExecutor(new ComandosReino(baseDeDatos));
+        getCommand("bmi").setExecutor(new ComandosBanco(baseDeDatos));
+
+        // Registrar eventos de menú y banco
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
         getServer().getPluginManager().registerEvents(new BancoMenuListener(this), this);
 
@@ -75,7 +78,6 @@ public final class MenuInteractivo extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("MenuInteractivo desactivado.");
-        // No hay método de desconexión, por lo tanto no se llama a ninguno
     }
 
     private boolean setupEconomy() {

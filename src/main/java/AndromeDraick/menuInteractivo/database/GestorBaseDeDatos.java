@@ -1,6 +1,7 @@
 package AndromeDraick.menuInteractivo.database;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
+import AndromeDraick.menuInteractivo.model.Reino;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.sql.*;
@@ -113,7 +114,7 @@ public class GestorBaseDeDatos {
 
     public boolean crearReino(String etiqueta, String nombre, UUID reyUUID) {
         String sql = "INSERT INTO reinos (etiqueta, nombre, uuid_rey) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, etiqueta);
             ps.setString(2, nombre);
             ps.setString(3, reyUUID.toString());
@@ -127,7 +128,7 @@ public class GestorBaseDeDatos {
     public List<Reino> listarReinos() {
         List<Reino> reinos = new ArrayList<>();
         String sql = "SELECT etiqueta, nombre, uuid_rey FROM reinos";
-        try (Statement stmt = connection.createStatement();
+        try (Statement stmt = conexion.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 reinos.add(new Reino(
@@ -147,7 +148,7 @@ public class GestorBaseDeDatos {
      */
     public boolean eliminarReino(String etiqueta) {
         String sql = "DELETE FROM reinos WHERE etiqueta = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, etiqueta);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -161,7 +162,7 @@ public class GestorBaseDeDatos {
      */
     public boolean unirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
         String sql = "INSERT INTO jugadores_reino (uuid_jugador, etiqueta_reino) VALUES (?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
             ps.setString(2, etiquetaReino);
             return ps.executeUpdate() > 0;
@@ -176,7 +177,7 @@ public class GestorBaseDeDatos {
      */
     public boolean salirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
         String sql = "DELETE FROM jugadores_reino WHERE uuid_jugador = ? AND etiqueta_reino = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
             ps.setString(2, etiquetaReino);
             return ps.executeUpdate() > 0;
@@ -193,7 +194,7 @@ public class GestorBaseDeDatos {
      */
     public boolean depositarEnBanco(String etiquetaBanco, double monto) {
         String sql = "UPDATE bancos SET fondos = fondos + ? WHERE etiqueta = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setDouble(1, monto);
             ps.setString(2, etiquetaBanco);
             return ps.executeUpdate() > 0;
@@ -208,7 +209,7 @@ public class GestorBaseDeDatos {
      */
     public boolean retirarDeBanco(String etiquetaBanco, double monto) {
         String sql = "UPDATE bancos SET fondos = fondos - ? WHERE etiqueta = ? AND fondos >= ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setDouble(1, monto);
             ps.setString(2, etiquetaBanco);
             ps.setDouble(3, monto);
@@ -224,7 +225,7 @@ public class GestorBaseDeDatos {
      */
     public double obtenerSaldoBanco(String etiquetaBanco) {
         String sql = "SELECT fondos FROM bancos WHERE etiqueta = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, etiquetaBanco);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -241,7 +242,7 @@ public class GestorBaseDeDatos {
      */
     public boolean agregarSocioBanco(String etiquetaBanco, UUID jugadorUUID) {
         String sql = "INSERT INTO jugadores_banco (uuid_jugador, etiqueta_banco) VALUES (?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
             ps.setString(2, etiquetaBanco);
             return ps.executeUpdate() > 0;
@@ -256,7 +257,7 @@ public class GestorBaseDeDatos {
      */
     public boolean quitarSocioBanco(String etiquetaBanco, UUID jugadorUUID) {
         String sql = "DELETE FROM jugadores_banco WHERE uuid_jugador = ? AND etiqueta_banco = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
             ps.setString(2, etiquetaBanco);
             return ps.executeUpdate() > 0;

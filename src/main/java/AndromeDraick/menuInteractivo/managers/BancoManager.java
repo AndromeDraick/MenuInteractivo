@@ -2,6 +2,7 @@ package AndromeDraick.menuInteractivo.managers;
 
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.model.Banco;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +16,15 @@ public class BancoManager {
 
     public BancoManager(GestorBaseDeDatos db) {
         this.db = db;
+    }
+
+    /** Devuelve la etiqueta del reino del jugador. */
+    public String obtenerReinoJugador(UUID jugadorUUID) {
+        return db.obtenerReinoJugador(jugadorUUID);
+    }
+
+    private String obtenerReino(Player p) {
+        return db.obtenerReinoJugador(p.getUniqueId());
     }
 
     /** Crea un nuevo banco (estado 'pendiente'). */

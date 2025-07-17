@@ -1,7 +1,7 @@
 package AndromeDraick.menuInteractivo.menu;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
-import AndromeDraick.menuInteractivo.gestores.BancoManager;
+import AndromeDraick.menuInteractivo.managers.BancoManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

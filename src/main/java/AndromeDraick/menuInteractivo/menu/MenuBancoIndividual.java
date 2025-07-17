@@ -59,7 +59,7 @@ public class MenuBancoIndividual {
 
     private boolean estaRegistradoEnBanco(Player jugador, String etiqueta) {
         try {
-            PreparedStatement ps = plugin.getGestorBaseDeDatos().getConexion().prepareStatement(
+            PreparedStatement ps = plugin.getBaseDeDatos().getConexion().prepareStatement(
                     "SELECT 1 FROM jugadores_banco WHERE uuid = ? AND etiqueta_banco = ?"
             );
             ps.setString(1, jugador.getUniqueId().toString());
@@ -74,7 +74,7 @@ public class MenuBancoIndividual {
 
     private double obtenerFondosBanco(String etiqueta) {
         try {
-            PreparedStatement ps = plugin.getGestorBaseDeDatos().getConexion().prepareStatement(
+            PreparedStatement ps = plugin.getBaseDeDatos().getConexion().prepareStatement(
                     "SELECT fondos FROM bancos WHERE etiqueta = ?"
             );
             ps.setString(1, etiqueta);
@@ -88,7 +88,7 @@ public class MenuBancoIndividual {
 
     private void actualizarFondosBanco(String etiqueta, double nuevoMonto) {
         try {
-            PreparedStatement ps = plugin.getGestorBaseDeDatos().getConexion().prepareStatement(
+            PreparedStatement ps = plugin.getBaseDeDatos().getConexion().prepareStatement(
                     "UPDATE bancos SET fondos = ? WHERE etiqueta = ?"
             );
             ps.setDouble(1, nuevoMonto);

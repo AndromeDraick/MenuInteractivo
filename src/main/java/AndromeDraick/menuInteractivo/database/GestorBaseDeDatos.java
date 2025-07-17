@@ -2,12 +2,13 @@ package AndromeDraick.menuInteractivo.database;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.model.Reino;
+import AndromeDraick.menuInteractivo.model.Banco;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+
 import java.sql.*;
 import java.util.UUID;
-
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,7 @@ public class GestorBaseDeDatos {
         String sqlJugadoresReino = "CREATE TABLE IF NOT EXISTS jugadores_reino (" +
                 "uuid TEXT PRIMARY KEY," +
                 "reino TEXT NOT NULL," +
-                "etiqueta_reino TEXT NOT NULL" +
+                "etiqueta_reino TEXT NOT NULL," +
                 "rol TEXT NOT NULL" +
                 ")";
 
@@ -204,12 +205,16 @@ public class GestorBaseDeDatos {
         }
     }
 
+    /**
+     * Devuelve la etiqueta del único banco al que está vinculado un jugador.
+     */
     public String obtenerBancoDeJugador(UUID jugadorUUID) {
-        String sql = "SELECT etiqueta_banco FROM jugadores_banco WHERE uuid_jugador = ?";
+        String sql = "SELECT etiqueta_banco FROM jugadores_banco WHERE uuid = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getString("etiqueta_banco");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("etiqueta_banco");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -219,9 +224,9 @@ public class GestorBaseDeDatos {
     public boolean insertarBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario) {
         String sql = """
             INSERT INTO bancos
-              (etiqueta, nombre, reino, propietario_uuid, fondos, estado)
+              (etiqueta, nombre, reino_etiqueta, uuid_propietario, estado, fondos)
             VALUES
-              (?, ?, ?, ?, 0, 'pendiente')
+              (?, ?, ?, ?, 'pendiente', 0)
             """;
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, etiqueta);
@@ -233,6 +238,113 @@ public class GestorBaseDeDatos {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Cambia el estado de un banco ('aprobado', 'rechazado', etc.).
+     */
+    public boolean actualizarEstadoBanco(String etiquetaBanco, String nuevoEstado) {
+        String sql = "UPDATE bancos SET estado = ? WHERE etiqueta = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, nuevoEstado);
+            ps.setString(2, etiquetaBanco);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Devuelve la información completa de un banco por su etiqueta.
+     */
+    public Banco obtenerBancoPorEtiqueta(String etiquetaBanco) {
+        String sql = """
+            SELECT etiqueta, nombre, reino_etiqueta,
+                   uuid_propietario, estado, fondos
+              FROM bancos
+             WHERE etiqueta = ?
+            """;
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, etiquetaBanco);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Banco(
+                            rs.getString("etiqueta"),
+                            rs.getString("nombre"),
+                            rs.getString("reino_etiqueta"),
+                            UUID.fromString(rs.getString("uuid_propietario")),
+                            rs.getString("estado"),
+                            rs.getDouble("fondos")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Lista todos los bancos aprobados de un reino.
+     */
+    public List<Banco> obtenerBancosDeReino(String etiquetaReino) {
+        List<Banco> lista = new ArrayList<>();
+        String sql = """
+            SELECT etiqueta, nombre, reino_etiqueta,
+                   uuid_propietario, estado, fondos
+              FROM bancos
+             WHERE reino_etiqueta = ? AND estado = 'aprobado'
+            """;
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, etiquetaReino);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(new Banco(
+                            rs.getString("etiqueta"),
+                            rs.getString("nombre"),
+                            rs.getString("reino_etiqueta"),
+                            UUID.fromString(rs.getString("uuid_propietario")),
+                            rs.getString("estado"),
+                            rs.getDouble("fondos")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    /**
+     * Lista todas las solicitudes de banco pendientes de un reino.
+     */
+    public List<Banco> obtenerBancosPendientes(String etiquetaReino) {
+        List<Banco> lista = new ArrayList<>();
+        String sql = """
+            SELECT etiqueta, nombre, reino_etiqueta,
+                   uuid_propietario, estado, fondos
+              FROM bancos
+             WHERE reino_etiqueta = ? AND estado = 'pendiente'
+            """;
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, etiquetaReino);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(new Banco(
+                            rs.getString("etiqueta"),
+                            rs.getString("nombre"),
+                            rs.getString("reino_etiqueta"),
+                            UUID.fromString(rs.getString("uuid_propietario")),
+                            rs.getString("estado"),
+                            rs.getDouble("fondos")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
     }
 
     /**
@@ -258,9 +370,8 @@ public class GestorBaseDeDatos {
         String sql = "SELECT fondos FROM bancos WHERE etiqueta = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, etiquetaBanco);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("fondos");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getDouble("fondos");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -272,7 +383,7 @@ public class GestorBaseDeDatos {
      * Agrega un socio a un banco.
      */
     public boolean agregarSocioBanco(String etiquetaBanco, UUID jugadorUUID) {
-        String sql = "INSERT INTO jugadores_banco (uuid_jugador, etiqueta_banco) VALUES (?, ?)";
+        String sql = "INSERT INTO jugadores_banco (uuid, etiqueta_banco) VALUES (?, ?)";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
             ps.setString(2, etiquetaBanco);
@@ -287,7 +398,7 @@ public class GestorBaseDeDatos {
      * Expulsa a un socio de un banco.
      */
     public boolean quitarSocioBanco(String etiquetaBanco, UUID jugadorUUID) {
-        String sql = "DELETE FROM jugadores_banco WHERE uuid_jugador = ? AND etiqueta_banco = ?";
+        String sql = "DELETE FROM jugadores_banco WHERE uuid = ? AND etiqueta_banco = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
             ps.setString(2, etiquetaBanco);

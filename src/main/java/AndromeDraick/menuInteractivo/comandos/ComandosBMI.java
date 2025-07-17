@@ -139,20 +139,7 @@ public class ComandosBMI implements CommandExecutor {
     }
 
     private void cmdListarActivos(Player p) {
-        String reino = bancoManager.obtenerReinoJugador(p.getUniqueId());
-        if (reino == null) {
-            p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
-            return;
-        }
-        List<Banco> activos = bancoManager.obtenerBancosDeReino(reino);
-        if (activos.isEmpty()) {
-            p.sendMessage(ChatColor.YELLOW + "No hay bancos activos en tu reino.");
-            return;
-        }
-        p.sendMessage(ChatColor.GOLD + "Bancos activos en '" + reino + "':");
-        activos.forEach(b -> p.sendMessage(
-                ChatColor.AQUA + b.getEtiqueta() + ChatColor.GRAY + " - " + b.getNombre()
-        ));
+        plugin.getMenuBancos().abrirListaActivos(p);
     }
 
     private void cmdUnirSalir(Player p, String[] args, boolean unir) {

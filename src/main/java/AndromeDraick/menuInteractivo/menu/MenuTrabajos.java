@@ -8,12 +8,19 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 
+/**
+ * Clase para mostrar y manejar el menú de selección de trabajos.
+ * Incluye ordenamiento de opciones y validación de persistencia en BD.
+ */
 public class MenuTrabajos {
 
     private static final String TITULO = ChatColor.GOLD + "Elige un trabajo";
@@ -29,15 +36,20 @@ public class MenuTrabajos {
             "guardia", new TrabajoVisual(Material.SHIELD, ChatColor.BLUE)
     );
 
+    /**
+     * Abre el inventario de selección de trabajos, ordenando las opciones.
+     */
     public static void abrir(Player jugador) {
         SistemaTrabajos sistema = MenuInteractivo.getInstancia().getSistemaTrabajos();
-        Set<String> trabajos = sistema.getTrabajosValidos();
+        // Obtener y ordenar trabajos válidos para un orden consistente
+        List<String> trabajosList = new ArrayList<>(sistema.getTrabajosValidos());
+        Collections.sort(trabajosList);
 
-        int size = Math.max(27, ((trabajos.size() - 1) / 9 + 1) * 9);
+        int size = Math.max(27, ((trabajosList.size() - 1) / 9 + 1) * 9);
         Inventory menu = Bukkit.createInventory(null, size, TITULO);
 
         int slot = 10;
-        for (String trabajo : trabajos) {
+        for (String trabajo : trabajosList) {
             String key = trabajo.toLowerCase();
             TrabajoVisual visual = TRABAJOS_PREDEFINIDOS.getOrDefault(
                     key,
@@ -79,6 +91,9 @@ public class MenuTrabajos {
         return item;
     }
 
+    /**
+     * Maneja clicks dentro del inventario de trabajos, comprobando persistencia en la BD.
+     */
     public static void manejarClick(InventoryClickEvent event) {
         if (!event.getView().getTitle().equals(TITULO)) return;
         event.setCancelled(true);
@@ -104,13 +119,18 @@ public class MenuTrabajos {
         }
 
         String actual = sistema.getTrabajo(jugador);
-        if (!actual.equalsIgnoreCase("Sin trabajo") && !actual.equalsIgnoreCase("")) {
+        if (!actual.equalsIgnoreCase("Sin trabajo") && !actual.isEmpty()) {
             jugador.sendMessage(ChatColor.RED + "Ya tienes un trabajo asignado (" + actual + "). No puedes cambiarlo.");
             return;
         }
 
+        // Persistir en memoria y BD
         sistema.setTrabajo(jugador, nombreClicado);
-        baseDeDatos.actualizarTrabajo(jugador.getUniqueId(), nombreClicado);
+        boolean ok = baseDeDatos.actualizarTrabajo(jugador.getUniqueId(), nombreClicado);
+        if (!ok) {
+            jugador.sendMessage(ChatColor.RED + "Error al guardar tu trabajo en la base de datos.");
+            return;
+        }
 
         jugador.sendMessage(ChatColor.GREEN + "¡Te has unido como " + capitalizar(nombreClicado) + "!");
         jugador.playSound(jugador.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
@@ -122,4 +142,24 @@ public class MenuTrabajos {
     }
 
     private record TrabajoVisual(Material material, ChatColor color) {}
+
+    /**
+     * Listener para recargar trabajos desde la BD cuando un jugador se une.
+     * Regístralo en tu clase principal:
+     * getServer().getPluginManager().registerEvents(new MenuTrabajos.TrabajoJoinListener(), this);
+     */
+    public static class TrabajoJoinListener implements Listener {
+        @EventHandler
+        public void onPlayerJoin(PlayerJoinEvent event) {
+            Player jugador = event.getPlayer();
+            String trabajo = MenuInteractivo.getInstancia()
+                    .getBaseDeDatos()
+                    .obtenerTrabajo(jugador.getUniqueId());
+            if (!trabajo.equalsIgnoreCase("Sin trabajo")) {
+                MenuInteractivo.getInstancia()
+                        .getSistemaTrabajos()
+                        .setTrabajo(jugador, trabajo);
+            }
+        }
+    }
 }

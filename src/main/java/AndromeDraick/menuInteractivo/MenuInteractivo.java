@@ -7,6 +7,7 @@ import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.listeners.BancoMenuListener;
 import AndromeDraick.menuInteractivo.menu.EventosMenu;
+import AndromeDraick.menuInteractivo.menu.MenuTrabajos;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -71,6 +72,7 @@ public final class MenuInteractivo extends JavaPlugin {
         // Registrar eventos de menú y banco
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
         getServer().getPluginManager().registerEvents(new BancoMenuListener(this), this);
+        getServer().getPluginManager().registerEvents(new MenuTrabajos.TrabajoJoinListener(), this);
 
         getLogger().info("MenuInteractivo activado correctamente.");
     }

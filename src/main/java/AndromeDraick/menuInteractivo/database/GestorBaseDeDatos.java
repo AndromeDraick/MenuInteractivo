@@ -281,15 +281,15 @@ public class GestorBaseDeDatos {
         return "Sin trabajo";
     }
 
-    public void actualizarTrabajo(UUID uuid, String nuevoTrabajo) {
-        try (PreparedStatement ps = conexion.prepareStatement(
-                "UPDATE jugadores SET trabajo = ? WHERE uuid = ?"
-        )) {
-            ps.setString(1, nuevoTrabajo);
-            ps.setString(2, uuid.toString());
-            ps.executeUpdate();
+    public boolean actualizarTrabajo(UUID jugadorUUID, String trabajo) {
+        String sql = "UPDATE jugadores SET trabajo = ? WHERE uuid = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, trabajo);
+            ps.setString(2, jugadorUUID.toString());
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            plugin.getLogger().warning("Error al actualizar trabajo: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 

@@ -1,12 +1,11 @@
 package AndromeDraick.menuInteractivo;
 
 import AndromeDraick.menuInteractivo.comandos.Comandos;
-import AndromeDraick.menuInteractivo.comandos.ComandosBanco;
+import AndromeDraick.menuInteractivo.comandos.ComandosBMI;
 import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.listeners.BancoMenuListener;
-import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.menu.EventosMenu;
 import AndromeDraick.menuInteractivo.menu.MenuTrabajos;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
@@ -31,54 +30,49 @@ public final class MenuInteractivo extends JavaPlugin {
     public void onEnable() {
         instancia = this;
 
-        // Vault
+        // 1) Vault
         if (!setupEconomy()) {
-            getLogger().severe("No se encontró un sistema de economía (Vault + plugin). ¡Desactivando!");
+            getLogger().severe("No se encontró Vault o un plugin de economía. Desactivando.");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        // LuckPerms
+        // 2) LuckPerms
         try {
             permisos = LuckPermsProvider.get();
         } catch (IllegalStateException e) {
-            getLogger().severe("LuckPerms no está cargado correctamente.");
+            getLogger().severe("LuckPerms no cargó correctamente.");
         }
 
-        // Sistema de trabajos
+        // 3) Sistema de trabajos
         trabajos = new SistemaTrabajos();
 
-        // Cargar config_tienda.yml
+        // 4) Configuración de tienda
         saveResource("config_tienda.yml", false);
         configTienda = new ConfigTiendaManager(this);
 
-        // Crear carpeta configuracion y cargar base de datos
-        File carpetaConfig = new File(getDataFolder(), "configuracion");
-        if (!carpetaConfig.exists()) carpetaConfig.mkdirs();
+        // 5) Configuración y conexión a BBDD
+        File cfgDir = new File(getDataFolder(), "configuracion");
+        if (!cfgDir.exists()) cfgDir.mkdirs();
+        File cfgBD = new File(cfgDir, "config_basededatos.yml");
+        if (!cfgBD.exists()) saveResource("configuracion/config_basededatos.yml", false);
+        baseDeDatos = new GestorBaseDeDatos(this);
 
-        File archivoBD = new File(carpetaConfig, "config_basededatos.yml");
-        if (!archivoBD.exists()) saveResource("configuracion/config_basededatos.yml", false);
-
-        baseDeDatos = new GestorBaseDeDatos(this); // Se conecta automáticamente en el constructor
-
-        // Registrar comandos del menú y tienda
+        // 6) Comandos de menú/tienda
         Comandos comandos = new Comandos();
         getCommand("menu").setExecutor(comandos);
         getCommand("tmi").setExecutor(comandos);
 
-        // Registrar comandos de reinos y bancos
-        getCommand("rnmi").setExecutor(new ComandosReino(baseDeDatos));
+        // 7) Comando de reinos (/rnmi)
+        getCommand("rnmi").setExecutor(new ComandosReino(this));
 
+        // 8) Comando de bancos (/bmi)
+        getCommand("bmi").setExecutor(new ComandosBMI(this));
 
-        BancoManager bancoManager = new BancoManager(baseDeDatos);
-        getCommand("bmi").setExecutor(new ComandosBanco(bancoManager, getEconomia()));
-        getServer().getPluginManager().registerEvents(new BancoMenuListener(this), this);
-
-
-        // Registrar eventos de menú y banco
+        // 9) Listeners
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
-        getServer().getPluginManager().registerEvents(new BancoMenuListener(this), this);
-        getServer().getPluginManager().registerEvents(new MenuTrabajos.TrabajoJoinListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BancoMenuListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new MenuTrabajos.TrabajoJoinListener(), this);
 
         getLogger().info("MenuInteractivo activado correctamente.");
     }

@@ -158,7 +158,7 @@ public class ComandosReino implements CommandExecutor {
             p.sendMessage(ChatColor.RED + "Reino '" + etiqueta + "' no encontrado.");
             return;
         }
-        if (!r.getReyUuid().equals(p.getUniqueId())) {
+        if (!r.getReyUUID().equals(p.getUniqueId())) {
             p.sendMessage(ChatColor.RED + "Solo el rey de este reino puede eliminarlo.");
             return;
         }
@@ -197,7 +197,7 @@ public class ComandosReino implements CommandExecutor {
         // Muestra info básica
         p.sendMessage(ChatColor.GREEN + "— Información de " + r.getNombre() + " —");
         p.sendMessage(ChatColor.GRAY + "Etiqueta: " + r.getEtiqueta());
-        p.sendMessage(ChatColor.GRAY + "Rey: " + r.getReyUuid());
+        p.sendMessage(ChatColor.GRAY + "Rey: " + r.getReyUUID());
         // Si quieres mostrar miembros, se necesitaría un método en manager que devuelva la lista de UUIDs
         // List<UUID> miembros = manager.obtenerMiembros(etiqueta);
         // p.sendMessage(ChatColor.GRAY + "Miembros: " + miembros.size());

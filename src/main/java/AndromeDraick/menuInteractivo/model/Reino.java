@@ -13,7 +13,24 @@ public class Reino {
         this.reyUUID = reyUUID;
     }
 
-    public String getEtiqueta() { return etiqueta; }
-    public String getNombre() { return nombre; }
-    public UUID getReyUUID() { return reyUUID; }
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public UUID getReyUUID() {
+        return reyUUID;
+    }
+
+    @Override
+    public String toString() {
+        return "Reino{" +
+                "etiqueta='" + etiqueta + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", reyUUID=" + reyUUID +
+                '}';
+    }
 }

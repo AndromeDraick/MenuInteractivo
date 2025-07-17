@@ -226,7 +226,7 @@ public class ComandosBMI implements CommandExecutor {
         // /bmi banco <Etiqueta> | /bmi banco cuenta <Etiqueta>
         if (args.length == 2) {
             String etiqueta = args[1].toLowerCase();
-            plugin.getMenuBancos().abrirMenuSolicitudes(p); // o .abrirMenuBanco(p, etiqueta)
+            plugin.getMenuBancos().abrirSolicitudes(p); // o .abrirMenuBanco(p, etiqueta)
         } else if (args.length == 3 && args[1].equalsIgnoreCase("cuenta")) {
             cmdSaldo(p, new String[] {"saldo", args[2]});
         } else {

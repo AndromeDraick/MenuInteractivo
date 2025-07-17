@@ -157,7 +157,7 @@ public class MenuPrincipal {
                 break;
             case 22:
                 if (jugador.hasPermission("bmi.comandos.aceptar.banco")) {
-                    new MenuBancos(MenuInteractivo.getInstancia()).abrirMenu(jugador);
+                    new MenuBancos(MenuInteractivo.getInstancia()).abrirSolicitudes(jugador);
                 } else {
                     jugador.sendMessage(ChatColor.RED + "No tienes permiso para gestionar bancos.");
                 }

@@ -46,11 +46,12 @@ public final class MenuInteractivo extends JavaPlugin {
         }
 
         // 3) Sistema de trabajos
-        trabajos = new SistemaTrabajos();
+        trabajos = new SistemaTrabajos(this);
 
         // 4) Configuración de tienda
         saveResource("config_tienda.yml", false);
         configTienda = new ConfigTiendaManager(this);
+        baseDeDatos = new GestorBaseDeDatos(this);
 
         // 5) Configuración y conexión a BBDD
         File cfgDir = new File(getDataFolder(), "configuracion");
@@ -72,8 +73,7 @@ public final class MenuInteractivo extends JavaPlugin {
 
         // 9) Listeners
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
-        Bukkit.getPluginManager().registerEvents(new MenuTrabajos.TrabajoJoinListener(), this);
-
+        
         this.menuBancos = new MenuBancos(this);
         getServer().getPluginManager().registerEvents(menuBancos, this);
 

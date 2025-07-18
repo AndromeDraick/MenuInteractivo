@@ -97,7 +97,7 @@ public class MenuPrincipal {
 
         // Trabajo del jugador
         SistemaTrabajos sistema = plugin.getSistemaTrabajos();
-        String trabajo = sistema != null ? sistema.getTrabajo(jugador) : "Sin trabajo";
+        String trabajo = sistema.getTrabajo(jugador.getUniqueId());
 
         // Base de datos
         GestorBaseDeDatos db = plugin.getBaseDeDatos();
@@ -143,7 +143,7 @@ public class MenuPrincipal {
         jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
     }
 
-    public static void manejarClick(InventoryClickEvent event) {
+    public void manejarClick(InventoryClickEvent event) {
         if (!event.getView().getTitle().startsWith(ChatColor.DARK_GREEN + "Menú Interactivo")) return;
         event.setCancelled(true);
 

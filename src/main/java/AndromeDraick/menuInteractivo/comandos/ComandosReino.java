@@ -3,12 +3,14 @@ package AndromeDraick.menuInteractivo.comandos;
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.managers.ReinoManager;
 import AndromeDraick.menuInteractivo.model.Reino;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ComandosReino implements CommandExecutor, TabCompleter {
@@ -18,7 +20,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
 
     // Subcomandos válidos para /rnmi
     private static final List<String> SUBS = List.of(
-            "crear", "unir", "salir", "eliminar", "listar", "info"
+            "crear", "unir", "salir", "eliminar", "listar", "info", "transferir"
     );
 
     public ComandosReino(MenuInteractivo plugin) {
@@ -51,6 +53,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                 case "eliminar" -> cmdEliminar(p, args);
                 case "listar"   -> cmdListar(p);
                 case "info"     -> cmdInfo(p, args);
+                case "transferir" -> cmdTransferir(p, args);
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
@@ -198,6 +201,44 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         // p.sendMessage(ChatColor.GRAY + "Miembros: " + miembros.size());
     }
 
+    private void cmdTransferir(Player p, String[] args) {
+        // /rnmi transferir <etiqueta> <jugador>
+        if (args.length < 3) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi transferir <etiqueta> <jugador>");
+            return;
+        }
+        String etiqueta = args[1].toLowerCase();
+        String targetName = args[2];
+        Reino reino = manager.listarReinos().stream()
+                .filter(r -> r.getEtiqueta().equalsIgnoreCase(etiqueta))
+                .findFirst().orElse(null);
+        if (reino == null) {
+            p.sendMessage(ChatColor.RED + "Reino '" + etiqueta + "' no encontrado.");
+            return;
+        }
+        // Solo el rey actual puede transferir
+        if (!reino.getReyUUID().equals(p.getUniqueId())) {
+            p.sendMessage(ChatColor.RED + "Solo el rey puede transferir el liderazgo.");
+            return;
+        }
+        Player target = plugin.getServer().getPlayerExact(targetName);
+        if (target == null || !manager.obtenerReinoJugador(target.getUniqueId())
+                .equalsIgnoreCase(etiqueta)) {
+            p.sendMessage(ChatColor.RED + "El jugador debe estar conectado y ser miembro de ese reino.");
+            return;
+        }
+        // Transfiere liderazgo
+        if (manager.transferirLiderazgo(etiqueta, target.getUniqueId())) {
+            p.sendMessage(ChatColor.GREEN +
+                    "Has transferido el liderazgo de '" + etiqueta + "' a " + targetName + ".");
+            target.sendMessage(ChatColor.GREEN +
+                    "Ahora eres el rey del reino '" + etiqueta + "'.");
+        } else {
+            p.sendMessage(ChatColor.RED + "Error al transferir liderazgo. Revisa la consola.");
+        }
+    }
+
+
     private void mostrarAyuda(Player p) {
         p.sendMessage(ChatColor.GOLD + "— Comandos de Reinos —");
         p.sendMessage(ChatColor.YELLOW + "/rnmi crear <etiqueta> <nombre>");
@@ -238,6 +279,25 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                             .map(Reino::getEtiqueta)
                             .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
                             .collect(Collectors.toList());
+                case "transferir":
+                    if (args.length == 2) {
+                        // sugerir etiquetas de reinos
+                        return manager.listarReinos().stream()
+                                .map(Reino::getEtiqueta)
+                                .filter(e -> e.startsWith(args[1].toLowerCase()))
+                                .collect(Collectors.toList());
+                    }
+                    if (args.length == 3) {
+                        // sugerir nombres de jugadores en el reino
+                        String etiqueta = args[1].toLowerCase();
+                        return manager.obtenerMiembros(etiqueta).stream()
+                                .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
+                                .filter(Objects::nonNull)
+                                .filter(n -> n.toLowerCase().startsWith(args[2].toLowerCase()))
+                                .collect(Collectors.toList());
+                    }
+                    break;
+
                 default:
                     // crear y listar no completan más
                     return Collections.emptyList();

@@ -1,60 +1,88 @@
 package AndromeDraick.menuInteractivo.utilidades;
 
-import java.util.*;
+import AndromeDraick.menuInteractivo.MenuInteractivo;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.PluginManager;
 
-public class SistemaTrabajos {
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-    private final Map<UUID, String> trabajosJugadores = new HashMap<>();
+/**
+ * Gestiona el trabajo asignado a cada jugador en memoria, con carga automática al join.
+ */
+public class SistemaTrabajos implements Listener {
 
-    private final Set<String> trabajosValidos = new HashSet<>(Arrays.asList(
+    // Trabajos válidos en orden definido:
+    private static final List<String> TRABAJOS_VALIDOS = List.of(
             "Granjero", "Minero", "Herrero", "Carpintero",
             "Agricultor", "Alquimista", "Guardia", "Cazador"
-    ));
+    );
 
-    // === Métodos para jugadores online ===
+    /** Mapa UUID → trabajo capitalizado. */
+    private final Map<UUID,String> trabajosJugadores = new ConcurrentHashMap<>();
 
-    public void setTrabajo(Player jugador, String trabajo) {
-        setTrabajo(jugador.getUniqueId(), trabajo);
+    public SistemaTrabajos(MenuInteractivo plugin) {
+        // Registrar listener para join/quit
+        PluginManager pm = Bukkit.getPluginManager();
+        pm.registerEvents(this, plugin);
     }
 
-    public String getTrabajo(Player jugador) {
-        return getTrabajo(jugador.getUniqueId());
+    /** Asigna un trabajo a un UUID. Devuelve true si fue válido y asignado. */
+    public boolean setTrabajo(UUID uuid, String trabajo) {
+        String cap = capitalizar(trabajo);
+        if (!TRABAJOS_VALIDOS.contains(cap)) return false;
+        trabajosJugadores.put(uuid, cap);
+        // Podrías aquí llamar a la BBDD: plugin.getBaseDeDatos().actualizarTrabajo(uuid, cap);
+        return true;
     }
 
-    public boolean tieneTrabajo(Player jugador) {
-        return trabajosJugadores.containsKey(jugador.getUniqueId());
-    }
-
-    public void removerTrabajo(Player jugador) {
-        trabajosJugadores.remove(jugador.getUniqueId());
-    }
-
-    // === Métodos para UUIDs directos (offline/online) ===
-
-    public void setTrabajo(UUID uuid, String trabajo) {
-        if (!trabajosValidos.contains(capitalizar(trabajo))) return;
-        trabajosJugadores.put(uuid, capitalizar(trabajo));
-    }
-
+    /** Obtiene el trabajo de un UUID, o "Sin trabajo" si no existe. */
     public String getTrabajo(UUID uuid) {
         return trabajosJugadores.getOrDefault(uuid, "Sin trabajo");
     }
 
-    public boolean tieneTrabajo(UUID uuid) {
-        return trabajosJugadores.containsKey(uuid);
-    }
-
+    /** Quita el trabajo del jugador (vuelve a "Sin trabajo"). */
     public void removerTrabajo(UUID uuid) {
         trabajosJugadores.remove(uuid);
     }
 
-    public Set<String> getTrabajosValidos() {
-        return Collections.unmodifiableSet(trabajosValidos);
+    /** Devuelve los trabajos válidos, de forma inmutable y ordenada. */
+    public List<String> getTrabajosValidos() {
+        return Collections.unmodifiableList(TRABAJOS_VALIDOS);
     }
 
     private String capitalizar(String texto) {
-        if (texto == null || texto.isEmpty()) return texto;
-        return texto.substring(0, 1).toUpperCase() + texto.substring(1).toLowerCase();
+        if (texto == null || texto.isBlank()) return "";
+        texto = texto.trim().toLowerCase(Locale.ROOT);
+        return Character.toUpperCase(texto.charAt(0)) + texto.substring(1);
+    }
+
+    // ————————————————
+    // Listeners para auto-sincronización
+    // ————————————————
+
+    /** Al entrar un jugador, carga su trabajo desde la BBDD si quieres. */
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        // Ejemplo: sincronizar con base de datos
+        String trabajo = MenuInteractivo.getInstancia()
+                .getBaseDeDatos()
+                .obtenerTrabajo(p.getUniqueId());
+        if (trabajo != null && !trabajo.equalsIgnoreCase("Sin trabajo")) {
+            trabajosJugadores.put(p.getUniqueId(), trabajo);
+        }
+    }
+
+    /** Al salir, opcionalmente liberamos memoria si hay muchos jugadores. */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        trabajosJugadores.remove(e.getPlayer().getUniqueId());
     }
 }

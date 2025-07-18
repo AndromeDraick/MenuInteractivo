@@ -1,7 +1,6 @@
 package AndromeDraick.menuInteractivo.menu;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
-import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,155 +10,129 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
+import java.util.List;
 
 /**
- * Clase para mostrar y manejar el menú de selección de trabajos.
- * Incluye ordenamiento de opciones y validación de persistencia en BD.
+ * Menú de selección de trabajos.
+ * - Dinámico en tamaño
+ * - Usa la lista ordenada de SistemaTrabajos
+ * - Maneja clics internamente
  */
-public class MenuTrabajos {
-
+public class MenuTrabajos implements Listener {
     private static final String TITULO = ChatColor.GOLD + "Elige un trabajo";
+    private final MenuInteractivo plugin;
+    private final SistemaTrabajos sistema;
 
-    private static final Map<String, TrabajoVisual> TRABAJOS_PREDEFINIDOS = Map.of(
-            "granjero", new TrabajoVisual(Material.WHEAT, ChatColor.GREEN),
-            "minero", new TrabajoVisual(Material.IRON_PICKAXE, ChatColor.GRAY),
-            "cazador", new TrabajoVisual(Material.BONE, ChatColor.RED),
-            "herrero", new TrabajoVisual(Material.ANVIL, ChatColor.DARK_GRAY),
-            "carpintero", new TrabajoVisual(Material.OAK_LOG, ChatColor.GOLD),
-            "agricultor", new TrabajoVisual(Material.HAY_BLOCK, ChatColor.YELLOW),
-            "alquimista", new TrabajoVisual(Material.BREWING_STAND, ChatColor.LIGHT_PURPLE),
-            "guardia", new TrabajoVisual(Material.SHIELD, ChatColor.BLUE)
-    );
+    public MenuTrabajos(MenuInteractivo plugin) {
+        this.plugin = plugin;
+        this.sistema = plugin.getSistemaTrabajos();
+        // Registrar este listener
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
 
-    /**
-     * Abre el inventario de selección de trabajos, ordenando las opciones.
-     */
-    public static void abrir(Player jugador) {
-        SistemaTrabajos sistema = MenuInteractivo.getInstancia().getSistemaTrabajos();
-        // Obtener y ordenar trabajos válidos para un orden consistente
-        List<String> trabajosList = new ArrayList<>(sistema.getTrabajosValidos());
-        Collections.sort(trabajosList);
+    /** Abre el inventario de trabajos para el jugador */
+    public void abrir(Player jugador) {
+        List<String> trabajos = sistema.getTrabajosValidos();
+        // filas = ceil(trabajos.size()/9), al menos 1 fila
+        int filas = Math.max(1, (trabajos.size() + 8) / 9);
+        // dejamos siempre al menos 3 filas para estética; hasta un máximo de 6
+        filas = Math.min(Math.max(filas, 3), 6);
+        Inventory menu = Bukkit.createInventory(null, filas * 9, TITULO);
 
-        int size = Math.max(27, ((trabajosList.size() - 1) / 9 + 1) * 9);
-        Inventory menu = Bukkit.createInventory(null, size, TITULO);
-
-        int slot = 10;
-        for (String trabajo : trabajosList) {
-            String key = trabajo.toLowerCase();
-            TrabajoVisual visual = TRABAJOS_PREDEFINIDOS.getOrDefault(
-                    key,
-                    new TrabajoVisual(Material.BOOK, ChatColor.WHITE)
-            );
-            menu.setItem(slot, crearTrabajoItem(key, visual));
-            slot = siguienteSlot(slot, size);
+        // Rellenar con items de trabajo
+        for (int i = 0; i < trabajos.size(); i++) {
+            String nombre = trabajos.get(i);
+            TrabajoVisual visual = TrabajoVisual.of(nombre);
+            ItemStack item = new ItemStack(visual.material());
+            ItemMeta meta = item.getItemMeta();
+            meta.setDisplayName(visual.color() + nombre);
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "Haz clic para unirte como " + nombre + ".",
+                    ChatColor.YELLOW + "Desbloquea ventajas únicas."
+            ));
+            item.setItemMeta(meta);
+            menu.setItem(i, item);
         }
 
-        // Botón para volver al menú principal (slot 22 por defecto)
-        ItemStack volver = new ItemStack(Material.BARRIER);
-        ItemMeta metaVolver = volver.getItemMeta();
-        metaVolver.setDisplayName(ChatColor.RED + "Volver al Menú Principal");
-        metaVolver.setLore(List.of(ChatColor.GRAY + "Haz clic para regresar."));
-        volver.setItemMeta(metaVolver);
-        menu.setItem(22, volver);
+        // Botón Volver al final (centro de la última fila)
+        int volverSlot = filas * 9 - 5;
+        ItemStack volver = new ItemStack(Material.ARROW);
+        ItemMeta mv = volver.getItemMeta();
+        mv.setDisplayName(ChatColor.RED + "Volver al Menú Principal");
+        volver.setItemMeta(mv);
+        menu.setItem(volverSlot, volver);
 
         jugador.openInventory(menu);
         jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
     }
 
-    private static int siguienteSlot(int actual, int size) {
-        actual++;
-        if (actual % 9 == 0 || actual >= size) {
-            actual += 2;
-        }
-        return actual;
-    }
+    @EventHandler
+    public void onClick(InventoryClickEvent e) {
+        if (!e.getView().getTitle().equals(TITULO)) return;
+        e.setCancelled(true);
 
-    private static ItemStack crearTrabajoItem(String nombre, TrabajoVisual visual) {
-        ItemStack item = new ItemStack(visual.material());
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(visual.color() + capitalizar(nombre));
-        meta.setLore(Arrays.asList(
-                ChatColor.GRAY + "Haz clic para unirte como " + nombre.toLowerCase() + ".",
-                ChatColor.YELLOW + "Desbloquea ítems y ventajas únicas."
-        ));
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    /**
-     * Maneja clicks dentro del inventario de trabajos, comprobando persistencia en la BD.
-     */
-    public static void manejarClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().equals(TITULO)) return;
-        event.setCancelled(true);
-
-        Player jugador = (Player) event.getWhoClicked();
-        ItemStack item = event.getCurrentItem();
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        ItemStack item = e.getCurrentItem();
         if (item == null || !item.hasItemMeta()) return;
 
-        String nombreClicado = ChatColor.stripColor(item.getItemMeta().getDisplayName()).toLowerCase();
-
-        if (nombreClicado.equals("volver al menú principal")) {
-            MenuPrincipal.abrir(jugador);
-            jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+        String clicked = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+        // Volver al menú principal
+        if (clicked.equalsIgnoreCase("Volver al Menú Principal")) {
+            plugin.getMenuPrincipal().abrir(p);
+            p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             return;
         }
 
-        SistemaTrabajos sistema = MenuInteractivo.getInstancia().getSistemaTrabajos();
-        GestorBaseDeDatos baseDeDatos = MenuInteractivo.getInstancia().getBaseDeDatos();
-
-        if (!sistema.getTrabajosValidos().contains(capitalizar(nombreClicado))) {
-            jugador.sendMessage(ChatColor.RED + "Trabajo desconocido.");
+        // Intentar asignar trabajo
+        String trabajo = clicked;
+        // Primero validamos en memoria
+        boolean valido = sistema.setTrabajo(p.getUniqueId(), trabajo);
+        if (!valido) {
+            p.sendMessage(ChatColor.RED + "Trabajo desconocido: " + trabajo);
+            return;
+        }
+        // Luego persistimos
+        boolean guardado = plugin.getBaseDeDatos().actualizarTrabajo(p.getUniqueId(), trabajo);
+        if (!guardado) {
+            p.sendMessage(ChatColor.RED + "No se pudo guardar tu trabajo. Inténtalo de nuevo más tarde.");
             return;
         }
 
-        String actual = sistema.getTrabajo(jugador);
-        if (!actual.equalsIgnoreCase("Sin trabajo") && !actual.isEmpty()) {
-            jugador.sendMessage(ChatColor.RED + "Ya tienes un trabajo asignado (" + actual + "). No puedes cambiarlo.");
-            return;
-        }
-
-        // Persistir en memoria y BD
-        sistema.setTrabajo(jugador, nombreClicado);
-        boolean ok = baseDeDatos.actualizarTrabajo(jugador.getUniqueId(), nombreClicado);
-        if (!ok) {
-            jugador.sendMessage(ChatColor.RED + "Error al guardar tu trabajo en la base de datos.");
-            return;
-        }
-
-        jugador.sendMessage(ChatColor.GREEN + "¡Te has unido como " + capitalizar(nombreClicado) + "!");
-        jugador.playSound(jugador.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
-        jugador.closeInventory();
+        p.sendMessage(ChatColor.GREEN + "¡Asignado como " + trabajo + "!");
+        p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
+        p.closeInventory();
     }
 
-    private static String capitalizar(String texto) {
-        return texto.substring(0, 1).toUpperCase() + texto.substring(1).toLowerCase();
-    }
+    /** Define el icono y color para cada trabajo. */
+    private enum TrabajoVisual {
+        GRANJERO   ("Granjero",   Material.WHEAT,           ChatColor.GREEN),
+        MINERO     ("Minero",     Material.IRON_PICKAXE,    ChatColor.GRAY),
+        CAZADOR    ("Cazador",    Material.BONE,            ChatColor.RED),
+        HERRERO    ("Herrero",    Material.ANVIL,           ChatColor.DARK_GRAY),
+        CARPINTERO ("Carpintero", Material.OAK_LOG,         ChatColor.GOLD),
+        AGRICULTOR ("Agricultor", Material.HAY_BLOCK,       ChatColor.YELLOW),
+        ALQUIMISTA ("Alquimista", Material.BREWING_STAND,   ChatColor.LIGHT_PURPLE),
+        GUARDIA    ("Guardia",    Material.SHIELD,          ChatColor.BLUE),
+        DEFAULT    ("",           Material.BOOK,            ChatColor.WHITE);
 
-    private record TrabajoVisual(Material material, ChatColor color) {}
-
-    /**
-     * Listener para recargar trabajos desde la BD cuando un jugador se une.
-     * Regístralo en tu clase principal:
-     * getServer().getPluginManager().registerEvents(new MenuTrabajos.TrabajoJoinListener(), this);
-     */
-    public static class TrabajoJoinListener implements Listener {
-        @EventHandler
-        public void onPlayerJoin(PlayerJoinEvent event) {
-            Player jugador = event.getPlayer();
-            String trabajo = MenuInteractivo.getInstancia()
-                    .getBaseDeDatos()
-                    .obtenerTrabajo(jugador.getUniqueId());
-            if (!trabajo.equalsIgnoreCase("Sin trabajo")) {
-                MenuInteractivo.getInstancia()
-                        .getSistemaTrabajos()
-                        .setTrabajo(jugador, trabajo);
+        private final String name;
+        private final Material material;
+        private final ChatColor color;
+        TrabajoVisual(String name, Material mat, ChatColor col) {
+            this.name = name;
+            this.material = mat;
+            this.color = col;
+        }
+        public Material material() { return material; }
+        public ChatColor color()     { return color; }
+        public static TrabajoVisual of(String clave) {
+            for (TrabajoVisual tv : values()) {
+                if (tv.name.equalsIgnoreCase(clave)) return tv;
             }
+            return DEFAULT;
         }
     }
 }

@@ -25,7 +25,7 @@ public class MenuPrincipal {
         ConfigTiendaManager config = plugin.getConfigTienda();
         double dinero = plugin.getEconomia().getBalance(jugador);
         String tituloConDinero = TITULO_BASE + " §7($ " + FormateadorNumeros.formatear(dinero) + ")";
-        Inventory menu = Bukkit.createInventory(null, 27, tituloConDinero);
+        Inventory menu = Bukkit.createInventory(null, 54, tituloConDinero);
 
         // == BORDES decorativos ==
         ItemStack borde = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);

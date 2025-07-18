@@ -10,50 +10,55 @@ import java.util.Map;
 public class CalculadoraPrecios {
 
     public static double calcularPrecioCompra(Material material, Player jugador) {
-        var configTienda = MenuInteractivo.getInstancia().getConfigTienda();
-        String nombreMaterial = material.name();
+        var cfg = MenuInteractivo.getInstancia().getConfigTienda();
+        String key = material.name();
 
-        Map<String, Object> item = configTienda.getDatosItemCustom(nombreMaterial);
-        if (item == null || item.isEmpty()) return -1;
+        Map<String,Object> itemDatos = cfg.getDatosItemVenta(key);
+        if (itemDatos == null || itemDatos.isEmpty()) return -1;
 
-        String tipo = (String) item.getOrDefault("material", "Piedra");
-        String bioma = ((String) item.getOrDefault("bioma", "overworld")).toLowerCase(Locale.ROOT);
-        String rareza = ((String) item.getOrDefault("rareza", "comun")).toLowerCase(Locale.ROOT);
-        String dimension = ((String) item.getOrDefault("dimension", "overworld")).toLowerCase(Locale.ROOT);
-        String categoria = (String) item.getOrDefault("categoria", "Building_Blocks");
+        String tipo      = (String) itemDatos.getOrDefault("material", "Piedra");
+        String bioma     = ((String) itemDatos.getOrDefault("bioma", "overworld"))
+                .toLowerCase(Locale.ROOT);
+        String rareza    = ((String) itemDatos.getOrDefault("rareza", "comun"))
+                .toLowerCase(Locale.ROOT);
+        String dimension = ((String) itemDatos.getOrDefault("dimension", "overworld"))
+                .toLowerCase(Locale.ROOT);
+        String categoria = (String) itemDatos.getOrDefault("categoria", "Building_Blocks");
 
-        double precioBase = configTienda.getPrecioMaterial(tipo);
-        double extraBioma = configTienda.getPrecioBioma(bioma);
-        double extraRareza = configTienda.getPrecioRareza(rareza);
-        double extraDimension = configTienda.getPrecioDimension(dimension);
-        double extraCategoria = configTienda.getPrecioCategoria(categoria);
+        double precioBase     = cfg.getPrecioMaterial(tipo);
+        double extraBioma     = cfg.getPrecioBioma(bioma);
+        double extraRareza    = cfg.getPrecioRareza(rareza);
+        double extraDimension = cfg.getPrecioDimension(dimension);
+        double extraCategoria = cfg.getPrecioCategoria(categoria);
 
-        double precioTotal = precioBase + extraBioma + extraRareza + extraDimension + extraCategoria;
+        double total = precioBase
+                + extraBioma
+                + extraRareza
+                + extraDimension
+                + extraCategoria;
 
         // Descuento por grupo
-        double descuentoGrupo = configTienda.getDescuentoGrupo(jugador.getName());
-        precioTotal *= (1.0 - descuentoGrupo / 100.0);
+        String grupo = MenuInteractivo.getInstancia()
+                .getPermisos()
+                .getUserManager()
+                .getUser(jugador.getUniqueId())
+                .getPrimaryGroup();
+        double desGrupo = cfg.getDescuentoGrupo(grupo);
+        total *= (1.0 - desGrupo / 100.0);
 
         // Descuento por trabajo
-        precioTotal = aplicarDescuentoPorTrabajo(jugador, precioTotal);
+        String trabajo = MenuInteractivo.getInstancia()
+                .getSistemaTrabajos()
+                .getTrabajo(jugador.getUniqueId());
+        double desTrabajo = cfg.getDescuentoTrabajo(trabajo);
+        total -= total * (desTrabajo / 100.0);
 
-        return precioTotal;
+        return total;
     }
 
     public static double calcularPrecioVenta(Material material, Player jugador) {
-        double compra = calcularPrecioCompra(material, jugador);
-        if (compra < 0) return -1;
-        return compra * 0.8; // 20% menos al vender
+        double precioCompra = calcularPrecioCompra(material, jugador);
+        return precioCompra < 0 ? -1 : precioCompra * 0.8;
     }
 
-    public static double aplicarDescuentoPorTrabajo(Player jugador, double precio) {
-        MenuInteractivo plugin     = MenuInteractivo.getInstancia();
-        var configTienda = MenuInteractivo.getInstancia().getConfigTienda();
-        String trabajo = plugin.getSistemaTrabajos().getTrabajo(jugador.getUniqueId());
-        if (trabajo != null) {
-            double descuento = configTienda.getDescuentoTrabajo(trabajo);
-            precio -= (precio * descuento / 100.0);
-        }
-        return precio;
-    }
 }

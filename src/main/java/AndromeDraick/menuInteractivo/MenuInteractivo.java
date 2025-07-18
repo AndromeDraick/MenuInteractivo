@@ -51,6 +51,7 @@ public final class MenuInteractivo extends JavaPlugin {
 
         // 4) Configuración de tienda
         saveResource("config_tienda.yml", false);
+        saveResource("configuración/config_item_venta.yml", false);
         configTienda = new ConfigTiendaManager(this);
         baseDeDatos = new GestorBaseDeDatos(this);
 

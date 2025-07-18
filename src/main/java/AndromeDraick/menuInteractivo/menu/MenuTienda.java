@@ -48,113 +48,109 @@ public class MenuTienda {
 
     public static void abrir(Player jugador, int pagina) {
         MenuInteractivo plugin     = MenuInteractivo.getInstancia();
-        ConfigTiendaManager config = plugin.getConfigTienda();
+        ConfigTiendaManager cfg    = plugin.getConfigTienda();
         var economia               = plugin.getEconomia();
 
-        // Guardar página actual
         paginaPorJugador.put(jugador.getUniqueId(), pagina);
 
-        // Título con saldo
         String titulo = TITULO
                 + " §7($ " + FormateadorNumeros.formatear(economia.getBalance(jugador)) + ")";
         Inventory tienda = Bukkit.createInventory(null, 54, titulo);
 
-        // ————— Categorías —————
+        // — Categorías (0–8) —
         int slotCat = 0;
         for (String clave : nombresCategoriaES.keySet()) {
             if (slotCat >= 9) break;
             ItemStack papel = new ItemStack(Material.PAPER);
-            ItemMeta meta = papel.getItemMeta();
-            meta.setDisplayName(ChatColor.AQUA + nombresCategoriaES.get(clave));
-            meta.setLore(List.of(ChatColor.GRAY + "Haz clic para filtrar por categoría"));
-            papel.setItemMeta(meta);
+            ItemMeta m = papel.getItemMeta();
+            m.setDisplayName(ChatColor.AQUA + nombresCategoriaES.get(clave));
+            m.setLore(List.of(ChatColor.GRAY + "Haz clic para filtrar categoría"));
+            papel.setItemMeta(m);
             tienda.setItem(slotCat++, papel);
         }
 
-        // ————— Mostrar todo —————
+        // — Mostrar todo —
         ItemStack mapa = new ItemStack(Material.MAP);
-        ItemMeta metaMapa = mapa.getItemMeta();
-        metaMapa.setDisplayName(ChatColor.YELLOW + "Mostrar todo");
-        metaMapa.setLore(List.of(ChatColor.GRAY + "Haz clic para ver todos los ítems"));
-        mapa.setItemMeta(metaMapa);
+        ItemMeta mm = mapa.getItemMeta();
+        mm.setDisplayName(ChatColor.YELLOW + "Mostrar todo");
+        mm.setLore(List.of(ChatColor.GRAY + "Ver todos los ítems"));
+        mapa.setItemMeta(mm);
         tienda.setItem(13, mapa);
 
-        // ————— Filtrar por categoría si hay —————
-        Set<String> claves = new HashSet<>(config.getItemsCustom());
-        String categoria = categoriaPorJugador.getOrDefault(jugador.getUniqueId(), "");
-        if (!categoria.isEmpty()) {
-            claves.removeIf(clave -> {
-                String cat = (String) config.getDatosItemCustom(clave).get("categoria");
-                return cat == null || !cat.equalsIgnoreCase(categoria);
+        // — Filtro por categoría seleccionada —
+        Set<String> claves = new HashSet<>(cfg.getItemsEnVenta());
+        String catSel = categoriaPorJugador.getOrDefault(jugador.getUniqueId(), "");
+        if (!catSel.isEmpty()) {
+            claves.removeIf(itemKey -> {
+                String cat = (String) cfg.getDatosItemVenta(itemKey).get("categoria");
+                return cat == null || !cat.equalsIgnoreCase(catSel);
             });
         }
 
-        // ————— Datos de grupo y trabajo —————
-        String grupo   = "default";
-        var lp         = plugin.getPermisos();
+        // — Datos de grupo y trabajo —
+        String grupo = "default";
+        var lp = plugin.getPermisos();
         if (lp != null) {
             var user = lp.getUserManager().getUser(jugador.getUniqueId());
             if (user != null) grupo = user.getPrimaryGroup();
         }
         String trabajo = plugin.getSistemaTrabajos().getTrabajo(jugador.getUniqueId());
 
-        // ————— Rarezas desbloqueadas por grupo —————
-        List<String> rarezasDesbloqueadas = config.getRarezasDesbloqueadas(grupo);
-        boolean esGrupoVIP = !rarezasDesbloqueadas.isEmpty();
+        // — Rarezas desbloqueadas y VIP check —
+        List<String> rarezasVIP = cfg.getRarezasDesbloqueadas(grupo);
+        boolean esVIP = !rarezasVIP.isEmpty();
 
-        // ————— Filtrar ítems por trabajo (solo no-VIP) y por rareza —————
-        claves.removeIf(clave -> {
-            Map<String,Object> datos = config.getDatosItemCustom(clave);
-            if (datos == null || datos.isEmpty()) return true;
+        // — Filtrar por trabajo (solo no-VIP) y por rareza —
+        claves.removeIf(itemKey -> {
+            Map<String,Object> datos = cfg.getDatosItemVenta(itemKey);
+            if (datos.isEmpty()) return true;
 
-            // Si no es VIP, aplica requisito de trabajo
-            if (!esGrupoVIP && datos.containsKey("trabajo")) {
+            if (!esVIP && datos.containsKey("trabajo")) {
                 String[] permitidos = ((String) datos.get("trabajo")).split(",");
-                boolean tieneAcceso = Arrays.stream(permitidos)
+                boolean ok = Arrays.stream(permitidos)
                         .map(String::trim)
                         .anyMatch(t -> t.equalsIgnoreCase(trabajo));
-                if (!tieneAcceso) return true;
+                if (!ok) return true;
             }
 
-            // Filtrar por rareza
             String rareza = ((String) datos.getOrDefault("rareza", "comun"))
                     .toLowerCase(Locale.ROOT);
-            return !rareza.equals("comun") && !rarezasDesbloqueadas.contains(rareza);
+            return !rareza.equals("comun") && !rarezasVIP.contains(rareza);
         });
 
-        // ————— Resto de la paginación y colocación de ítems … —————
-        List<String> listaFinal = new ArrayList<>(claves);
+        // — Paginación e inserción de ítems …
+        List<String> lista = new ArrayList<>(claves);
         int inicio = pagina * ITEMS_POR_PAGINA;
-        int fin    = Math.min(listaFinal.size(), inicio + ITEMS_POR_PAGINA);
+        int fin    = Math.min(lista.size(), inicio + ITEMS_POR_PAGINA);
         int slot   = 0;
         for (int i = inicio; i < fin && slot < slotsDeVenta.length; i++) {
-            String clave = listaFinal.get(i);
+            String key = lista.get(i);
             Material mat;
-            try { mat = Material.valueOf(clave); }
+            try { mat = Material.valueOf(key); }
             catch (IllegalArgumentException e) { continue; }
 
             double precio = CalculadoraPrecios.calcularPrecioCompra(mat, jugador);
             if (precio < 0) continue;
 
             ItemStack item = new ItemStack(mat);
-            ItemMeta meta = item.getItemMeta();
-            Map<String,Object> datos = config.getDatosItemCustom(clave);
-            String nombreTrad = datos.containsKey("material")
+            ItemMeta im = item.getItemMeta();
+            Map<String,Object> datos = cfg.getDatosItemVenta(key);
+            String nombre = datos.containsKey("material")
                     ? String.valueOf(datos.get("material"))
-                    : clave.replace("_", " ");
-            meta.setDisplayName(ChatColor.GOLD + nombreTrad);
-            meta.setLore(List.of(
+                    : key.replace("_", " ");
+            im.setDisplayName(ChatColor.GOLD + nombre);
+            im.setLore(List.of(
                     ChatColor.GRAY + "Precio: " + ChatColor.GREEN + "$" +
                             FormateadorNumeros.formatear(precio),
-                    ChatColor.YELLOW + "Haz clic para comprar 1 unidad"
+                    ChatColor.YELLOW + "Clic para comprar 1"
             ));
-            item.setItemMeta(meta);
+            item.setItemMeta(im);
             tienda.setItem(slotsDeVenta[slot++], item);
         }
 
         // ————— Navegación y botones finales … —————
         if (pagina > 0)    tienda.setItem(45, crearBoton(Material.ARROW, "§ePágina anterior"));
-        if (fin < listaFinal.size()) tienda.setItem(53, crearBoton(Material.ARROW, "§ePágina siguiente"));
+        if (fin < lista.size()) tienda.setItem(53, crearBoton(Material.ARROW, "§ePágina siguiente"));
 
         ItemStack volver = new ItemStack(Material.ARROW);
         ItemMeta mv = volver.getItemMeta();
@@ -169,7 +165,7 @@ public class MenuTienda {
         mv2.setLore(List.of(
                 ChatColor.GRAY + "Haz clic para vender ítems válidos",
                 ChatColor.GRAY + "Página " + (pagina+1) + "/" +
-                        ((listaFinal.size()-1)/ITEMS_POR_PAGINA + 1)
+                        ((lista.size()-1)/ITEMS_POR_PAGINA + 1)
         ));
         vender.setItemMeta(mv2);
         tienda.setItem(49, vender);

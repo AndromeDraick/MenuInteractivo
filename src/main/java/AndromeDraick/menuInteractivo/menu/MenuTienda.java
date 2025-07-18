@@ -245,9 +245,24 @@ public class MenuTienda {
     }
 
     private static void venderInventario(Player jugador) {
-        var configTienda = MenuInteractivo.getInstancia().getConfigTienda();
+        var cfg      = MenuInteractivo.getInstancia().getConfigTienda();
         var economia = MenuInteractivo.getInstancia().getEconomia();
         var inventario = jugador.getInventory();
+
+        // Determinar grupo y trabajo del jugador
+        String grupo = "default";
+        var lp = MenuInteractivo.getInstancia().getPermisos();
+        if (lp != null) {
+            var user = lp.getUserManager().getUser(jugador.getUniqueId());
+            if (user != null) grupo = user.getPrimaryGroup();
+        }
+        String trabajo = MenuInteractivo.getInstancia()
+                .getSistemaTrabajos()
+                .getTrabajo(jugador.getUniqueId());
+
+        // Lista de rarezas que desbloquea este grupo
+        List<String> rarezasVIP = cfg.getRarezasDesbloqueadas(grupo);
+        boolean esVIP = !rarezasVIP.isEmpty();
 
         double total = 0;
         int vendidos = 0;
@@ -255,11 +270,33 @@ public class MenuTienda {
         for (ItemStack item : inventario.getContents()) {
             if (item == null || item.getType() == Material.AIR) continue;
             String nombre = item.getType().name();
-            if (!configTienda.getItemsCustom().contains(nombre)) continue;
 
+            // Solo ítems configurados en venta
+            if (!cfg.getItemsEnVenta().contains(nombre)) continue;
+
+            // Obtener datos del ítem
+            Map<String,Object> datos = cfg.getDatosItemVenta(nombre);
+            if (datos.isEmpty()) continue;
+
+            // Si no es VIP, validar requisito de trabajo
+            if (!esVIP && datos.containsKey("trabajo")) {
+                String[] trabajosPermitidos = ((String) datos.get("trabajo")).split(",");
+                boolean coincide = Arrays.stream(trabajosPermitidos)
+                        .map(String::trim)
+                        .anyMatch(t -> t.equalsIgnoreCase(trabajo));
+                if (!coincide) continue;
+            }
+
+            // Validar rareza (común o desbloqueada para VIP)
+            String rareza = ((String) datos.getOrDefault("rareza", "comun"))
+                    .toLowerCase(Locale.ROOT);
+            if (!rareza.equals("comun") && !rarezasVIP.contains(rareza)) continue;
+
+            // Calcular precio de venta
             double precio = CalculadoraPrecios.calcularPrecioVenta(item.getType(), jugador);
             if (precio <= 0) continue;
 
+            // Sumar al total y marcar como vendido
             total += precio * item.getAmount();
             vendidos += item.getAmount();
             inventario.remove(item);
@@ -267,14 +304,18 @@ public class MenuTienda {
 
         if (vendidos == 0) {
             jugador.sendMessage(ChatColor.RED + "No tienes ítems válidos para vender.");
-            jugador.playSound(jugador.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.7f);
+            jugador.playSound(jugador.getLocation(),
+                    Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.7f);
             return;
         }
 
         economia.depositPlayer(jugador, total);
-        jugador.sendMessage(ChatColor.GREEN + "Vendiste " + vendidos + " ítems por $" + FormateadorNumeros.formatear(total));
-        jugador.playSound(jugador.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
+        jugador.sendMessage(ChatColor.GREEN + "Vendiste " + vendidos +
+                " ítems por $" + FormateadorNumeros.formatear(total));
+        jugador.playSound(jugador.getLocation(),
+                Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
     }
+
 
     public static int getPagina(Player jugador) {
         return paginaPorJugador.getOrDefault(jugador.getUniqueId(), 0);

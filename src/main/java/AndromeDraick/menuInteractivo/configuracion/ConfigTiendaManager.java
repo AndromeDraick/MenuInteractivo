@@ -1,5 +1,3 @@
-// AndromeDraick/menuInteractivo/configuracion/ConfigTiendaManager.java
-
 package AndromeDraick.menuInteractivo.configuracion;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;

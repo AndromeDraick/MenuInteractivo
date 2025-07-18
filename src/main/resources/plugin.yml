@@ -1,7 +1,8 @@
 name: MenuInteractivo
-version: '1.0.0.14-SNAPSHOT'
+version: '1.0.0.16-SNAPSHOT'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
 api-version: '1.21.1'
+softdepend: [Vault]
 folia-supported: true
 
 

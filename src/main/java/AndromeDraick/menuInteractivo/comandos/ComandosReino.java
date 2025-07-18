@@ -54,16 +54,28 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                     }
                     cmdCrear(p, args);
                     break;
-                case "unir"     -> cmdUnir(p, args);
-                case "salir"    -> cmdSalir(p, args);
-                case "eliminar" -> cmdEliminar(p, args);
-                case "listar"   -> cmdListar(p);
-                case "info"     -> cmdInfo(p, args);
-                case "transferir" -> cmdTransferir(p, args);
-                default -> {
+                case "unir":
+                    cmdUnir(p, args);
+                    break;
+                case "salir":
+                    cmdSalir(p, args);
+                    break;
+                case "eliminar":
+                    cmdEliminar(p, args);
+                    break;
+                case "listar":
+                    cmdListar(p);
+                    break;
+                case "info":
+                    cmdInfo(p, args);
+                    break;
+                case "transferir":
+                    cmdTransferir(p, args);
+                    break;
+                default:
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
-                }
+                    break;
             }
         } catch (Exception ex) {
             p.sendMessage(ChatColor.RED + "Ocurrió un error al ejecutar el comando. Revisa la consola.");
@@ -72,6 +84,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         }
         return true;
     }
+
 
     private void cmdCrear(Player p, String[] args) {
         if (args.length < 3) {
@@ -258,11 +271,16 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
         if (!(sender instanceof Player)) return Collections.emptyList();
+        Player p = (Player) sender;
 
         // Primer argumento: subcomandos
         if (args.length == 1) {
             return SUBS.stream()
-                    .filter(s -> s.startsWith(args[0].toLowerCase()))
+                    .filter(s -> {
+                        if (s.equals("crear") && !p.hasPermission("menuinteractivo.reino.comandos.crear"))
+                            return false;
+                        return s.startsWith(args[0].toLowerCase());
+                    })
                     .collect(Collectors.toList());
         }
 

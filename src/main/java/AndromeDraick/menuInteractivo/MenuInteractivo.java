@@ -73,10 +73,9 @@ public final class MenuInteractivo extends JavaPlugin {
         getCommand("bmi").setExecutor(new ComandosBMI(this));
 
         // 9) Listeners
-        Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
+        getServer().getPluginManager().registerEvents(new EventosMenu(), this);
 
         this.menuBancos = new MenuBancos(this);
-        getServer().getPluginManager().registerEvents(menuBancos, this);
         this.menuPrincipal = new MenuPrincipal(this);
         this.menuTrabajos  = new MenuTrabajos(this);
         this.menuReino     = new MenuReino(this);

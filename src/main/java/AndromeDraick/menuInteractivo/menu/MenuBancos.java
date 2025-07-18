@@ -129,52 +129,57 @@ public class MenuBancos implements Listener {
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player)) return;
+        Player p = (Player) e.getWhoClicked();
         String title = e.getView().getTitle();
-        Player p = (Player)e.getWhoClicked();
-        ItemStack it = e.getCurrentItem();
-        if (it==null||!it.hasItemMeta()) return;
 
-        // 1) Solicitudes
+        // 1) Solo manejamos clicks dentro de nuestros menús
+        if (!isMiMenu(title)) return;
+
+        // 2) Cancelamos TODO movimiento dentro de nuestros menús
+        e.setCancelled(true);
+
+        ItemStack it = e.getCurrentItem();
+        if (it == null || !it.hasItemMeta()) return;
+
+        // 3) Procesamos cada menú
+        // 3.1) Solicitudes
         if (title.equals(TITULO_SOLICITUDES)) {
-            e.setCancelled(true);
             String tag = ChatColor.stripColor(it.getItemMeta().getDisplayName());
             if (e.isLeftClick()) {
                 bancoManager.aprobarBanco(tag);
                 p.sendMessage(ChatColor.GREEN + "Banco " + tag + " aprobado.");
             } else {
                 bancoManager.rechazarBanco(tag);
-                p.sendMessage(ChatColor.RED   + "Banco " + tag + " rechazado.");
+                p.sendMessage(ChatColor.RED + "Banco " + tag + " rechazado.");
             }
             p.closeInventory();
             return;
         }
 
-        // 2) Lista activos
+        // 3.2) Lista de bancos activos
         if (title.startsWith(TITULO_LISTA)) {
-            e.setCancelled(true);
             String tag = ChatColor.stripColor(it.getItemMeta().getDisplayName());
             abrirIndividual(p, tag);
             return;
         }
 
-        // 3) Individual
+        // 3.3) Vista individual
         if (title.startsWith(TITULO_INDIVIDUAL)) {
-            e.setCancelled(true);
             String tag = title.substring(TITULO_INDIVIDUAL.length());
             double fondos = bancoManager.obtenerSaldo(tag);
 
-            if (it.getType()==Material.REDSTONE) {
+            if (it.getType() == Material.REDSTONE) {
                 // retirar
-                if (fondos>=100 && bancoManager.retirar(tag,100)) {
-                    economia.depositPlayer(p,100);
+                if (fondos >= 100 && bancoManager.retirar(tag, 100)) {
+                    economia.depositPlayer(p, 100);
                     p.sendMessage(ChatColor.GREEN + "Retiraste $100 de " + tag);
                 } else {
                     p.sendMessage(ChatColor.RED + "No hay fondos suficientes en el banco.");
                 }
-            } else if (it.getType()==Material.EMERALD) {
+            } else if (it.getType() == Material.EMERALD) {
                 // ingresar
-                if (economia.getBalance(p)>=100 && bancoManager.depositar(tag,100)) {
-                    economia.withdrawPlayer(p,100);
+                if (economia.getBalance(p) >= 100 && bancoManager.depositar(tag, 100)) {
+                    economia.withdrawPlayer(p, 100);
                     p.sendMessage(ChatColor.GREEN + "Ingresaste $100 al banco " + tag);
                 } else {
                     p.sendMessage(ChatColor.RED + "No tienes $100 para ingresar.");
@@ -183,4 +188,12 @@ public class MenuBancos implements Listener {
             p.closeInventory();
         }
     }
+
+    // Helper: detecta si el título corresponde a uno de tus menús
+    private boolean isMiMenu(String title) {
+        return title.equals(TITULO_SOLICITUDES)
+                || title.startsWith(TITULO_LISTA)
+                || title.startsWith(TITULO_INDIVIDUAL);
+    }
+
 }

@@ -4,22 +4,29 @@ import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.managers.ReinoManager;
 import AndromeDraick.menuInteractivo.model.Reino;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
+
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class ComandosReino implements CommandExecutor {
+public class ComandosReino implements CommandExecutor, TabCompleter {
 
     private final MenuInteractivo plugin;
     private final ReinoManager manager;
 
+    // Subcomandos válidos para /rnmi
+    private static final List<String> SUBS = List.of(
+            "crear", "unir", "salir", "eliminar", "listar", "info"
+    );
+
     public ComandosReino(MenuInteractivo plugin) {
         this.plugin = plugin;
         this.manager = new ReinoManager(plugin.getBaseDeDatos());
+        PluginCommand cmd = plugin.getCommand("rnmi");
+        cmd.setExecutor(this);
+        cmd.setTabCompleter(this);
     }
 
     @Override
@@ -38,34 +45,22 @@ public class ComandosReino implements CommandExecutor {
         String sub = args[0].toLowerCase();
         try {
             switch (sub) {
-                case "crear":
-                    cmdCrear(p, args);
-                    break;
-                case "unir":
-                    cmdUnir(p, args);
-                    break;
-                case "salir":
-                    cmdSalir(p, args);
-                    break;
-                case "eliminar":
-                    cmdEliminar(p, args);
-                    break;
-                case "listar":
-                    cmdListar(p);
-                    break;
-                case "info":
-                    cmdInfo(p, args);
-                    break;
-                default:
+                case "crear"    -> cmdCrear(p, args);
+                case "unir"     -> cmdUnir(p, args);
+                case "salir"    -> cmdSalir(p, args);
+                case "eliminar" -> cmdEliminar(p, args);
+                case "listar"   -> cmdListar(p);
+                case "info"     -> cmdInfo(p, args);
+                default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
+                }
             }
         } catch (Exception ex) {
             p.sendMessage(ChatColor.RED + "Ocurrió un error al ejecutar el comando. Revisa la consola.");
             plugin.getLogger().severe("Error en ComandosReino: " + ex.getMessage());
             ex.printStackTrace();
         }
-
         return true;
     }
 
@@ -211,5 +206,45 @@ public class ComandosReino implements CommandExecutor {
         p.sendMessage(ChatColor.YELLOW + "/rnmi eliminar <etiqueta>");
         p.sendMessage(ChatColor.YELLOW + "/rnmi listar");
         p.sendMessage(ChatColor.YELLOW + "/rnmi info <etiqueta>");
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
+        if (!(sender instanceof Player)) return Collections.emptyList();
+
+        // Primer argumento: subcomandos
+        if (args.length == 1) {
+            return SUBS.stream()
+                    .filter(s -> s.startsWith(args[0].toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        String sub = args[0].toLowerCase();
+
+        // Solo los subcomandos que usan etiqueta como segundo arg
+        if (args.length == 2) {
+            switch (sub) {
+                case "unir":
+                case "salir":
+                    // sugerir etiquetas de todos los reinos disponibles
+                    return manager.listarReinos().stream()
+                            .map(Reino::getEtiqueta)
+                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                case "eliminar":
+                case "info":
+                    // sugerir etiquetas de reinos existentes
+                    return manager.listarReinos().stream()
+                            .map(Reino::getEtiqueta)
+                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                default:
+                    // crear y listar no completan más
+                    return Collections.emptyList();
+            }
+        }
+
+        // No sugerir nada más para args.length > 2
+        return Collections.emptyList();
     }
 }

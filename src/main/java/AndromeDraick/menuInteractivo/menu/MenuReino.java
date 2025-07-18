@@ -103,7 +103,7 @@ public class MenuReino implements Listener {
                             "Ocurrió un error al intentar abandonar el reino.");
                 }
             }
-            case 26 -> MenuPrincipal.abrir(jugador);
+            case 26 -> plugin.getMenuPrincipal().abrir(jugador);
         }
     }
 }

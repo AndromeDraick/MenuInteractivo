@@ -9,6 +9,8 @@ import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -16,17 +18,22 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.*;
 
-public class MenuPrincipal {
+public class MenuPrincipal implements Listener {
 
+    private final MenuInteractivo plugin;
     private static final String TITULO_BASE = ChatColor.DARK_GREEN + "Menú Interactivo";
 
-    public static void abrir(Player jugador) {
-        MenuInteractivo plugin = MenuInteractivo.getInstancia();
+    public MenuPrincipal(MenuInteractivo plugin) {
+        this.plugin = plugin;
+        // Al construirse, se registra como listener
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void abrir(Player jugador) {
         ConfigTiendaManager config = plugin.getConfigTienda();
         double dinero = plugin.getEconomia().getBalance(jugador);
-        String tituloConDinero = TITULO_BASE + " §7($ " + FormateadorNumeros.formatear(dinero) + ")";
-        Inventory menu = Bukkit.createInventory(null, 54, tituloConDinero);
-
+        String titulo = TITULO_BASE + " §7($ " + FormateadorNumeros.formatear(dinero) + ")";
+        Inventory menu = Bukkit.createInventory(null, 54, titulo);
         // == BORDES decorativos ==
         ItemStack borde = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta metaBorde = borde.getItemMeta();
@@ -143,30 +150,34 @@ public class MenuPrincipal {
         jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
     }
 
-    public void manejarClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().startsWith(ChatColor.DARK_GREEN + "Menú Interactivo")) return;
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        // Solo reaccionamos si el título coincide
+        if (!event.getView().getTitle().startsWith(TITULO_BASE)) return;
         event.setCancelled(true);
 
-        if (event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) return;
+        if (event.getCurrentItem() == null ||
+                event.getCurrentItem().getType() == Material.AIR) return;
 
         Player jugador = (Player) event.getWhoClicked();
+        int slot = event.getRawSlot();
 
-        switch (event.getRawSlot()) {
+        switch (slot) {
             case 21:
                 MenuTienda.abrir(jugador, 0);
                 break;
             case 22:
                 if (jugador.hasPermission("bmi.comandos.aceptar.banco")) {
-                    new MenuBancos(MenuInteractivo.getInstancia()).abrirSolicitudes(jugador);
+                    plugin.getMenuBancos().abrirSolicitudes(jugador);
                 } else {
                     jugador.sendMessage(ChatColor.RED + "No tienes permiso para gestionar bancos.");
                 }
                 break;
             case 23:
-                MenuTrabajos.abrir(jugador);
+                plugin.getMenuTrabajos().abrir(jugador);
                 break;
             case 31:
-                MenuReino.abrir(jugador);
+                plugin.getMenuReino().abrir(jugador);
                 break;
         }
     }

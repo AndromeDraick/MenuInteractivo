@@ -5,9 +5,7 @@ import AndromeDraick.menuInteractivo.comandos.ComandosBMI;
 import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
-import AndromeDraick.menuInteractivo.menu.EventosMenu;
-import AndromeDraick.menuInteractivo.menu.MenuBancos;
-import AndromeDraick.menuInteractivo.menu.MenuTrabajos;
+import AndromeDraick.menuInteractivo.menu.*;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -26,6 +24,9 @@ public final class MenuInteractivo extends JavaPlugin {
     private SistemaTrabajos trabajos;
     private GestorBaseDeDatos baseDeDatos;
     private MenuBancos menuBancos;
+    private MenuPrincipal menuPrincipal;
+    private MenuTrabajos  menuTrabajos;
+    private MenuReino menuReino;
 
     @Override
     public void onEnable() {
@@ -73,9 +74,12 @@ public final class MenuInteractivo extends JavaPlugin {
 
         // 9) Listeners
         Bukkit.getPluginManager().registerEvents(new EventosMenu(), this);
-        
+
         this.menuBancos = new MenuBancos(this);
         getServer().getPluginManager().registerEvents(menuBancos, this);
+        this.menuPrincipal = new MenuPrincipal(this);
+        this.menuTrabajos  = new MenuTrabajos(this);
+        this.menuReino     = new MenuReino(this);
 
         getLogger().info("MenuInteractivo activado correctamente.");
     }
@@ -116,6 +120,19 @@ public final class MenuInteractivo extends JavaPlugin {
     public MenuBancos getMenuBancos() {
         return menuBancos;
     }
+
+    public MenuPrincipal getMenuPrincipal() {
+        return menuPrincipal;
+    }
+
+    public MenuTrabajos  getMenuTrabajos()  {
+        return menuTrabajos;
+    }
+
+    public MenuReino     getMenuReino()     {
+        return menuReino;
+    }
+
 
     public GestorBaseDeDatos getBaseDeDatos() {
         return baseDeDatos;

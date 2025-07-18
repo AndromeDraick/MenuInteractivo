@@ -1,6 +1,7 @@
 package AndromeDraick.menuInteractivo.menu;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
+import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.utilidades.CalculadoraPrecios;
 import AndromeDraick.menuInteractivo.utilidades.FormateadorNumeros;
 import org.bukkit.*;
@@ -46,7 +47,8 @@ public class MenuTienda {
     }
 
     public static void abrir(Player jugador, int pagina) {
-        var plugin = MenuInteractivo.getInstancia();
+
+        MenuInteractivo plugin     = MenuInteractivo.getInstancia();
         var configTienda = plugin.getConfigTienda();
         var economia = plugin.getEconomia();
 
@@ -87,7 +89,7 @@ public class MenuTienda {
         }
 
         String grupo = "default";
-        String trabajo = plugin.getSistemaTrabajos().getTrabajo(jugador);
+        String trabajo = plugin.getSistemaTrabajos().getTrabajo(jugador.getUniqueId());
         var lp = plugin.getPermisos();
         if (lp != null) {
             var user = lp.getUserManager().getUser(jugador.getUniqueId());
@@ -171,6 +173,7 @@ public class MenuTienda {
     }
 
     public static void manejarClick(InventoryClickEvent event) {
+        MenuInteractivo plugin = MenuInteractivo.getInstancia();
         Player jugador = (Player) event.getWhoClicked();
         if (!event.getView().getTitle().startsWith(TITULO)) return;
         event.setCancelled(true);
@@ -202,7 +205,7 @@ public class MenuTienda {
         }
 
         if (slot == 46) {
-            MenuPrincipal.abrir(jugador);
+            plugin.getMenuPrincipal().abrir(jugador);
             return;
         }
 

@@ -2,7 +2,6 @@ package AndromeDraick.menuInteractivo.managers;
 
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.model.Banco;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,28 +17,19 @@ public class BancoManager {
         this.db = db;
     }
 
-    /** Devuelve la etiqueta del reino del jugador. */
-    public String obtenerReinoJugador(UUID jugadorUUID) {
-        return db.obtenerReinoJugador(jugadorUUID);
-    }
-
-    private String obtenerReino(Player p) {
-        return db.obtenerReinoJugador(p.getUniqueId());
-    }
-
     /** Crea un nuevo banco (estado 'pendiente'). */
     public boolean crearBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario) {
-        return db.insertarBanco(etiqueta, nombre, reinoEtiqueta, propietario);
+        return db.crearBanco(etiqueta, nombre, reinoEtiqueta, propietario);
     }
 
     /** Aprueba una solicitud de banco. */
     public boolean aprobarBanco(String etiquetaBanco) {
-        return db.actualizarEstadoBanco(etiquetaBanco, "aprobado");
+        return db.setEstadoBanco(etiquetaBanco, "aprobado");
     }
 
     /** Rechaza una solicitud de banco. */
     public boolean rechazarBanco(String etiquetaBanco) {
-        return db.actualizarEstadoBanco(etiquetaBanco, "rechazado");
+        return db.setEstadoBanco(etiquetaBanco, "rechazado");
     }
 
     /** Devuelve el objeto Banco completo por su etiqueta. */
@@ -58,28 +48,28 @@ public class BancoManager {
     }
 
     /** Deposita un monto en el banco. */
-    public boolean depositar(String etiquetaBanco, double monto) {
-        return db.depositarEnBanco(etiquetaBanco, monto);
+    public boolean depositarBanco(String etiquetaBanco, double monto) {
+        return db.depositarBanco(etiquetaBanco, monto);
     }
 
     /** Retira un monto del banco (si hay saldo suficiente). */
-    public boolean retirar(String etiquetaBanco, double monto) {
-        return db.retirarDeBanco(etiquetaBanco, monto);
+    public boolean retirarBanco(String etiquetaBanco, double monto) {
+        return db.retirarBanco(etiquetaBanco, monto);
     }
 
     /** Obtiene el saldo actual del banco. */
-    public double obtenerSaldo(String etiquetaBanco) {
-        return db.obtenerSaldoBanco(etiquetaBanco);
+    public double getSaldoBanco(String etiquetaBanco) {
+        return db.getSaldoBanco(etiquetaBanco);
     }
 
-    /** Añade un socio al banco. */
-    public boolean agregarSocio(String etiquetaBanco, UUID jugadorUUID) {
-        return db.agregarSocioBanco(etiquetaBanco, jugadorUUID);
+    /** Añade un jugador como socio al banco. */
+    public boolean agregarJugadorABanco(UUID jugadorUUID, String etiquetaBanco) {
+        return db.agregarJugadorABanco(jugadorUUID, etiquetaBanco);
     }
 
-    /** Quita un socio del banco. */
-    public boolean quitarSocio(String etiquetaBanco, UUID jugadorUUID) {
-        return db.quitarSocioBanco(etiquetaBanco, jugadorUUID);
+    /** Elimina un jugador del banco. */
+    public boolean eliminarJugadorDeBanco(UUID jugadorUUID, String etiquetaBanco) {
+        return db.eliminarJugadorDeBanco(jugadorUUID, etiquetaBanco);
     }
 
     /** Devuelve la etiqueta del banco al que está vinculado el jugador (o null). */

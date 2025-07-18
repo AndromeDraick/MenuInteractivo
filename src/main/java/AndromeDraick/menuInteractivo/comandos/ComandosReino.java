@@ -121,25 +121,24 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return;
         }
         String etiqueta = args[1].toLowerCase();
-        // Comprobar que existe
-        List<String> etiquetas = manager.listarReinos()
-                .stream()
-                .map(Reino::getEtiqueta)
-                .collect(Collectors.toList());
-        if (!etiquetas.contains(etiqueta)) {
+        // Comprobar existencia…
+        if (!manager.listarReinos().stream()
+                .map(r -> r.getEtiqueta())
+                .anyMatch(e -> e.equalsIgnoreCase(etiqueta))) {
             p.sendMessage(ChatColor.RED + "No existe ningún reino con etiqueta '" + etiqueta + "'.");
             return;
         }
-        // Comprobar que no estés ya en uno
-        String miReino = manager.obtenerReinoJugador(p.getUniqueId());
-        if (miReino != null) {
-            p.sendMessage(ChatColor.RED + "Ya perteneces al reino '" + miReino + "'. Primero usa /rnmi salir.");
+        // Comprobar que no estés ya en uno…
+        if (manager.obtenerReinoJugador(p.getUniqueId()) != null) {
+            p.sendMessage(ChatColor.RED + "Ya perteneces a un reino. Primero usa /rnmi salir.");
             return;
         }
-        if (manager.unirReino(p.getUniqueId(), etiqueta)) {
+        // **NUEVO**: usar agregarJugadorAReino en lugar de unirReino
+        if (manager.agregarJugadorAReino(p.getUniqueId(), etiqueta, "miembro")) {
             p.sendMessage(ChatColor.GREEN + "Te has unido al reino '" + etiqueta + "'.");
         } else {
-            p.sendMessage(ChatColor.RED + "Error al unirte al reino. ¿Está en estado 'aprobado'?");
+            p.sendMessage(ChatColor.RED +
+                    "Error al unirte al reino. ¿Existe y está aprobado?");
         }
     }
 
@@ -154,7 +153,8 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.RED + "No perteneces al reino '" + etiqueta + "'.");
             return;
         }
-        if (manager.salirReino(p.getUniqueId(), etiqueta)) {
+        // **NUEVO**: usar eliminarJugadorDeReino en lugar de salirReino
+        if (manager.eliminarJugadorDeReino(p.getUniqueId())) {
             p.sendMessage(ChatColor.GREEN + "Has salido del reino '" + etiqueta + "'.");
         } else {
             p.sendMessage(ChatColor.RED + "Error al salir del reino.");

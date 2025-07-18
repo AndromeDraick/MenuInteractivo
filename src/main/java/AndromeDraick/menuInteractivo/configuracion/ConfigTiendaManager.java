@@ -9,7 +9,7 @@ import java.util.*;
 
 public class ConfigTiendaManager {
     private final FileConfiguration config;        // config_tienda.yml
-    private final FileConfiguration itemsConfig;   // configuracion/config_items_venta.yml
+    private final FileConfiguration itemsConfig;   // config_items_venta.yml
 
     public ConfigTiendaManager(MenuInteractivo plugin) {
         // load tienda config
@@ -18,8 +18,8 @@ public class ConfigTiendaManager {
         this.config = YamlConfiguration.loadConfiguration(archivo);
 
         // load items-venta config
-        File archivoItems = new File(plugin.getDataFolder(), "configuracion/config_items_venta.yml");
-        if (!archivoItems.exists()) plugin.saveResource("configuracion/config_items_venta.yml", false);
+        File archivoItems = new File(plugin.getDataFolder(), "config_items_venta.yml");
+        if (!archivoItems.exists()) plugin.saveResource("config_items_venta.yml", false);
         this.itemsConfig = YamlConfiguration.loadConfiguration(archivoItems);
     }
 

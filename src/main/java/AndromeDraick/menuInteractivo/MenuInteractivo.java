@@ -50,14 +50,15 @@ public final class MenuInteractivo extends JavaPlugin {
         trabajos = new SistemaTrabajos(this);
 
         // 4) Configuración de tienda
+        File cfgDir = new File(getDataFolder(), "configuracion");
+        if (!cfgDir.exists()) cfgDir.mkdirs();
         saveResource("config_tienda.yml", false);
-        saveResource("configuracion/config_item_venta.yml", false);
+        File cfgIV = new File(cfgDir, "config_items_venta.yml");
+        if (!cfgIV.exists()) saveResource("configuracion/config_items_venta.yml", false);
         configTienda = new ConfigTiendaManager(this);
         baseDeDatos = new GestorBaseDeDatos(this);
 
         // 5) Configuración y conexión a BBDD
-        File cfgDir = new File(getDataFolder(), "configuracion");
-        if (!cfgDir.exists()) cfgDir.mkdirs();
         File cfgBD = new File(cfgDir, "config_basededatos.yml");
         if (!cfgBD.exists()) saveResource("configuracion/config_basededatos.yml", false);
         baseDeDatos = new GestorBaseDeDatos(this);

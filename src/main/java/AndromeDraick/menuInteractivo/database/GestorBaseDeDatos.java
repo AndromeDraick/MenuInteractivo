@@ -27,7 +27,8 @@ public class GestorBaseDeDatos {
 
     private void cargarConfiguracionYConectar() {
         File archivo = new File(plugin.getDataFolder(), "configuracion/config_basededatos.yml");
-        if (!archivo.exists()) plugin.saveResource("configuracion/config_basededatos.yml", false);
+        if (!archivo.exists())
+            plugin.saveResource("configuracion/config_basededatos.yml", false);
 
         FileConfiguration config = YamlConfiguration.loadConfiguration(archivo);
         usarMySQL = config.getString("tipo", "sqlite").equalsIgnoreCase("mysql");

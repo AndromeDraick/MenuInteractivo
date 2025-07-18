@@ -18,9 +18,10 @@ public class ConfigTiendaManager {
         this.config = YamlConfiguration.loadConfiguration(archivo);
 
         // load items-venta config
-        File archivoItems = new File(plugin.getDataFolder(), "config_items_venta.yml");
-        if (!archivoItems.exists()) plugin.saveResource("config_items_venta.yml", false);
-        this.itemsConfig = YamlConfiguration.loadConfiguration(archivoItems);
+        File Items = new File(plugin.getDataFolder(), "configuracion/config_items_venta.yml");
+        if (!Items.exists())
+            plugin.saveResource("configuracion/config_items_venta.yml", false);
+        this.itemsConfig = YamlConfiguration.loadConfiguration(Items);
     }
 
     /** Acceso al config principal **/

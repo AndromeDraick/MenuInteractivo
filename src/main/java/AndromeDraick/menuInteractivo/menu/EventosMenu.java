@@ -23,6 +23,8 @@ public class EventosMenu implements Listener {
         String titulo = event.getView().getTitle();
 
         // Manejar clics en los distintos menús personalizados
+        MenuPrincipal.manejarClick(event);
+        MenuTrabajos .manejarClick(event);
         MenuTienda.manejarClick(event);
         MenuConfirmacion.manejarClick(event);
         MenuVentaVisual.manejarClick(event);

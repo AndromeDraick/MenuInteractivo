@@ -77,6 +77,8 @@ public final class MenuInteractivo extends JavaPlugin {
         // 9) Listeners
         getServer().getPluginManager().registerEvents(new EventosMenu(), this);
 
+        new MenuEconomia(this);
+
         this.menuBancos = new MenuBancos(this);
         this.menuPrincipal = new MenuPrincipal(this);
         this.menuTrabajos  = new MenuTrabajos(this);

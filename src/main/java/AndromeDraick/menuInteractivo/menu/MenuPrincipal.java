@@ -172,7 +172,7 @@ public class MenuPrincipal implements Listener {
                 } else {
                     jugador.sendMessage(ChatColor.RED + "No tienes permiso para gestionar bancos.");
                 }
-                break;
+                 break;
             case 23:
                 plugin.getMenuTrabajos().abrir(jugador);
                 break;

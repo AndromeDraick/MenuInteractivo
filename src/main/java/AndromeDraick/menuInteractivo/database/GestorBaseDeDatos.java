@@ -6,15 +6,12 @@ import AndromeDraick.menuInteractivo.model.Banco;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-
 import java.sql.*;
-import java.util.UUID;
+import java.util.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 public class GestorBaseDeDatos {
-
     private Connection conexion;
     private boolean usarMySQL;
     private final MenuInteractivo plugin;
@@ -22,13 +19,12 @@ public class GestorBaseDeDatos {
     public GestorBaseDeDatos(MenuInteractivo plugin) {
         this.plugin = plugin;
         cargarConfiguracionYConectar();
-        crearTablasEconomia();
+        crearTablas();
     }
 
     private void cargarConfiguracionYConectar() {
         File archivo = new File(plugin.getDataFolder(), "configuracion/config_basededatos.yml");
-        if (!archivo.exists())
-            plugin.saveResource("configuracion/config_basededatos.yml", false);
+        if (!archivo.exists()) plugin.saveResource("configuracion/config_basededatos.yml", false);
 
         FileConfiguration config = YamlConfiguration.loadConfiguration(archivo);
         usarMySQL = config.getString("tipo", "sqlite").equalsIgnoreCase("mysql");
@@ -52,52 +48,107 @@ public class GestorBaseDeDatos {
         }
     }
 
-    private void crearTablasEconomia() {
+    private void crearTablas() {
         String sqlReinos = "CREATE TABLE IF NOT EXISTS reinos (" +
-                "etiqueta TEXT PRIMARY KEY," +
-                "nombre TEXT NOT NULL," +
-                "uuid_rey TEXT NOT NULL" +
+                "etiqueta TEXT PRIMARY KEY, " +
+                "nombre TEXT NOT NULL, " +
+                "uuid_rey TEXT NOT NULL, " +
+                "descripcion TEXT DEFAULT '', " +
+                "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                 ")";
-
         String sqlJugadores = "CREATE TABLE IF NOT EXISTS jugadores (" +
-                "uuid TEXT PRIMARY KEY," +
-                "nombre TEXT," +
-                "trabajo TEXT," +
-                "nivel INTEGER DEFAULT 1," +
-                "puntos INTEGER DEFAULT 0," +
-                "estadisticas TEXT DEFAULT ''" +
+                "uuid TEXT PRIMARY KEY, " +
+                "nombre TEXT, " +
+                "trabajo TEXT, " +
+                "nivel INTEGER DEFAULT 1, " +
+                "puntos INTEGER DEFAULT 0, " +
+                "estadisticas TEXT DEFAULT '', " +
+                "genero TEXT DEFAULT 'Masculino'" +
                 ")";
-
         String sqlBancos = "CREATE TABLE IF NOT EXISTS bancos (" +
-                "etiqueta TEXT PRIMARY KEY," +
-                "nombre TEXT NOT NULL," +
-                "reino_etiqueta TEXT NOT NULL," +
-                "uuid_propietario TEXT NOT NULL," +
-                "estado TEXT DEFAULT 'pendiente'," +
-                "fondos REAL DEFAULT 0" +
+                "etiqueta TEXT PRIMARY KEY, " +
+                "nombre TEXT NOT NULL, " +
+                "reino_etiqueta TEXT NOT NULL, " +
+                "uuid_propietario TEXT NOT NULL, " +
+                "estado TEXT DEFAULT 'pendiente', " +
+                "fondos REAL DEFAULT 0, " +
+                "tasa_interes REAL DEFAULT 0.01, " +
+                "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                 ")";
-
         String sqlJugadoresBanco = "CREATE TABLE IF NOT EXISTS jugadores_banco (" +
-                "uuid TEXT NOT NULL," +
-                "etiqueta_banco TEXT NOT NULL," +
+                "uuid TEXT NOT NULL, " +
+                "etiqueta_banco TEXT NOT NULL, " +
                 "PRIMARY KEY(uuid, etiqueta_banco)" +
                 ")";
-
         String sqlJugadoresReino = "CREATE TABLE IF NOT EXISTS jugadores_reino (" +
-                "uuid TEXT PRIMARY KEY," +
-                "reino TEXT NOT NULL," +
-                "etiqueta_reino TEXT NOT NULL," +
+                "uuid TEXT PRIMARY KEY, " +
+                "etiqueta_reino TEXT NOT NULL, " +
                 "rol TEXT NOT NULL" +
                 ")";
-
+        String sqlGenero = "CREATE TABLE IF NOT EXISTS genero_jugador (" +
+                "uuid TEXT PRIMARY KEY, " +
+                "genero TEXT NOT NULL" +
+                ")";
         try (Statement st = conexion.createStatement()) {
             st.executeUpdate(sqlReinos);
             st.executeUpdate(sqlJugadores);
             st.executeUpdate(sqlBancos);
             st.executeUpdate(sqlJugadoresBanco);
             st.executeUpdate(sqlJugadoresReino);
+            st.executeUpdate(sqlGenero);
         } catch (SQLException e) {
-            plugin.getLogger().severe("Error al crear tablas de economía/reinos: " + e.getMessage());
+            plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
+        }
+    }
+
+    // Métodos de género
+    public boolean setGenero(UUID uuid, String genero) {
+        String sql = "REPLACE INTO genero_jugador (uuid, genero) VALUES (?, ?)";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            ps.setString(2, genero);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al setear género: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public String getGenero(UUID uuid) {
+        String sql = "SELECT genero FROM genero_jugador WHERE uuid = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("genero");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al obtener género: " + e.getMessage());
+        }
+        return "Masculino"; // default
+    }
+
+    // Renombrados y correcciones en uniones de reinos
+    public boolean agregarJugadorAReino(UUID jugadorUUID, String etiquetaReino, String rol) {
+        String sql = "REPLACE INTO jugadores_reino (uuid, etiqueta_reino, rol) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ps.setString(2, etiquetaReino);
+            ps.setString(3, rol);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al unir jugador al reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean eliminarJugadorDeReino(UUID jugadorUUID) {
+        String sql = "DELETE FROM jugadores_reino WHERE uuid = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al salir del reino: " + e.getMessage());
+            return false;
         }
     }
 
@@ -460,28 +511,6 @@ public class GestorBaseDeDatos {
             plugin.getLogger().warning("Error al obtener el rol del jugador: " + e.getMessage());
         }
         return null;
-    }
-
-    public boolean eliminarJugadorDeReino(UUID uuidJugador) {
-        try (PreparedStatement stmt = conexion.prepareStatement("DELETE FROM jugadores_reino WHERE uuid = ?")) {
-            stmt.setString(1, uuidJugador.toString());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error al eliminar jugador de reino: " + e.getMessage());
-        }
-        return false;
-    }
-
-    public boolean agregarJugadorAReino(UUID uuidJugador, String etiquetaReino, String rol) {
-        try (PreparedStatement stmt = conexion.prepareStatement("REPLACE INTO jugadores_reino (uuid, reino, rol) VALUES (?, ?, ?)")) {
-            stmt.setString(1, uuidJugador.toString());
-            stmt.setString(2, etiquetaReino);
-            stmt.setString(3, rol);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error al agregar jugador a reino: " + e.getMessage());
-        }
-        return false;
     }
 
     public boolean transferirLiderazgoReino(String etiquetaReino, UUID nuevoReyUUID) {

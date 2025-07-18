@@ -6,6 +6,9 @@ import AndromeDraick.menuInteractivo.model.Reino;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Encapsula operaciones de reino usando GestorBaseDeDatos.
+ */
 public class ReinoManager {
 
     private final GestorBaseDeDatos db;
@@ -29,14 +32,14 @@ public class ReinoManager {
         return db.eliminarReino(etiqueta);
     }
 
-    /** Une a un jugador a un reino. */
+    /** Une a un jugador a un reino (rol \"miembro\"). */
     public boolean unirReino(UUID jugadorUUID, String etiquetaReino) {
-        return db.unirJugadorReino(jugadorUUID, etiquetaReino);
+        return db.agregarJugadorAReino(jugadorUUID, etiquetaReino, "miembro");
     }
 
-    /** Saca a un jugador de un reino. */
-    public boolean salirReino(UUID jugadorUUID, String etiquetaReino) {
-        return db.salirJugadorReino(jugadorUUID, etiquetaReino);
+    /** Saca a un jugador de su reino. */
+    public boolean salirReino(UUID jugadorUUID) {
+        return db.eliminarJugadorDeReino(jugadorUUID);
     }
 
     /** Devuelve la etiqueta del reino al que pertenece el jugador (o null). */

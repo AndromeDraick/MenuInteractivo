@@ -47,9 +47,9 @@ public class CalculadoraPrecios {
     }
 
     public static double aplicarDescuentoPorTrabajo(Player jugador, double precio) {
+        MenuInteractivo plugin     = MenuInteractivo.getInstancia();
         var configTienda = MenuInteractivo.getInstancia().getConfigTienda();
-        var sistemaTrabajos = MenuInteractivo.getInstancia().getSistemaTrabajos();
-        String trabajo = sistemaTrabajos.getTrabajo(jugador);
+        String trabajo = plugin.getSistemaTrabajos().getTrabajo(jugador.getUniqueId());
         if (trabajo != null) {
             double descuento = configTienda.getDescuentoTrabajo(trabajo);
             precio -= (precio * descuento / 100.0);

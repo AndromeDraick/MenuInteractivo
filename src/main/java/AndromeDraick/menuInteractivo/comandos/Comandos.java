@@ -28,7 +28,7 @@ public class Comandos implements CommandExecutor, TabCompleter {
         }
 
         if (etiqueta.equalsIgnoreCase("menu")) {
-            plugin.getMenuPrincipal().abrir(jugador);
+            MenuInteractivo.getInstancia().getMenuPrincipal().abrir(jugador);
             return true;
         }
 

@@ -27,7 +27,6 @@ public class EventosMenu implements Listener {
         MenuTienda.manejarClick(event);
         MenuConfirmacion.manejarClick(event);
         MenuVentaVisual.manejarClick(event);
-        MenuTrabajos.manejarClick(event);
 
         // Menú de Compras Recientes
         if (titulo.equals(ChatColor.DARK_AQUA + "Compras Recientes")) {

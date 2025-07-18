@@ -47,130 +47,138 @@ public class MenuTienda {
     }
 
     public static void abrir(Player jugador, int pagina) {
-
         MenuInteractivo plugin     = MenuInteractivo.getInstancia();
-        var configTienda = plugin.getConfigTienda();
-        var economia = plugin.getEconomia();
+        ConfigTiendaManager config = plugin.getConfigTienda();
+        var economia               = plugin.getEconomia();
 
+        // Guardar página actual
         paginaPorJugador.put(jugador.getUniqueId(), pagina);
 
-        String tituloConDinero = TITULO + " §7($ " + FormateadorNumeros.formatear(economia.getBalance(jugador)) + ")";
-        Inventory tienda = Bukkit.createInventory(null, 54, tituloConDinero);
+        // Título con saldo
+        String titulo = TITULO
+                + " §7($ " + FormateadorNumeros.formatear(economia.getBalance(jugador)) + ")";
+        Inventory tienda = Bukkit.createInventory(null, 54, titulo);
 
-        // Categorías en los primeros 9 slots (0 al 8)
+        // ————— Categorías —————
         int slotCat = 0;
         for (String clave : nombresCategoriaES.keySet()) {
             if (slotCat >= 9) break;
             ItemStack papel = new ItemStack(Material.PAPER);
             ItemMeta meta = papel.getItemMeta();
             meta.setDisplayName(ChatColor.AQUA + nombresCategoriaES.get(clave));
-            meta.setLore(List.of(ChatColor.GRAY + "Haz clic para ver solo esta categoría."));
+            meta.setLore(List.of(ChatColor.GRAY + "Haz clic para filtrar por categoría"));
             papel.setItemMeta(meta);
             tienda.setItem(slotCat++, papel);
         }
 
-        // Botón Mostrar Todo
+        // ————— Mostrar todo —————
         ItemStack mapa = new ItemStack(Material.MAP);
         ItemMeta metaMapa = mapa.getItemMeta();
         metaMapa.setDisplayName(ChatColor.YELLOW + "Mostrar todo");
-        metaMapa.setLore(List.of(ChatColor.GRAY + "Haz clic para ver todos los ítems."));
+        metaMapa.setLore(List.of(ChatColor.GRAY + "Haz clic para ver todos los ítems"));
         mapa.setItemMeta(metaMapa);
-        tienda.setItem(13, mapa);  //Slot 13 donde se encuentra el boton de "Mostrar todo"
+        tienda.setItem(13, mapa);
 
-        // Filtros
-        Set<String> claves = new HashSet<>(configTienda.getItemsCustom());
+        // ————— Filtrar por categoría si hay —————
+        Set<String> claves = new HashSet<>(config.getItemsCustom());
         String categoria = categoriaPorJugador.getOrDefault(jugador.getUniqueId(), "");
-
         if (!categoria.isEmpty()) {
             claves.removeIf(clave -> {
-                String cat = (String) configTienda.getDatosItemCustom(clave).get("categoria");
-                return cat == null || !categoria.equalsIgnoreCase(cat);
+                String cat = (String) config.getDatosItemCustom(clave).get("categoria");
+                return cat == null || !cat.equalsIgnoreCase(categoria);
             });
         }
 
-        String grupo = "default";
-        String trabajo = plugin.getSistemaTrabajos().getTrabajo(jugador.getUniqueId());
-        var lp = plugin.getPermisos();
+        // ————— Datos de grupo y trabajo —————
+        String grupo   = "default";
+        var lp         = plugin.getPermisos();
         if (lp != null) {
             var user = lp.getUserManager().getUser(jugador.getUniqueId());
             if (user != null) grupo = user.getPrimaryGroup();
         }
+        String trabajo = plugin.getSistemaTrabajos().getTrabajo(jugador.getUniqueId());
 
-        List<String> rarezasDesbloqueadas = configTienda.getRarezasDesbloqueadas(grupo);
+        // ————— Rarezas desbloqueadas por grupo —————
+        List<String> rarezasDesbloqueadas = config.getRarezasDesbloqueadas(grupo);
+        boolean esGrupoVIP = !rarezasDesbloqueadas.isEmpty();
 
+        // ————— Filtrar ítems por trabajo (solo no-VIP) y por rareza —————
         claves.removeIf(clave -> {
-            Map<String, Object> datos = configTienda.getDatosItemCustom(clave);
+            Map<String,Object> datos = config.getDatosItemCustom(clave);
             if (datos == null || datos.isEmpty()) return true;
 
-            if (datos.containsKey("trabajo")) {
+            // Si no es VIP, aplica requisito de trabajo
+            if (!esGrupoVIP && datos.containsKey("trabajo")) {
                 String[] permitidos = ((String) datos.get("trabajo")).split(",");
-                boolean ok = Arrays.stream(permitidos)
+                boolean tieneAcceso = Arrays.stream(permitidos)
                         .map(String::trim)
                         .anyMatch(t -> t.equalsIgnoreCase(trabajo));
-                if (!ok) return true;
+                if (!tieneAcceso) return true;
             }
 
-            String rareza = ((String) datos.getOrDefault("rareza", "comun")).toLowerCase();
+            // Filtrar por rareza
+            String rareza = ((String) datos.getOrDefault("rareza", "comun"))
+                    .toLowerCase(Locale.ROOT);
             return !rareza.equals("comun") && !rarezasDesbloqueadas.contains(rareza);
         });
 
+        // ————— Resto de la paginación y colocación de ítems … —————
         List<String> listaFinal = new ArrayList<>(claves);
         int inicio = pagina * ITEMS_POR_PAGINA;
-        int fin = Math.min(listaFinal.size(), inicio + ITEMS_POR_PAGINA);
-        int slot = 0;
-
+        int fin    = Math.min(listaFinal.size(), inicio + ITEMS_POR_PAGINA);
+        int slot   = 0;
         for (int i = inicio; i < fin && slot < slotsDeVenta.length; i++) {
             String clave = listaFinal.get(i);
             Material mat;
-            try {
-                mat = Material.valueOf(clave);
-            } catch (Exception e) {
-                continue;
-            }
+            try { mat = Material.valueOf(clave); }
+            catch (IllegalArgumentException e) { continue; }
 
             double precio = CalculadoraPrecios.calcularPrecioCompra(mat, jugador);
             if (precio < 0) continue;
 
             ItemStack item = new ItemStack(mat);
             ItemMeta meta = item.getItemMeta();
-            Map<String, Object> datos = configTienda.getDatosItemCustom(clave);
-            String nombreTraducido = datos.containsKey("material")
+            Map<String,Object> datos = config.getDatosItemCustom(clave);
+            String nombreTrad = datos.containsKey("material")
                     ? String.valueOf(datos.get("material"))
                     : clave.replace("_", " ");
-            meta.setDisplayName(ChatColor.GOLD + nombreTraducido);
+            meta.setDisplayName(ChatColor.GOLD + nombreTrad);
             meta.setLore(List.of(
-                    ChatColor.GRAY + "Precio: " + ChatColor.GREEN + "$" + FormateadorNumeros.formatear(precio),
+                    ChatColor.GRAY + "Precio: " + ChatColor.GREEN + "$" +
+                            FormateadorNumeros.formatear(precio),
                     ChatColor.YELLOW + "Haz clic para comprar 1 unidad"
             ));
             item.setItemMeta(meta);
             tienda.setItem(slotsDeVenta[slot++], item);
         }
 
-        if (pagina > 0) tienda.setItem(45, crearBoton(Material.ARROW, "§ePágina anterior"));
+        // ————— Navegación y botones finales … —————
+        if (pagina > 0)    tienda.setItem(45, crearBoton(Material.ARROW, "§ePágina anterior"));
         if (fin < listaFinal.size()) tienda.setItem(53, crearBoton(Material.ARROW, "§ePágina siguiente"));
 
-        // Botón volver al menú principal
         ItemStack volver = new ItemStack(Material.ARROW);
-        ItemMeta metaVolver = volver.getItemMeta();
-        metaVolver.setDisplayName(ChatColor.RED + "Volver al Menú Principal");
-        metaVolver.setLore(List.of(ChatColor.GRAY + "Haz clic para regresar."));
-        volver.setItemMeta(metaVolver);
-        tienda.setItem(46, volver); // Slot 46 = botón regresar
+        ItemMeta mv = volver.getItemMeta();
+        mv.setDisplayName(ChatColor.RED + "Volver al Menú Principal");
+        mv.setLore(List.of(ChatColor.GRAY + "Haz clic para regresar"));
+        volver.setItemMeta(mv);
+        tienda.setItem(46, volver);
 
-        // Botón vender
         ItemStack vender = new ItemStack(Material.GOLD_INGOT);
-        ItemMeta metaV = vender.getItemMeta();
-        metaV.setDisplayName(ChatColor.RED + "Vender inventario");
-        metaV.setLore(List.of(
+        ItemMeta mv2 = vender.getItemMeta();
+        mv2.setDisplayName(ChatColor.RED + "Vender inventario");
+        mv2.setLore(List.of(
                 ChatColor.GRAY + "Haz clic para vender ítems válidos",
-                ChatColor.GRAY + "Página " + (pagina + 1) + "/" + ((listaFinal.size() - 1) / ITEMS_POR_PAGINA + 1)
+                ChatColor.GRAY + "Página " + (pagina+1) + "/" +
+                        ((listaFinal.size()-1)/ITEMS_POR_PAGINA + 1)
         ));
-        vender.setItemMeta(metaV);
-        tienda.setItem(49, vender);  //Slot 49 para "vender todo"
+        vender.setItemMeta(mv2);
+        tienda.setItem(49, vender);
 
         jugador.openInventory(tienda);
-        jugador.playSound(jugador.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.1f);
+        jugador.playSound(jugador.getLocation(),
+                Sound.BLOCK_CHEST_OPEN, 0.8f, 1.1f);
     }
+
 
     public static void manejarClick(InventoryClickEvent event) {
         MenuInteractivo plugin = MenuInteractivo.getInstancia();

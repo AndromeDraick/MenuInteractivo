@@ -5,24 +5,34 @@ import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.model.Banco;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class ComandosBMI implements CommandExecutor {
+public class ComandosBMI implements CommandExecutor, TabCompleter {
 
     private final MenuInteractivo plugin;
     private final BancoManager bancoManager;
     private final Economy economia;
+    // Subcomandos válidos
+    private static final List<String> SUBS = List.of(
+            "crear", "pendientes", "aprobar", "rechazar",
+            "listar", "unir", "salir", "saldo",
+            "depositar", "retirar", "banco", "ayuda"
+    );
 
     public ComandosBMI(MenuInteractivo plugin) {
         this.plugin = plugin;
         this.bancoManager = new BancoManager(plugin.getBaseDeDatos());
         this.economia = plugin.getEconomia();
+        // Registrar executor y tab completer
+        PluginCommand cmd = plugin.getCommand("bmi");
+        cmd.setExecutor(this);
+        cmd.setTabCompleter(this);
     }
 
     @Override
@@ -41,44 +51,25 @@ public class ComandosBMI implements CommandExecutor {
         String sub = args[0].toLowerCase();
         try {
             switch (sub) {
-                case "crear":
-                    cmdCrearBanco(p, args);
-                    break;
-                case "pendientes":
-                    cmdListarPendientes(p);
-                    break;
-                case "aprobar":
-                    cmdAprobarRechazar(p, args, true);
-                    break;
-                case "rechazar":
-                    cmdAprobarRechazar(p, args, false);
-                    break;
-                case "listar":
-                    cmdListarActivos(p);
-                    break;
-                case "unir":
-                    cmdUnirSalir(p, args, true);
-                    break;
-                case "salir":
-                    cmdUnirSalir(p, args, false);
-                    break;
-                case "saldo":
-                    cmdSaldo(p, args);
-                    break;
-                case "depositar":
-                case "retirar":
-                    cmdMoverFondos(p, args, sub.equals("depositar"));
-                    break;
-                case "banco":
-                    cmdBanco(p, args);
-                    break;
-                default:
+                case "crear"      -> cmdCrearBanco(p, args);
+                case "pendientes" -> cmdListarPendientes(p);
+                case "aprobar"    -> cmdAprobarRechazar(p, args, true);
+                case "rechazar"   -> cmdAprobarRechazar(p, args, false);
+                case "listar"     -> cmdListarActivos(p);
+                case "unir"       -> cmdUnirSalir(p, args, true);
+                case "salir"      -> cmdUnirSalir(p, args, false);
+                case "saldo"      -> cmdSaldo(p, args);
+                case "depositar", "retirar" -> cmdMoverFondos(p, args, sub.equals("depositar"));
+                case "banco"      -> cmdBanco(p, args);
+                default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
+                }
             }
         } catch (Exception e) {
             p.sendMessage(ChatColor.RED + "Error al ejecutar el comando, mira la consola.");
             plugin.getLogger().severe("Error en ComandosBMI: " + e);
+            e.printStackTrace();
         }
         return true;
     }
@@ -236,4 +227,100 @@ public class ComandosBMI implements CommandExecutor {
         p.sendMessage(ChatColor.YELLOW + "/bmi banco <Etiqueta> [cuenta]");
         p.sendMessage(ChatColor.YELLOW + "/bmi ayuda");
     }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
+        if (!(sender instanceof Player p)) return Collections.emptyList();
+        String reino = bancoManager.obtenerReinoJugador(p.getUniqueId());
+        // Primer argumento: subcomandos
+        if (args.length == 1) {
+            return SUBS.stream()
+                    .filter(s -> s.startsWith(args[0].toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        String sub = args[0].toLowerCase();
+        // Abortar si subcomando inválido
+        if (!SUBS.contains(sub)) return Collections.emptyList();
+
+        // Para subcomandos que no llevan más argumentos
+        if (List.of("pendientes", "listar", "ayuda").contains(sub)) {
+            return Collections.emptyList();
+        }
+
+        // Segunda y tercera posición según subcomando
+        switch (sub) {
+            case "crear":
+                // /bmi crear banco <Nombre> <Etiqueta>
+                if (args.length == 2) {
+                    return Collections.singletonList("banco").stream()
+                            .filter(s -> s.startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                return Collections.emptyList();
+
+            case "aprobar":
+            case "rechazar":
+                // /bmi aprobar|rechazar <Etiqueta>
+                if (args.length == 2 && reino != null) {
+                    return bancoManager.obtenerBancosPendientes(reino).stream()
+                            .map(Banco::getEtiqueta)
+                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                return Collections.emptyList();
+
+            case "unir":
+            case "salir":
+            case "saldo":
+                // /bmi unir|salir|saldo <Etiqueta>
+                if (args.length == 2 && reino != null) {
+                    return bancoManager.obtenerBancosDeReino(reino).stream()
+                            .map(Banco::getEtiqueta)
+                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                return Collections.emptyList();
+
+            case "depositar":
+            case "retirar":
+                // /bmi depositar|retirar <Etiqueta> <Monto>
+                if (args.length == 2 && reino != null) {
+                    return bancoManager.obtenerBancosDeReino(reino).stream()
+                            .map(Banco::getEtiqueta)
+                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 3) {
+                    return List.of("100", "500", "1000").stream()
+                            .filter(m -> m.startsWith(args[2]))
+                            .collect(Collectors.toList());
+                }
+                return Collections.emptyList();
+
+            case "banco":
+                // /bmi banco <Etiqueta> | /bmi banco cuenta <Etiqueta>
+                if (args.length == 2 && reino != null) {
+                    List<String> etiquetas = bancoManager.obtenerBancosDeReino(reino).stream()
+                            .map(Banco::getEtiqueta)
+                            .collect(Collectors.toList());
+                    // también permitimos la palabra "cuenta"
+                    etiquetas.add("cuenta");
+                    return etiquetas.stream()
+                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 3 && "cuenta".equalsIgnoreCase(args[1]) && reino != null) {
+                    return bancoManager.obtenerBancosDeReino(reino).stream()
+                            .map(Banco::getEtiqueta)
+                            .filter(e -> e.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                return Collections.emptyList();
+
+            default:
+                return Collections.emptyList();
+        }
+    }
+
 }

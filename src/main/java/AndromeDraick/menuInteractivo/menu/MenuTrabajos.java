@@ -81,7 +81,7 @@ public class MenuTrabajos implements Listener {
         String clicked = ChatColor.stripColor(item.getItemMeta().getDisplayName());
         // Volver al menú principal
         if (clicked.equalsIgnoreCase("Volver al Menú Principal")) {
-            plugin.getMenuPrincipal().abrir(p);
+            MenuPrincipal.abrir(p);
             p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             return;
         }

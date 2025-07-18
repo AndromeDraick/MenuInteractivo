@@ -17,6 +17,11 @@ public class BancoManager {
         this.db = db;
     }
 
+    /** Devuelve la etiqueta del reino al que pertenece el jugador. */
+    public String obtenerReinoJugador(UUID jugadorUUID) {
+        return db.obtenerReinoJugador(jugadorUUID);
+    }
+
     /** Crea un nuevo banco (estado 'pendiente'). */
     public boolean crearBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario) {
         return db.crearBanco(etiqueta, nombre, reinoEtiqueta, propietario);

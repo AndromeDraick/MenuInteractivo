@@ -21,12 +21,10 @@ import java.util.List;
 
 public class MenuBancos implements Listener {
 
-    // Constantes “plain” (sin color) para comparar
     private static final String PLAIN_SOLICITUDES   = "Solicitudes de Bancos";
     private static final String PLAIN_LISTA         = "Bancos del Reino ";
     private static final String PLAIN_INDIVIDUAL    = "Banco: ";
 
-    // Constantes coloreadas para mostrar en el título
     private static final String TITULO_SOLICITUDES  = ChatColor.DARK_GREEN + PLAIN_SOLICITUDES;
     private static final String TITULO_LISTA        = ChatColor.DARK_AQUA  + PLAIN_LISTA;
     private static final String TITULO_INDIVIDUAL   = ChatColor.GOLD       + PLAIN_INDIVIDUAL;
@@ -104,7 +102,7 @@ public class MenuBancos implements Listener {
     }
 
     /** 3) Menú individual de un banco: saldo, retirar/ingresar */
-    private void abrirIndividual(Player p, String etiqueta) {
+    public void abrirIndividual(Player p, String etiqueta) {
         String propia = bancoManager.obtenerBancoDeJugador(p.getUniqueId());
         if (!etiqueta.equals(propia)) {
             p.sendMessage(ChatColor.RED + "No estás vinculado a ese banco.");
@@ -137,7 +135,6 @@ public class MenuBancos implements Listener {
 
         p.openInventory(inv);
     }
-    // === EVENT HANDLERS ===
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onInventoryClick(InventoryClickEvent e) {
@@ -180,11 +177,11 @@ public class MenuBancos implements Listener {
         // 3.3) Vista individual
         if (title.startsWith(PLAIN_INDIVIDUAL)) {
             String tag    = title.substring(PLAIN_INDIVIDUAL.length());
-            double fondos = bancoManager.obtenerSaldo(tag);
+            double fondos = bancoManager.getSaldoBanco(tag);
 
             if (it.getType() == Material.REDSTONE) {
                 // retirar
-                if (fondos >= 100 && bancoManager.retirar(tag, 100)) {
+                if (fondos >= 100 && bancoManager.retirarBanco(tag, 100)) {
                     economia.depositPlayer(p, 100);
                     p.sendMessage(ChatColor.GREEN + "Retiraste $100 de " + tag);
                 } else {
@@ -192,7 +189,7 @@ public class MenuBancos implements Listener {
                 }
             } else if (it.getType() == Material.EMERALD) {
                 // ingresar
-                if (economia.getBalance(p) >= 100 && bancoManager.depositar(tag, 100)) {
+                if (economia.getBalance(p) >= 100 && bancoManager.depositarBanco(tag, 100)) {
                     economia.withdrawPlayer(p, 100);
                     p.sendMessage(ChatColor.GREEN + "Ingresaste $100 al banco " + tag);
                 } else {
@@ -210,8 +207,6 @@ public class MenuBancos implements Listener {
             e.setCancelled(true);
         }
     }
-
-    // Helper para detectar cualquier menú propio
     private boolean isMiMenu(String title) {
         return title.equals(PLAIN_SOLICITUDES)
                 || title.startsWith(PLAIN_LISTA)

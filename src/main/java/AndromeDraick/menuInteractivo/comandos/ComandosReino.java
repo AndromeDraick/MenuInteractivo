@@ -47,7 +47,13 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         String sub = args[0].toLowerCase();
         try {
             switch (sub) {
-                case "crear"    -> cmdCrear(p, args);
+                case "crear":
+                    if (!p.hasPermission("menuinteractivo.reino.comandos.crear")) {
+                        p.sendMessage(ChatColor.RED + "No tienes permiso para crear reinos.");
+                        return true;
+                    }
+                    cmdCrear(p, args);
+                    break;
                 case "unir"     -> cmdUnir(p, args);
                 case "salir"    -> cmdSalir(p, args);
                 case "eliminar" -> cmdEliminar(p, args);

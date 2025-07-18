@@ -22,24 +22,24 @@ commands:
   rnmi:
     description: Comandos de reinos
     usage: /rnmi <crear|unir|salir|eliminar|listar|info> [args]
-    permission: menuinteractivo.reino
+    permission: menuinteractivo.reino.comandos
     permission-message: No tienes permiso para gestionar reinos.
-    tab-completer: AndromeDraick.menuInteractivo.comandos.ComandosReino
-
   bmi:
     description: Comandos de bancos
     usage: /bmi <crear|pendientes|aprobar|rechazar|listar|unir|salir|saldo|depositar|retirar|banco|ayuda> [args]
     permission: menuinteractivo.banco
     permission-message: No tienes permiso para gestionar bancos.
-    tab-completer: AndromeDraick.menuInteractivo.comandos.ComandosBMI
-
 permissions:
   menuinteractivo.usar:
     description: Permite usar el sistema de tienda personalizada.
     default: true
 
-  menuinteractivo.reino:
+  menuinteractivo.reino.comandos:
     description: Permite crear y gestionar reinos.
+    default: true
+
+  menuinteractivo.reino.comandos.crear:
+    description: Permite crear nuevos reinos
     default: op
 
   menuinteractivo.banco:

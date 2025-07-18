@@ -131,12 +131,12 @@ public class MenuBancos implements Listener {
         if (!(e.getWhoClicked() instanceof Player)) return;
         String title = e.getView().getTitle();
         Player p = (Player)e.getWhoClicked();
-        e.setCancelled(true);
         ItemStack it = e.getCurrentItem();
         if (it==null||!it.hasItemMeta()) return;
 
         // 1) Solicitudes
         if (title.equals(TITULO_SOLICITUDES)) {
+            e.setCancelled(true);
             String tag = ChatColor.stripColor(it.getItemMeta().getDisplayName());
             if (e.isLeftClick()) {
                 bancoManager.aprobarBanco(tag);
@@ -151,6 +151,7 @@ public class MenuBancos implements Listener {
 
         // 2) Lista activos
         if (title.startsWith(TITULO_LISTA)) {
+            e.setCancelled(true);
             String tag = ChatColor.stripColor(it.getItemMeta().getDisplayName());
             abrirIndividual(p, tag);
             return;
@@ -158,6 +159,7 @@ public class MenuBancos implements Listener {
 
         // 3) Individual
         if (title.startsWith(TITULO_INDIVIDUAL)) {
+            e.setCancelled(true);
             String tag = title.substring(TITULO_INDIVIDUAL.length());
             double fondos = bancoManager.obtenerSaldo(tag);
 

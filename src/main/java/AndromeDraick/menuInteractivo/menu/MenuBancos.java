@@ -9,8 +9,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -19,9 +21,15 @@ import java.util.List;
 
 public class MenuBancos implements Listener {
 
-    private static final String TITULO_SOLICITUDES = ChatColor.DARK_GREEN + "Solicitudes de Bancos";
-    private static final String TITULO_LISTA     = ChatColor.DARK_AQUA  + "Bancos del Reino ";
-    private static final String TITULO_INDIVIDUAL= ChatColor.GOLD       + "Banco: ";
+    // Constantes “plain” (sin color) para comparar
+    private static final String PLAIN_SOLICITUDES   = "Solicitudes de Bancos";
+    private static final String PLAIN_LISTA         = "Bancos del Reino ";
+    private static final String PLAIN_INDIVIDUAL    = "Banco: ";
+
+    // Constantes coloreadas para mostrar en el título
+    private static final String TITULO_SOLICITUDES  = ChatColor.DARK_GREEN + PLAIN_SOLICITUDES;
+    private static final String TITULO_LISTA        = ChatColor.DARK_AQUA  + PLAIN_LISTA;
+    private static final String TITULO_INDIVIDUAL   = ChatColor.GOLD       + PLAIN_INDIVIDUAL;
 
     private final MenuInteractivo plugin;
     private final BancoManager bancoManager;
@@ -31,7 +39,6 @@ public class MenuBancos implements Listener {
         this.plugin       = plugin;
         this.bancoManager = new BancoManager(plugin.getBaseDeDatos());
         this.economia     = plugin.getEconomia();
-        // Registramos el listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -47,7 +54,10 @@ public class MenuBancos implements Listener {
             p.sendMessage(ChatColor.YELLOW + "No hay solicitudes pendientes.");
             return;
         }
-        Inventory inv = Bukkit.createInventory(null, ((pendientes.size()-1)/9+1)*9, TITULO_SOLICITUDES);
+        Inventory inv = Bukkit.createInventory(null,
+                ((pendientes.size() - 1) / 9 + 1) * 9,
+                TITULO_SOLICITUDES
+        );
         for (Banco b : pendientes) {
             ItemStack it = new ItemStack(Material.PAPER);
             ItemMeta m = it.getItemMeta();
@@ -75,7 +85,10 @@ public class MenuBancos implements Listener {
             p.sendMessage(ChatColor.YELLOW + "No hay bancos activos en tu reino.");
             return;
         }
-        Inventory inv = Bukkit.createInventory(null, ((activos.size()-1)/9+1)*9, TITULO_LISTA + reino);
+        Inventory inv = Bukkit.createInventory(null,
+                ((activos.size() - 1) / 9 + 1) * 9,
+                TITULO_LISTA + reino
+        );
         for (Banco b : activos) {
             ItemStack it = new ItemStack(Material.BOOK);
             ItemMeta m = it.getItemMeta();
@@ -92,7 +105,6 @@ public class MenuBancos implements Listener {
 
     /** 3) Menú individual de un banco: saldo, retirar/ingresar */
     private void abrirIndividual(Player p, String etiqueta) {
-        // comprueba que el jugador es socio
         String propia = bancoManager.obtenerBancoDeJugador(p.getUniqueId());
         if (!etiqueta.equals(propia)) {
             p.sendMessage(ChatColor.RED + "No estás vinculado a ese banco.");
@@ -125,47 +137,49 @@ public class MenuBancos implements Listener {
 
         p.openInventory(inv);
     }
+    // === EVENT HANDLERS ===
 
-    @EventHandler
-    public void onClick(InventoryClickEvent e) {
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player)) return;
         Player p = (Player) e.getWhoClicked();
-        String title = e.getView().getTitle();
+        String rawTitle = e.getView().getTitle();
+        String title    = ChatColor.stripColor(rawTitle);
 
-        // 1) Solo manejamos clicks dentro de nuestros menús
+        // 1) Solo seguimos si es uno de nuestros menús
         if (!isMiMenu(title)) return;
 
-        // 2) Cancelamos TODO movimiento dentro de nuestros menús
+        // 2) Cancelamos TODO click interno
         e.setCancelled(true);
 
+        // 3) Procesamos acción
         ItemStack it = e.getCurrentItem();
         if (it == null || !it.hasItemMeta()) return;
 
-        // 3) Procesamos cada menú
         // 3.1) Solicitudes
-        if (title.equals(TITULO_SOLICITUDES)) {
+        if (title.equals(PLAIN_SOLICITUDES)) {
             String tag = ChatColor.stripColor(it.getItemMeta().getDisplayName());
             if (e.isLeftClick()) {
                 bancoManager.aprobarBanco(tag);
                 p.sendMessage(ChatColor.GREEN + "Banco " + tag + " aprobado.");
             } else {
                 bancoManager.rechazarBanco(tag);
-                p.sendMessage(ChatColor.RED + "Banco " + tag + " rechazado.");
+                p.sendMessage(ChatColor.RED   + "Banco " + tag + " rechazado.");
             }
             p.closeInventory();
             return;
         }
 
-        // 3.2) Lista de bancos activos
-        if (title.startsWith(TITULO_LISTA)) {
+        // 3.2) Lista activos
+        if (title.startsWith(PLAIN_LISTA)) {
             String tag = ChatColor.stripColor(it.getItemMeta().getDisplayName());
             abrirIndividual(p, tag);
             return;
         }
 
         // 3.3) Vista individual
-        if (title.startsWith(TITULO_INDIVIDUAL)) {
-            String tag = title.substring(TITULO_INDIVIDUAL.length());
+        if (title.startsWith(PLAIN_INDIVIDUAL)) {
+            String tag    = title.substring(PLAIN_INDIVIDUAL.length());
             double fondos = bancoManager.obtenerSaldo(tag);
 
             if (it.getType() == Material.REDSTONE) {
@@ -189,11 +203,18 @@ public class MenuBancos implements Listener {
         }
     }
 
-    // Helper: detecta si el título corresponde a uno de tus menús
-    private boolean isMiMenu(String title) {
-        return title.equals(TITULO_SOLICITUDES)
-                || title.startsWith(TITULO_LISTA)
-                || title.startsWith(TITULO_INDIVIDUAL);
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onInventoryDrag(InventoryDragEvent e) {
+        String title = ChatColor.stripColor(e.getView().getTitle());
+        if (isMiMenu(title)) {
+            e.setCancelled(true);
+        }
     }
 
+    // Helper para detectar cualquier menú propio
+    private boolean isMiMenu(String title) {
+        return title.equals(PLAIN_SOLICITUDES)
+                || title.startsWith(PLAIN_LISTA)
+                || title.startsWith(PLAIN_INDIVIDUAL);
+    }
 }

@@ -31,14 +31,6 @@ items_custom:
     categoria: Combat
     trabajo: Guardia
 
-  ENDER_PEARL:
-    material: Item_Mobs
-    bioma: end
-    rareza: raro
-    dimension: end
-    categoria: Ingredients
-    trabajo: Cazador
-
   SPAWNER:
     material: Item_Mobs
     bioma: cueva
@@ -1604,4 +1596,881 @@ items_custom:
     dimension: Nether
     categoria: Building_Blocks
     trabajo: Alquimista, Carpintero
+  OAK_FENCE_GATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
 
+  SPRUCE_FENCE_GATE:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  BIRCH_FENCE_GATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  JUNGLE_FENCE_GATE:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  ACACIA_FENCE_GATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  DARK_OAK_FENCE_GATE:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  MANGROVE_FENCE_GATE:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  CHERRY_FENCE_GATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  CRIMSON_FENCE_GATE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Alquimista, Carpintero
+
+  WARPED_FENCE_GATE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Alquimista, Carpintero
+  OAK_DOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_DOOR:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_DOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_DOOR:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_DOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_DOOR:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_DOOR:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_DOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_DOOR:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_DOOR:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Alquimista
+  OAK_TRAPDOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_TRAPDOOR:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_TRAPDOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_TRAPDOOR:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_TRAPDOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_TRAPDOOR:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_TRAPDOOR:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_TRAPDOOR:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_TRAPDOOR:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_TRAPDOOR:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Alquimista
+  OAK_BUTTON:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  SPRUCE_BUTTON:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  BIRCH_BUTTON:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  JUNGLE_BUTTON:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_BUTTON:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_BUTTON:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_BUTTON:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_BUTTON:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_BUTTON:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_BUTTON:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+  OAK_PRESSURE_PLATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  SPRUCE_PRESSURE_PLATE:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  BIRCH_PRESSURE_PLATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  JUNGLE_PRESSURE_PLATE:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_PRESSURE_PLATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_PRESSURE_PLATE:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_PRESSURE_PLATE:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_PRESSURE_PLATE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_PRESSURE_PLATE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_PRESSURE_PLATE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+  OAK_BOAT:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_BOAT:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  BIRCH_BOAT:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_BOAT:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_BOAT:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_BOAT:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_BOAT:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_BOAT:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_RAFT:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_RAFT_WITH_CHEST:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Agricultor
+  OAK_SIGN:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_SIGN:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_SIGN:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_SIGN:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_SIGN:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_SIGN:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_SIGN:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_SIGN:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_SIGN:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Agricultor
+  BONE:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Cazador, Alquimista
+
+  ROTTEN_FLESH:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Cazador, Alquimista
+
+  SPIDER_EYE:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  FERMENTED_SPIDER_EYE:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Agricultor
+
+  GUNPOWDER:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  STRING:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Cazador, Carpintero
+
+  ENDER_PEARL:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Cazador, Alquimista
+
+  GHAST_TEAR:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: nether
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  SLIME_BALL:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  BLAZE_ROD:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: nether
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+  MAGMA_CREAM:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: nether
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  SHULKER_SHELL:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: end
+    categoria: Ingredients
+    trabajo: Cazador, Alquimista
+
+  DRAGON_BREATH:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: end
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  WITHER_SKELETON_SKULL:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Ingredients
+    trabajo: Alquimista, Guardia
+
+  RABBIT_FOOT:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  RABBIT_HIDE:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Carpintero, Cazador
+
+  LEATHER:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Cazador
+
+  INK_SAC:
+    material: Item_Mobs
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  GLOW_INK_SAC:
+    material: Item_Mobs
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+  HONEYCOMB:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Agricultor, Carpintero
+
+  HONEY_BOTTLE:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Agricultor, Alquimista
+
+  MILK_BUCKET:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Alquimista
+
+  EGG:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Cazador
+
+  FEATHER:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Carpintero, Granjero
+
+  BEEF:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Cazador
+
+  PORKCHOP:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Cazador
+
+  MUTTON:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Cazador
+
+  CHICKEN:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Cazador
+
+  RABBIT:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Cazador
+
+  BONE_MEAL:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Agricultor, Alquimista
+
+  ENDER_EYE:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Guardia
+
+  WITHER_ROSE:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Alquimista, Agricultor
+
+  ZOMBIE_HEAD:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Cazador, Guardia
+
+  SKELETON_SKULL:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Cazador, Guardia
+# --------------------------------------------------------------------------A modificar.
+  BUCKET_OF_TADPOLE:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Granjero, Cazador
+
+  FROGSPAWN:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Cazador
+
+  SNIFFER_EGG:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: legendario
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Cazador
+
+  FROG_LEGS:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Granjero, Cazador
+
+  ALLAY_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Cazador, Alquimista
+
+  IRON_GOLEM_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: legendario
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Cazador, Guardia
+
+  WARDEN_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Guardia, Cazador
+
+  CAMEL_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Cazador

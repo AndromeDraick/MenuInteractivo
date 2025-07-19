@@ -81,18 +81,27 @@ public class MenuReino implements Listener {
         int slot = event.getRawSlot();
 
         switch (slot) {
-            case 11 -> MenuEconomia.abrir(jugador);
+            case 11 -> {
+                // Solo quien tiene un banco afiliado puede abrir Economía
+                String miBanco = db.obtenerBancoDeJugador(jugador.getUniqueId());
+                if (miBanco == null) {
+                    jugador.sendMessage(ChatColor.RED + "No eres dueño de un Banco afiliado al Reino.");
+                    return;
+                }
+                MenuEconomia.abrir(jugador);
+            }
             case 13 -> plugin.getMenuMiembrosReino().abrir(jugador);
             case 15 -> {
+                // Abandonar reino: prohibido a Reyes/Reinas
                 String reino = db.obtenerReinoJugador(jugador.getUniqueId());
                 if (reino == null) {
                     jugador.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
                     return;
                 }
                 String rol = db.obtenerRolJugadorEnReino(jugador.getUniqueId());
-                if ("rey".equalsIgnoreCase(rol)) {
+                if (rol.equalsIgnoreCase("Rey") || rol.equalsIgnoreCase("Reina")) {
                     jugador.sendMessage(ChatColor.RED +
-                            "No puedes abandonar el reino siendo el Rey. Transfiere el liderazgo primero.");
+                            "No puedes abandonar el reino siendo " + rol + ". Transfiere el liderazgo primero.");
                     return;
                 }
                 if (db.eliminarJugadorDeReino(jugador.getUniqueId())) {
@@ -106,4 +115,5 @@ public class MenuReino implements Listener {
             case 26 -> plugin.getMenuPrincipal().abrir(jugador);
         }
     }
+
 }

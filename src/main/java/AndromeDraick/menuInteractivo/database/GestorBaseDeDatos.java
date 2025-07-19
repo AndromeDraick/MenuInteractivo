@@ -429,21 +429,6 @@ public class GestorBaseDeDatos {
     }
 
     /**
-     * Asocia un jugador a un reino.
-     */
-    public boolean unirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
-        String sql = "INSERT INTO jugadores_reino (uuid_jugador, etiqueta_reino) VALUES (?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, jugadorUUID.toString());
-            ps.setString(2, etiquetaReino);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
      * Elimina la pertenencia de un jugador a un reino.
      */
     public boolean salirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
@@ -650,11 +635,5 @@ public class GestorBaseDeDatos {
             plugin.getLogger().warning("Error creando reino: " + e.getMessage());
             return false;
         }
-    }
-
-
-
-    public Connection getConexion() {
-        return conexion;
     }
 }

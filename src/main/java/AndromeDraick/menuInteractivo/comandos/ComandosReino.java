@@ -1,10 +1,12 @@
 package AndromeDraick.menuInteractivo.comandos;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
+import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.managers.ReinoManager;
 import AndromeDraick.menuInteractivo.model.Reino;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
@@ -13,6 +15,8 @@ import java.util.List;
 import java.util.Objects;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
+
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ComandosReino implements CommandExecutor, TabCompleter {
@@ -323,6 +327,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi info <etiqueta>");
             return;
         }
+
         String etiqueta = args[1].toLowerCase();
         Reino r = manager.listarReinos().stream()
                 .filter(x -> x.getEtiqueta().equalsIgnoreCase(etiqueta))
@@ -331,12 +336,51 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.RED + "Reino '" + etiqueta + "' no encontrado.");
             return;
         }
-        p.sendMessage(ChatColor.GREEN + "— Información de " + r.getNombre() + " —");
-        p.sendMessage(ChatColor.GRAY + "Etiqueta: " + r.getEtiqueta());
-        p.sendMessage(ChatColor.GRAY + "Rey: " + r.getReyUUID());
+
+        // Encabezado
+        p.sendMessage(ChatColor.GREEN + "— Información de " + ChatColor.GOLD + r.getNombre() + ChatColor.GREEN + " —");
+
+        // Etiqueta (gris oscuro + negrita)
+        p.sendMessage(ChatColor.GRAY + "Etiqueta: " +
+                ChatColor.DARK_GRAY + "" + ChatColor.BOLD + r.getEtiqueta());
+
+        // Creador: nombre de usuario y rol (Rey/Reina)
+        OfflinePlayer creador = Bukkit.getOfflinePlayer(r.getReyUUID());
+        String nombreCreador = creador.getName() != null ? creador.getName() : r.getReyUUID().toString();
+        String rolRey = manager.obtenerRolJugador(r.getReyUUID());
+        p.sendMessage(ChatColor.GRAY + "Creador: " +
+                ChatColor.AQUA + nombreCreador +
+                ChatColor.GRAY + " (" + ChatColor.GOLD + rolRey + ChatColor.GRAY + ")");
+
+        // Descripción
+        String desc = r.getDescripcion() == null || r.getDescripcion().isBlank()
+                ? "Sin descripción"
+                : r.getDescripcion();
+        p.sendMessage(ChatColor.GRAY + "Descripción: " +
+                ChatColor.WHITE + desc);
+
+        // Moneda
+        p.sendMessage(ChatColor.GRAY + "Moneda: " +
+                ChatColor.GREEN + r.getMoneda());
+
+        // Fecha de creación (asumiendo que es un LocalDateTime)
+        p.sendMessage(ChatColor.GRAY + "Fecha de creación: " +
+                ChatColor.YELLOW + r.getFechaCreacion()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+
+        // Miembros
+        List<UUID> miembros = manager.obtenerMiembros(etiqueta);
         p.sendMessage(ChatColor.GRAY + "Miembros: " +
-                manager.obtenerMiembros(etiqueta).size());
+                ChatColor.YELLOW + miembros.size());
+
+        // Bancos
+        BancoManager bm = new BancoManager(plugin.getBaseDeDatos());
+        p.sendMessage(ChatColor.GRAY + "Bancos activos: " +
+                ChatColor.YELLOW + bm.obtenerBancosDeReino(etiqueta).size());
+        p.sendMessage(ChatColor.GRAY + "Solicitudes pendientes: " +
+                ChatColor.YELLOW + bm.obtenerBancosPendientes(etiqueta).size());
     }
+
 
     private void cmdTransferir(Player p, String[] args) {
         if (args.length < 3) {

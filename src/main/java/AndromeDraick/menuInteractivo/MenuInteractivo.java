@@ -27,6 +27,7 @@ public final class MenuInteractivo extends JavaPlugin {
     private MenuPrincipal menuPrincipal;
     private MenuTrabajos  menuTrabajos;
     private MenuReino menuReino;
+    private MenuMiembrosReino menuMiembrosReino;
 
     @Override
     public void onEnable() {
@@ -79,6 +80,7 @@ public final class MenuInteractivo extends JavaPlugin {
 
         new MenuEconomia(this);
 
+        this.menuMiembrosReino = new MenuMiembrosReino(this);
         this.menuBancos = new MenuBancos(this);
         this.menuPrincipal = new MenuPrincipal(this);
         this.menuTrabajos  = new MenuTrabajos(this);
@@ -134,6 +136,9 @@ public final class MenuInteractivo extends JavaPlugin {
 
     public MenuReino     getMenuReino()     {
         return menuReino;
+    }
+    public MenuMiembrosReino getMenuMiembrosReino() {
+        return menuMiembrosReino;
     }
 
 

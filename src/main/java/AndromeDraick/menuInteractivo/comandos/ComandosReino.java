@@ -20,7 +20,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     private final ReinoManager manager;
 
     private static final List<String> SUBS = List.of(
-            "crear", "unir", "salir", "eliminar", "listar", "info", "transferir"
+            "crear", "unir", "salir", "eliminar", "listar", "info", "transferir", "exiliar"
     );
 
     public ComandosReino(MenuInteractivo plugin) {
@@ -54,12 +54,13 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                         cmdCrear(p, args);
                     }
                 }
-                case "unir"     -> cmdUnir(p, args);
+                case "unirse"     -> cmdUnirse(p, args);
                 case "salir"    -> cmdSalir(p);
                 case "eliminar" -> cmdEliminar(p, args);
                 case "listar"   -> cmdListar(p);
                 case "info"     -> cmdInfo(p, args);
                 case "transferir" -> cmdTransferir(p, args);
+                case "exiliar"   -> cmdExiliar(p, args);
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
@@ -131,11 +132,40 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                 etiqueta + "' y ahora eres " + rolJugador + " de la " + tituloSocial + ".");
     }
 
-
-
-    private void cmdUnir(Player p, String[] args) {
+    private void cmdExiliar(Player p, String[] args) {
+        // /rnmi exiliar <jugador>
         if (args.length < 2) {
-            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi unir <etiqueta>");
+            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi exiliar <jugador>");
+            return;
+        }
+        // Sólo el rey o la reina pueden exiliar
+        String etiqueta = manager.obtenerReinoJugador(p.getUniqueId());
+        String rol      = manager.obtenerRolJugador(p.getUniqueId());
+        if (etiqueta == null || !(rol.equalsIgnoreCase("Rey") || rol.equalsIgnoreCase("Reina"))) {
+            p.sendMessage(ChatColor.RED + "Solo el rey o la reina puede exiliar miembros.");
+            return;
+        }
+
+        String targetName = args[1];
+        Player target = Bukkit.getPlayerExact(targetName);
+        if (target == null
+                || !etiqueta.equalsIgnoreCase(manager.obtenerReinoJugador(target.getUniqueId()))) {
+            p.sendMessage(ChatColor.RED + "Ese jugador no está en tu reino o no está en línea.");
+            return;
+        }
+
+        // Exiliar (sacarlo del reino)
+        if (manager.salirReino(target.getUniqueId())) {
+            p.sendMessage(ChatColor.GREEN + targetName + " ha sido exiliado del reino.");
+            target.sendMessage(ChatColor.RED + "Has sido exiliado del reino '" + etiqueta + "'.");
+        } else {
+            p.sendMessage(ChatColor.RED + "Error al exiliar a " + targetName + ".");
+        }
+    }
+
+    private void cmdUnirse(Player p, String[] args) {
+        if (args.length < 2) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi unirse <etiqueta>");
             return;
         }
         String etiqueta = args[1].toLowerCase();
@@ -302,7 +332,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         String sub = args[0].toLowerCase();
         if (args.length == 2) {
             switch (sub) {
-                case "unir", "salir", "eliminar", "info" -> {
+                case "unirse", "salir", "eliminar", "info" -> {
                     return manager.listarReinos().stream()
                             .map(Reino::getEtiqueta)
                             .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
@@ -315,6 +345,14 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                                 .filter(e -> e.startsWith(args[1].toLowerCase()))
                                 .collect(Collectors.toList());
                     }
+                }
+                case "exiliar" -> {
+                    return manager.obtenerMiembros(
+                                    manager.obtenerReinoJugador(p.getUniqueId())
+                            ).stream()
+                            .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
+                            .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
                 }
             }
         } else if (args.length == 3 && sub.equals("transferir")) {

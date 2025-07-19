@@ -82,7 +82,7 @@ public class MenuReino implements Listener {
 
         switch (slot) {
             case 11 -> MenuEconomia.abrir(jugador);
-            case 13 -> MenuMiembrosReino.abrir(jugador);
+            case 13 -> plugin.getMenuMiembrosReino().abrir(jugador);
             case 15 -> {
                 String reino = db.obtenerReinoJugador(jugador.getUniqueId());
                 if (reino == null) {

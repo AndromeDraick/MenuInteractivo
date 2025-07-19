@@ -47,6 +47,10 @@ public class ReinoManager {
         return db.obtenerReinoJugador(jugadorUUID);
     }
 
+    public boolean crearReino(String etiqueta, String nombre, String moneda, UUID reyUUID) {
+        return db.crearReino(etiqueta, nombre, moneda, reyUUID);
+    }
+
     /** Devuelve el rol del jugador dentro de su reino (o null). */
     public String obtenerRolJugador(UUID jugadorUUID) {
         return db.obtenerRolJugadorEnReino(jugadorUUID);

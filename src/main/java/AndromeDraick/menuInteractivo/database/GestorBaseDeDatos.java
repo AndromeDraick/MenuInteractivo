@@ -608,6 +608,21 @@ public class GestorBaseDeDatos {
         return miembros;
     }
 
+    public boolean crearReino(String etiqueta, String nombre, String moneda, UUID reyUUID) {
+        String sql = "INSERT INTO reinos (etiqueta, nombre, uuid_rey, moneda) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, etiqueta);
+            ps.setString(2, nombre);
+            ps.setString(3, reyUUID.toString());
+            ps.setString(4, moneda);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error creando reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 
     public Connection getConexion() {
         return conexion;

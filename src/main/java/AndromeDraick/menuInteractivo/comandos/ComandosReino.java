@@ -74,31 +74,53 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     }
 
     private void cmdCrear(Player p, String[] args) {
-        if (args.length < 3) {
-            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi crear <etiqueta> <nombre>");
+        // Ahora esperamos 3 parámetros: etiqueta, nombre, moneda
+        if (args.length < 4) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi crear <etiqueta> <nombre> <moneda>");
             return;
         }
-        String etiqueta = args[1].toLowerCase();
-        String nombre   = args[2];
 
-        if (!etiqueta.matches("[a-z0-9_-]+")) {
-            p.sendMessage(ChatColor.RED + "La etiqueta solo puede contener minúsculas, números, guiones o guión bajo.");
+        String etiqueta = args[1];
+        String nombreArg = args[2];
+        String moneda    = args[3];
+
+        // 1) Validar etiqueta: sólo letras, dígitos o [ ], hasta 5 caracteres
+        if (!etiqueta.matches("^[A-Za-z0-9\\[\\]]{1,5}$")) {
+            p.sendMessage(ChatColor.RED + "Etiqueta inválida. Máximo 5 caracteres, sólo letras, dígitos o []");
             return;
         }
+
+        // 2) Validar nombre: puede usar _ en lugar de espacios, al menos 1 carácter
+        if (nombreArg.length() < 1) {
+            p.sendMessage(ChatColor.RED + "Nombre inválido. Usa '_' para espacios, al menos 1 carácter.");
+            return;
+        }
+        String nombre = nombreArg.replace("_", " ");
+
+        // 3) Validar moneda: sólo letras, hasta 8 caracteres
+        if (!moneda.matches("^[A-Za-z]{1,8}$")) {
+            p.sendMessage(ChatColor.RED + "Moneda inválida. Máximo 8 letras, sólo A–Z.");
+            return;
+        }
+
+        // 4) Etiqueta única
         if (manager.listarReinos().stream()
                 .anyMatch(r -> r.getEtiqueta().equalsIgnoreCase(etiqueta))) {
             p.sendMessage(ChatColor.RED + "Ya existe un reino con esa etiqueta.");
             return;
         }
-        if (manager.crearReino(etiqueta, nombre, p.getUniqueId())) {
-            // crea y asocia al creador
+
+        // 5) Crear en BD (ahora con moneda) y asociar creador
+        if (manager.crearReino(etiqueta, nombre, moneda, p.getUniqueId())) {
             manager.unirReino(p.getUniqueId(), etiqueta);
             p.sendMessage(ChatColor.GREEN +
-                    "Reino '" + nombre + "' creado con etiqueta '" + etiqueta + "' y ahora eres su rey.");
+                    "Reino '" + nombre + "' (moneda: " + moneda + ") creado con etiqueta '" +
+                    etiqueta + "' y ahora eres su rey.");
         } else {
             p.sendMessage(ChatColor.RED + "Error al crear el reino. ¿Has revisado la consola?");
         }
     }
+
 
     private void cmdUnir(Player p, String[] args) {
         if (args.length < 2) {

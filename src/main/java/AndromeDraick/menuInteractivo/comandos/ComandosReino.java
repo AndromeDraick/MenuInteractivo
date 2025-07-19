@@ -57,7 +57,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                 case "unirse"     -> cmdUnirse(p, args);
                 case "salir"    -> cmdSalir(p);
                 case "eliminar" -> cmdEliminar(p, args);
-                case "listar"   -> cmdListar(p);
+                case "lista"   -> cmdLista(p);
                 case "info"     -> cmdInfo(p, args);
                 case "transferir" -> cmdTransferir(p, args);
                 case "exiliar"   -> cmdExiliar(p, args);
@@ -77,6 +77,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     // === En ComandosReino.java ===
 
     private void cmdCrear(Player p, String[] args) {
+        if (!p.hasPermission("menuinteractivo.reino.comandos.crear")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para crear reinos.");
+            return;
+        }
         // Ahora esperamos: etiqueta, nombre, moneda
         if (args.length < 4) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi crear <etiqueta> <nombre> <moneda>");
@@ -133,6 +137,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     }
 
     private void cmdExiliar(Player p, String[] args) {
+        if (!p.hasPermission("menuinteractivo.reino.comandos.exiliar")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para exiliar personas.");
+            return;
+        }
         // /rnmi exiliar <jugador>
         if (args.length < 2) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi exiliar <jugador>");
@@ -164,28 +172,48 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     }
 
     private void cmdUnirse(Player p, String[] args) {
+        // Permiso para unirse
+        if (!p.hasPermission("menuinteractivo.reino.comandos.unirse")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para unirte a reinos.");
+            return;
+        }
+        // Uso correcto
         if (args.length < 2) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi unirse <etiqueta>");
             return;
         }
         String etiqueta = args[1].toLowerCase();
+        // El reino debe existir
         if (manager.listarReinos().stream()
                 .map(Reino::getEtiqueta)
                 .noneMatch(e -> e.equalsIgnoreCase(etiqueta))) {
             p.sendMessage(ChatColor.RED + "No existe ningún reino con etiqueta '" + etiqueta + "'.");
             return;
         }
+        // No estar ya en uno
         if (manager.obtenerReinoJugador(p.getUniqueId()) != null) {
             p.sendMessage(ChatColor.RED + "Ya perteneces a un reino. Primero usa /rnmi salir.");
             return;
         }
-        if (manager.unirReino(p.getUniqueId(), etiqueta)) {
-            p.sendMessage(ChatColor.GREEN + "Te has unido al reino '" + etiqueta + "'.");
+
+        // Determinar rol según género (por defecto Campesino)
+        String genero    = plugin.getBaseDeDatos().getGenero(p.getUniqueId());
+        String rolJugador = genero.equalsIgnoreCase("Femenino")
+                ? "Campesina"
+                : "Campesino";
+        // Usamos título social genérico
+        String tituloSocial = "plebeyo";
+
+        // Unir al jugador con rol y título
+        if (manager.unirReino(p.getUniqueId(), etiqueta, rolJugador, tituloSocial)) {
+            p.sendMessage(ChatColor.GREEN +
+                    "Te has unido al reino '" + etiqueta + "' como " + rolJugador + ".");
         } else {
             p.sendMessage(ChatColor.RED +
                     "Error al unirte al reino. ¿Existe y está aprobado?");
         }
     }
+
 
     private void cmdSalir(Player p) {
         String miReino = manager.obtenerReinoJugador(p.getUniqueId());
@@ -234,7 +262,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void cmdListar(Player p) {
+    private void cmdLista(Player p) {
         List<Reino> reinos = manager.listarReinos();
         if (reinos.isEmpty()) {
             p.sendMessage(ChatColor.YELLOW + "No hay reinos creados.");
@@ -306,10 +334,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     private void mostrarAyuda(Player p) {
         p.sendMessage(ChatColor.GOLD + "— Comandos de Reinos —");
         p.sendMessage(ChatColor.YELLOW + "/rnmi crear <etiqueta> <nombre>");
-        p.sendMessage(ChatColor.YELLOW + "/rnmi unir <etiqueta>");
+        p.sendMessage(ChatColor.YELLOW + "/rnmi unirse <etiqueta>");
         p.sendMessage(ChatColor.YELLOW + "/rnmi salir");
         p.sendMessage(ChatColor.YELLOW + "/rnmi eliminar <etiqueta>");
-        p.sendMessage(ChatColor.YELLOW + "/rnmi listar");
+        p.sendMessage(ChatColor.YELLOW + "/rnmi lista");
         p.sendMessage(ChatColor.YELLOW + "/rnmi info <etiqueta>");
         p.sendMessage(ChatColor.YELLOW + "/rnmi transferir <etiqueta> <jugador>");
     }
@@ -332,7 +360,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         String sub = args[0].toLowerCase();
         if (args.length == 2) {
             switch (sub) {
-                case "unirse", "salir", "eliminar", "info" -> {
+                case "salir", "eliminar", "info", "lista" -> {
                     return manager.listarReinos().stream()
                             .map(Reino::getEtiqueta)
                             .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
@@ -346,6 +374,15 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                                 .collect(Collectors.toList());
                     }
                 }
+                case "unirse" -> {
+                    if (args.length == 2) {
+                        return manager.listarReinos().stream()
+                                .map(Reino::getEtiqueta)
+                                .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                                .collect(Collectors.toList());
+                    }
+                }
+
                 case "exiliar" -> {
                     return manager.obtenerMiembros(
                                     manager.obtenerReinoJugador(p.getUniqueId())

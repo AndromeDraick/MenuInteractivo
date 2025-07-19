@@ -163,12 +163,22 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
             return;
         }
+
+        // Impedir que el Rey o la Reina salgan de su propio reino
+        String rol = manager.obtenerRolJugador(p.getUniqueId());  // devuelve "Rey", "Reina" o "miembro"
+        if (rol.equalsIgnoreCase("Rey") || rol.equalsIgnoreCase("Reina")) {
+            p.sendMessage(ChatColor.RED + "Los " + rol.toLowerCase() + " no pueden abandonar su reino.");
+            return;
+        }
+
+        // El resto de miembros sí pueden salir
         if (manager.salirReino(p.getUniqueId())) {
             p.sendMessage(ChatColor.GREEN + "Has salido del reino '" + miReino + "'.");
         } else {
             p.sendMessage(ChatColor.RED + "Error al salir del reino.");
         }
     }
+
 
     private void cmdEliminar(Player p, String[] args) {
         if (args.length < 2) {

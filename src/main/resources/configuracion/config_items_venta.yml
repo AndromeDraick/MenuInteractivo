@@ -1,20 +1,4 @@
 items_custom:
-  STONE:
-    material: Piedra
-    bioma: cueva
-    rareza: comun
-    dimension: overworld
-    categoria: Building_Blocks
-    trabajo: Minero
-
-  OAK_LOG:
-    material: Madera
-    bioma: sabana
-    rareza: comun
-    dimension: overworld
-    categoria: Building_Blocks
-    trabajo: Carpintero, Cazador
-
   gunpowder:
     material: Item_Mobs
     bioma: sabana
@@ -62,3 +46,1562 @@ items_custom:
     dimension: overworld
     categoria: Spawn_Eggs
     trabajo: Cazador
+  STONE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  COBBLESTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  ANDESITE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  DIORITE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  GRANITE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  DEEPSLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  COBBLED_DEEPSLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  TUFF:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  CALCITE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Alquimista
+
+  DRIPSTONE_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Alquimista
+
+  POLISHED_ANDESITE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Herrero
+
+  POLISHED_DIORITE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Herrero
+
+  POLISHED_GRANITE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Herrero
+
+  SMOOTH_STONE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  CRACKED_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  CHISELED_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  MOSSY_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Cazador
+
+  MOSSY_COBBLESTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Cazador
+  END_STONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: End
+    categoria: Natural_Blocks
+    trabajo: Minero, Alquimista
+
+  END_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: End
+    categoria: Building_Blocks
+    trabajo: Minero, Herrero
+
+  PURPUR_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: End
+    categoria: Building_Blocks
+    trabajo: Alquimista, Herrero
+
+  PURPUR_PILLAR:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: End
+    categoria: Building_Blocks
+    trabajo: Alquimista, Carpintero
+
+  NETHER_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Guardia
+
+  RED_NETHER_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Guardia
+
+  CHISELED_NETHER_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Guardia
+
+  CRACKED_NETHER_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Guardia
+
+  QUARTZ_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Alquimista
+
+  CHISELED_QUARTZ_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+  QUARTZ_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  SMOOTH_QUARTZ:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  BASALT:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  POLISHED_BASALT:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Minero, Herrero
+
+  BLACKSTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Natural_Blocks
+    trabajo: Minero, Herrero
+
+  POLISHED_BLACKSTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  POLISHED_BLACKSTONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  CHISELED_POLISHED_BLACKSTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  CRACKED_POLISHED_BLACKSTONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Herrero, Carpintero
+
+  GILDED_BLACKSTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: Nether
+    categoria: Natural_Blocks
+    trabajo: Minero, Guardia
+  INFESTED_STONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Cazador
+
+  INFESTED_COBBLESTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Cazador
+
+  INFESTED_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Cazador
+
+  INFESTED_CRACKED_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Cazador
+
+  INFESTED_MOSSY_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Cazador
+
+  INFESTED_CHISELED_STONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Cazador
+
+  REINFORCED_DEEPSLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Guardia, Minero
+
+  CHISELED_DEEPSLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  DEEPSLATE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Minero
+
+  CRACKED_DEEPSLATE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Minero
+  DEEPSLATE_TILES:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Minero
+
+  CRACKED_DEEPSLATE_TILES:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Herrero, Minero
+
+  CHISELED_POLISHED_BLACKSTONE_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Herrero
+
+  SMOOTH_BASALT:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Minero, Herrero
+
+  PRISMARINE:
+    material: Piedra
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Cazador, Herrero
+
+  PRISMARINE_BRICKS:
+    material: Piedra
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Cazador, Herrero
+
+  DARK_PRISMARINE:
+    material: Piedra
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Cazador, Herrero
+
+  SEA_LANTERN:
+    material: Piedra
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Cazador, Alquimista
+
+  OCHRE_FROGLIGHT:
+    material: Piedra
+    bioma: jungla
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Alquimista, Agricultor
+
+  VERDANT_FROGLIGHT:
+    material: Piedra
+    bioma: jungla
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Alquimista, Agricultor
+  PEARLESCENT_FROGLIGHT:
+    material: Piedra
+    bioma: jungla
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Alquimista, Agricultor
+
+  LODESTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Alquimista, Guardia
+
+  GRINDSTONE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Herrero, Carpintero
+
+  FLETCHING_TABLE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Cazador, Carpintero
+
+  SMITHING_TABLE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Herrero, Guardia
+
+  STONECUTTER:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Herrero
+
+  BLAST_FURNACE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Herrero, Minero
+
+  SMOKER:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Cazador, Agricultor
+
+  FURNACE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Herrero, Minero
+
+  DISPENSER:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Alquimista, Guardia
+  DROPPER:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Alquimista, Guardia
+
+  OBSERVER:
+    material: Piedra
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Alquimista, Carpintero
+
+  PISTON:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Herrero
+
+  STICKY_PISTON:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  LEVER:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Minero
+
+  REDSTONE_REPEATER:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  REDSTONE_COMPARATOR:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  NOTE_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Alquimista
+
+  REPEATING_COMMAND_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Guardia, Alquimista
+
+  CHAIN_COMMAND_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Guardia, Alquimista
+  STRUCTURE_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Guardia, Carpintero
+
+  STRUCTURE_VOID:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Guardia, Alquimista
+
+  JIGSAW:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Guardia
+
+  LIGHT:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Alquimista, Guardia
+
+  DECORATED_POT:
+    material: Piedra
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Agricultor, Alquimista
+
+  GRAVEL:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Agricultor
+
+  PACKED_MUD:
+    material: Piedra
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Carpintero
+
+  MUD_BRICKS:
+    material: Piedra
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHISELED_MUD_BRICKS:
+    material: Piedra
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+  MUD_BRICK_SLAB:
+    material: Piedra
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  MUD_BRICK_STAIRS:
+    material: Piedra
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  MUD_BRICK_WALL:
+    material: Piedra
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  DEEPSLATE_BRICK_SLAB:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  DEEPSLATE_BRICK_STAIRS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  DEEPSLATE_BRICK_WALL:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  DEEPSLATE_TILE_SLAB:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  DEEPSLATE_TILE_STAIRS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  DEEPSLATE_TILE_WALL:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  POLISHED_DEEPSLATE_WALL:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+  POLISHED_DEEPSLATE_SLAB:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  POLISHED_DEEPSLATE_STAIRS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  POLISHED_DEEPSLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Herrero
+
+  POLISHED_BLACKSTONE_SLAB:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Herrero
+
+  POLISHED_BLACKSTONE_STAIRS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Herrero
+
+  POLISHED_BLACKSTONE_WALL:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Herrero
+
+  BLACKSTONE_SLAB:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Herrero
+
+  BLACKSTONE_STAIRS:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Herrero
+
+  BLACKSTONE_WALL:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Herrero
+  OAK_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_LOG:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_LOG:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_LOG:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_LOG:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_BLOCK:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_STEM:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+  WARPED_STEM:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  STRIPPED_OAK_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_SPRUCE_LOG:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_BIRCH_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_JUNGLE_LOG:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  STRIPPED_ACACIA_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_DARK_OAK_LOG:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_MANGROVE_LOG:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  STRIPPED_CHERRY_LOG:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  STRIPPED_CRIMSON_STEM:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+  STRIPPED_WARPED_STEM:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  STRIPPED_BAMBOO_BLOCK:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  OAK_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_WOOD:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_WOOD:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_WOOD:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_WOOD:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+  CRIMSON_HYPHAE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_HYPHAE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  STRIPPED_OAK_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_SPRUCE_WOOD:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_BIRCH_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_JUNGLE_WOOD:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  STRIPPED_ACACIA_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_DARK_OAK_WOOD:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  STRIPPED_MANGROVE_WOOD:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  STRIPPED_CHERRY_WOOD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+  STRIPPED_CRIMSON_HYPHAE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  STRIPPED_WARPED_HYPHAE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  STRIPPED_BAMBOO_MOSAIC:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_MOSAIC:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_PLANKS:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  OAK_PLANKS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_PLANKS:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_PLANKS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_PLANKS:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_PLANKS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+  DARK_OAK_PLANKS:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_PLANKS:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_PLANKS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_PLANKS:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_PLANKS:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  BAMBOO_MOSAIC_SLAB:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_MOSAIC_STAIRS:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_SLAB:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_STAIRS:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  BAMBOO_FENCE:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  OAK_SLAB:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_SLAB:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_SLAB:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_SLAB:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_SLAB:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_SLAB:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_SLAB:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_SLAB:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_SLAB:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_SLAB:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+  OAK_STAIRS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  SPRUCE_STAIRS:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  BIRCH_STAIRS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  JUNGLE_STAIRS:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  ACACIA_STAIRS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  DARK_OAK_STAIRS:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Cazador
+
+  MANGROVE_STAIRS:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CHERRY_STAIRS:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Agricultor
+
+  CRIMSON_STAIRS:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WARPED_STAIRS:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+  OAK_FENCE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  SPRUCE_FENCE:
+    material: Madera
+    bioma: nevado
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  BIRCH_FENCE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  JUNGLE_FENCE:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  ACACIA_FENCE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  DARK_OAK_FENCE:
+    material: Madera
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  MANGROVE_FENCE:
+    material: Madera
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  CHERRY_FENCE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Agricultor, Carpintero
+
+  CRIMSON_FENCE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Alquimista, Carpintero
+
+  WARPED_FENCE:
+    material: Madera
+    bioma: cueva
+    rareza: comun
+    dimension: Nether
+    categoria: Building_Blocks
+    trabajo: Alquimista, Carpintero
+

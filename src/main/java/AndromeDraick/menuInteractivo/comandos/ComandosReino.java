@@ -11,7 +11,8 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.user.User;
 import java.util.stream.Collectors;
 
 public class ComandosReino implements CommandExecutor, TabCompleter {
@@ -269,11 +270,53 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return;
         }
         p.sendMessage(ChatColor.GOLD + "— Reinos registrados —");
+
+        // Necesitamos LuckPerms para consultar el grupo del creador
+        LuckPerms lp = plugin.getPermisos();
+
         for (Reino r : reinos) {
-            p.sendMessage(ChatColor.AQUA + r.getEtiqueta() +
-                    ChatColor.GRAY + ": " + r.getNombre());
+            // Obtener grupo principal del rey
+            String grupo = "default";
+            if (lp != null) {
+                User user = lp.getUserManager().getUser(r.getReyUUID());
+                if (user != null) {
+                    grupo = user.getPrimaryGroup();
+                }
+            }
+
+            // Colorizar el nombre del reino según grupo
+            String nombre = r.getNombre();
+            String nombreColoreado;
+            switch (grupo.toLowerCase()) {
+                case "platino"   ->
+                        nombreColoreado = colorName(nombre, ChatColor.DARK_GRAY, ChatColor.GRAY);
+                case "diamante"  ->
+                        nombreColoreado = colorName(nombre, ChatColor.DARK_AQUA, ChatColor.AQUA);
+                case "esmeralda" ->
+                        nombreColoreado = colorName(nombre, ChatColor.DARK_GREEN, ChatColor.GREEN);
+                case "netherita" ->
+                        nombreColoreado = colorName(nombre, ChatColor.DARK_PURPLE, ChatColor.LIGHT_PURPLE);
+                default ->
+                        nombreColoreado = ChatColor.GRAY + nombre;
+            }
+
+            // La etiqueta siempre en DARK_GRAY + BOLD
+            String etiquetaColoreada = ChatColor.DARK_GRAY + "" + ChatColor.BOLD + r.getEtiqueta();
+            p.sendMessage(etiquetaColoreada + ChatColor.GRAY + ": " + nombreColoreado);
         }
     }
+
+    // 2) Helper privado para aplicar &outer &middle &outer al nombre
+    private String colorName(String name, ChatColor outer, ChatColor middle) {
+        int len   = name.length();
+        int part1 = (len + 2) / 3;
+        int part2 = (2 * len + 2) / 3;
+        String s1 = name.substring(0, part1);
+        String s2 = name.substring(part1, part2);
+        String s3 = name.substring(part2);
+        return outer + s1 + middle + s2 + outer + s3;
+    }
+
 
     private void cmdInfo(Player p, String[] args) {
         if (args.length < 2) {

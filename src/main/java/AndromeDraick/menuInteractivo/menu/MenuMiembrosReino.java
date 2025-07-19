@@ -60,9 +60,5 @@ public class MenuMiembrosReino {
         jugador.openInventory(menu);
         jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
     }
-
-    public static void manejarClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().contains("Miembros del Reino")) return;
-        event.setCancelled(true);
-    }
+    
 }

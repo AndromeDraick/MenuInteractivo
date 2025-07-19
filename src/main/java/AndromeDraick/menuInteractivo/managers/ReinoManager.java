@@ -51,6 +51,11 @@ public class ReinoManager {
         return db.crearReino(etiqueta, nombre, moneda, reyUUID);
     }
 
+    /** Asocia un jugador a un reino con rol y título custom */
+    public boolean unirReino(UUID jugadorUUID, String etiquetaReino, String rol, String titulo) {
+        return db.agregarJugadorAReino(jugadorUUID, etiquetaReino, rol, titulo);
+    }
+
     /** Devuelve el rol del jugador dentro de su reino (o null). */
     public String obtenerRolJugador(UUID jugadorUUID) {
         return db.obtenerRolJugadorEnReino(jugadorUUID);

@@ -354,6 +354,21 @@ public class GestorBaseDeDatos {
         return "Masculino";
     }
 
+    public String getTituloJugador(UUID jugadorUUID) {
+        String sql = "SELECT titulo FROM jugadores_reino WHERE uuid = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("titulo");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al obtener título del jugador: " + e.getMessage());
+        }
+        return "plebeyo";
+    }
+
     public void guardarJugador(UUID uuid, String nombre, String trabajo) {
         try (PreparedStatement ps = conexion.prepareStatement(
                 "INSERT OR REPLACE INTO jugadores (uuid, nombre, trabajo) VALUES (?, ?, ?)"
@@ -395,6 +410,20 @@ public class GestorBaseDeDatos {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean agregarJugadorAReino(UUID jugadorUUID, String etiquetaReino, String rol, String titulo) {
+        String sql = "REPLACE INTO jugadores_reino (uuid, etiqueta_reino, rol, titulo) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ps.setString(2, etiquetaReino);
+            ps.setString(3, rol);
+            ps.setString(4, titulo);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error uniendo jugador al reino: " + e.getMessage());
             return false;
         }
     }

@@ -20,7 +20,7 @@ public class MenuMiembrosReino {
 
     public static void abrir(Player jugador) {
         MenuInteractivo plugin = MenuInteractivo.getInstancia();
-        GestorBaseDeDatos db = plugin.getBaseDeDatos();
+        GestorBaseDeDatos db  = plugin.getBaseDeDatos();
 
         String reino = db.obtenerReinoJugador(jugador.getUniqueId());
         if (reino == null) {
@@ -34,18 +34,24 @@ public class MenuMiembrosReino {
             return;
         }
 
-        Inventory menu = Bukkit.createInventory(null, 36, ChatColor.AQUA + "Miembros del Reino " + reino);
+        Inventory menu = Bukkit.createInventory(
+                null, 36, ChatColor.AQUA + "Miembros del Reino " + reino
+        );
 
         int slot = 0;
         for (UUID uuid : miembros) {
             OfflinePlayer miembro = Bukkit.getOfflinePlayer(uuid);
-            String rol = db.obtenerRolJugadorEnReino(uuid); // "Rey" o "Miembro"
+            String rol    = db.obtenerRolJugadorEnReino(uuid);   // "Rey"/"Reina"/"miembro"
+            String titulo = db.getTituloJugador(uuid);           // "realeza", "nobleza", etc.
 
             ItemStack cabeza = new ItemStack(Material.PLAYER_HEAD);
-            SkullMeta meta = (SkullMeta) cabeza.getItemMeta();
+            SkullMeta meta   = (SkullMeta) cabeza.getItemMeta();
             meta.setOwningPlayer(miembro);
             meta.setDisplayName(ChatColor.YELLOW + miembro.getName());
-            meta.setLore(List.of(ChatColor.GRAY + "Rol: " + ChatColor.GOLD + rol));
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "Rol: "    + ChatColor.GOLD + rol,
+                    ChatColor.GRAY + "Título: " + ChatColor.AQUA + titulo
+            ));
             cabeza.setItemMeta(meta);
 
             menu.setItem(slot++, cabeza);

@@ -68,6 +68,7 @@ public class GestorBaseDeDatos {
             st.executeUpdate("CREATE TABLE IF NOT EXISTS jugadores_reino (" +
                     "uuid TEXT PRIMARY KEY, " +
                     "etiqueta_reino TEXT NOT NULL, " +
+                    "titulo TEXT NOT NULL, " +
                     "rol TEXT NOT NULL" +
                     ")");
             // Bancos

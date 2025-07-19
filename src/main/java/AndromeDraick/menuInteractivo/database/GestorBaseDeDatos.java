@@ -61,6 +61,7 @@ public class GestorBaseDeDatos {
                     "nombre TEXT NOT NULL, " +
                     "uuid_rey TEXT NOT NULL, " +
                     "descripcion TEXT DEFAULT '', " +
+                    "moneda TEXT NOT NULL, " +
                     "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
             // Jugadores de reino

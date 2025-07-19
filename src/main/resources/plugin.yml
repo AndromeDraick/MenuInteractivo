@@ -36,7 +36,7 @@ permissions:
     default: true
 
   menuinteractivo.reino.comandos:
-    description: Permite crear y gestionar reinos.
+    description: Permite gestionar reinos.
     default: true
 
   menuinteractivo.reino.comandos.crear:

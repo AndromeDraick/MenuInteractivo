@@ -64,6 +64,7 @@ public class GestorBaseDeDatos {
                     "moneda TEXT NOT NULL, " +
                     "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
+
             // Jugadores de reino
             st.executeUpdate("CREATE TABLE IF NOT EXISTS jugadores_reino (" +
                     "uuid TEXT PRIMARY KEY, " +
@@ -71,6 +72,7 @@ public class GestorBaseDeDatos {
                     "titulo TEXT NOT NULL, " +
                     "rol TEXT NOT NULL" +
                     ")");
+
             // Bancos
             st.executeUpdate("CREATE TABLE IF NOT EXISTS bancos (" +
                     "etiqueta TEXT PRIMARY KEY, " +
@@ -82,12 +84,14 @@ public class GestorBaseDeDatos {
                     "tasa_interes REAL DEFAULT 0.01, " +
                     "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
+
             // Jugadores de banco
             st.executeUpdate("CREATE TABLE IF NOT EXISTS jugadores_banco (" +
                     "uuid TEXT NOT NULL, " +
                     "etiqueta_banco TEXT NOT NULL, " +
                     "PRIMARY KEY(uuid, etiqueta_banco)" +
                     ")");
+
             // Jugadores generales
             st.executeUpdate("CREATE TABLE IF NOT EXISTS jugadores (" +
                     "uuid TEXT PRIMARY KEY, " +
@@ -97,15 +101,36 @@ public class GestorBaseDeDatos {
                     "puntos INTEGER DEFAULT 0, " +
                     "estadisticas TEXT DEFAULT ''" +
                     ")");
+
             // Género de jugador
             st.executeUpdate("CREATE TABLE IF NOT EXISTS genero_jugador (" +
                     "uuid TEXT PRIMARY KEY, " +
                     "genero TEXT NOT NULL" +
                     ")");
+
+            // Contratos entre bancos y reinos
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS contratos_banco_reino (" +
+                    "banco_etiqueta TEXT NOT NULL, " +
+                    "reino_etiqueta TEXT NOT NULL, " +
+                    "fecha_inicio DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                    "fecha_fin DATETIME NOT NULL, " +
+                    "permisos TEXT NOT NULL, " + // Ejemplo: 'imprimir,quemar'
+                    "PRIMARY KEY(banco_etiqueta, reino_etiqueta)" +
+                    ")");
+
+            // Monedas del reino (movimiento económico)
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS monedas_reino (" +
+                    "reino_etiqueta TEXT PRIMARY KEY, " +
+                    "cantidad_impresa REAL DEFAULT 0, " +
+                    "cantidad_quemada REAL DEFAULT 0, " +
+                    "dinero_convertido REAL DEFAULT 0, " +
+                    "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
         }
     }
+
 
     // —— Métodos para Reinos ——
     public boolean crearReino(String etiqueta, String nombre, UUID reyUUID) {

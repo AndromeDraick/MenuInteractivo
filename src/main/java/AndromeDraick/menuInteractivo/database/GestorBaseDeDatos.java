@@ -610,6 +610,25 @@ public class GestorBaseDeDatos {
         }
     }
 
+    public boolean insertarContratoBancoReino(String banco, String reino, Timestamp inicio, Timestamp fin, String permisos) {
+        String sql = "INSERT OR REPLACE INTO contratos_banco_reino " +
+                "(banco_etiqueta, reino_etiqueta, fecha_inicio, fecha_fin, permisos) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, banco);
+            stmt.setString(2, reino);
+            stmt.setTimestamp(3, inicio);
+            stmt.setTimestamp(4, fin);
+            stmt.setString(5, permisos.toLowerCase());
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al insertar contrato banco-reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+
     public String obtenerTrabajo(UUID uuid) {
         try (PreparedStatement ps = conexion.prepareStatement(
                 "SELECT trabajo FROM jugadores WHERE uuid = ?"

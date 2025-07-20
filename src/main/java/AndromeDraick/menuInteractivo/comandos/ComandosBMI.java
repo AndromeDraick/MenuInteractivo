@@ -9,6 +9,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
+import java.security.Timestamp;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -61,6 +63,8 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 case "saldo"      -> cmdSaldo(p, args);
                 case "depositar", "retirar" -> cmdMoverFondos(p, args, sub.equals("depositar"));
                 case "banco"      -> cmdBanco(p, args);
+                case "contrato" -> cmdContrato(p, args);
+                case "imprimir" -> cmdImprimirMoneda(p, args);
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
@@ -134,6 +138,106 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                     "No se pudo " + (aprobar ? "aprobar " : "rechazar ") + etiqueta + ".");
         }
     }
+
+    private void cmdContrato(Player p, String[] args) {
+        // /bmi contrato <reino> <tiempo> permite <acciones>
+        if (args.length < 5 || !args[3].equalsIgnoreCase("permite")) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi contrato <Reino> <Tiempo> permite <acciones>");
+            p.sendMessage(ChatColor.YELLOW + "Ej: /bmi contrato RNS 1w permite \"imprimir, quemar\"");
+            return;
+        }
+
+        String reino = args[1];
+        String tiempo = args[2].toLowerCase();
+        String permisosRaw = String.join(" ", Arrays.copyOfRange(args, 4, args.length));
+        String permisos = permisosRaw.replace("\"", "").replace("'", "").toLowerCase();
+
+        // Validar tiempo
+        long duracionMs;
+        if (tiempo.endsWith("d")) duracionMs = Integer.parseInt(tiempo.replace("d", "")) * 86400000L;
+        else if (tiempo.endsWith("w")) duracionMs = Integer.parseInt(tiempo.replace("w", "")) * 7 * 86400000L;
+        else if (tiempo.endsWith("m")) duracionMs = Integer.parseInt(tiempo.replace("m", "")) * 30L * 86400000L;
+        else if (tiempo.endsWith("y")) duracionMs = Integer.parseInt(tiempo.replace("y", "")) * 365L * 86400000L;
+        else {
+            p.sendMessage(ChatColor.RED + "Formato de tiempo inválido. Usa d (día), w (semana), m (mes), y (año).");
+            return;
+        }
+
+        UUID uuid = p.getUniqueId();
+        String banco = bancoManager.obtenerBancoPropietario(uuid);
+        if (banco == null) {
+            p.sendMessage(ChatColor.RED + "No eres dueño de ningún banco aprobado.");
+            return;
+        }
+
+        if (!bancoManager.reinoExiste(reino)) {
+            p.sendMessage(ChatColor.RED + "El reino '" + reino + "' no existe.");
+            return;
+        }
+
+        long ahora = System.currentTimeMillis();
+        long fechaFin = ahora + duracionMs;
+
+        boolean ok = bancoManager.crearContrato(banco, reino, new Timestamp(ahora), new Timestamp(fechaFin), permisos);
+        if (ok) {
+            p.sendMessage(ChatColor.GREEN + "Contrato enviado al reino " + reino +
+                    " por " + tiempo + " con permisos: " + permisos);
+        } else {
+            p.sendMessage(ChatColor.RED + "Error al crear contrato. ¿Ya existe uno activo?");
+        }
+    }
+
+    private void cmdImprimirMoneda(Player p, String[] args) {
+        // /bmi imprimir <moneda> <cantidad>
+        if (args.length != 3) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi imprimir <moneda> <cantidad>");
+            return;
+        }
+
+        String nombreMoneda = args[1];
+        double cantidad;
+        try {
+            cantidad = Double.parseDouble(args[2]);
+            if (cantidad <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            p.sendMessage(ChatColor.RED + "Cantidad inválida.");
+            return;
+        }
+
+        String banco = bancoManager.obtenerBancoPropietario(p.getUniqueId());
+        if (banco == null) {
+            p.sendMessage(ChatColor.RED + "No eres propietario de ningún banco aprobado.");
+            return;
+        }
+
+        String reinoDelBanco = bancoManager.obtenerReinoDeBanco(banco);
+        if (reinoDelBanco == null) {
+            p.sendMessage(ChatColor.RED + "No se pudo determinar el reino del banco.");
+            return;
+        }
+
+        // Verificar si la moneda coincide con la moneda oficial del reino
+        String monedaOficial = bancoManager.obtenerNombreMonedaDeReino(reinoDelBanco);
+        if (!nombreMoneda.equalsIgnoreCase(monedaOficial)) {
+            p.sendMessage(ChatColor.RED + "Solo puedes imprimir la moneda oficial del reino: " + monedaOficial);
+            return;
+        }
+
+        // Verificar contrato válido con permiso
+        if (!bancoManager.tienePermisoContrato(banco, reinoDelBanco, "imprimir")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para imprimir moneda. Contrato no autorizado.");
+            return;
+        }
+
+        // Realizar impresión
+        if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)) {
+            p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
+        } else {
+            p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");
+        }
+    }
+
+
 
     private void cmdUnirSalir(Player p, String[] args, boolean unir) {
         // /bmi unir|salir <Etiqueta>

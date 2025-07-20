@@ -3,6 +3,7 @@ package AndromeDraick.menuInteractivo.managers;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.model.Banco;
 
+import java.security.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,27 @@ public class BancoManager {
     public BancoManager(GestorBaseDeDatos db) {
         this.db = db;
     }
+
+    public boolean crearContrato(String bancoEtiqueta, String reinoEtiqueta, Timestamp fechaInicio, Timestamp fechaFin, String permisos) {
+        return baseDeDatos.insertarContratoBancoReino(bancoEtiqueta, reinoEtiqueta, fechaInicio, fechaFin, permisos);
+    }
+
+    public String obtenerReinoDeBanco(String etiquetaBanco) {
+        return baseDeDatos.obtenerReinoDeBanco(etiquetaBanco);
+    }
+
+    public String obtenerNombreMonedaDeReino(String etiquetaReino) {
+        return baseDeDatos.obtenerMonedaDeReino(etiquetaReino);
+    }
+
+    public boolean tienePermisoContrato(String banco, String reino, String permiso) {
+        return baseDeDatos.tienePermisoContrato(banco, reino, permiso);
+    }
+
+    public boolean incrementarCantidadImpresa(String etiquetaReino, double cantidad) {
+        return baseDeDatos.aumentarMonedaImpresa(etiquetaReino, cantidad);
+    }
+
 
     /** Devuelve la etiqueta del reino al que pertenece el jugador. */
     public String obtenerReinoJugador(UUID jugadorUUID) {

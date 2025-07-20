@@ -39,6 +39,8 @@ public class MenuMonedas {
             double convertidas = moneda.getDineroConvertido();
             double valor = (impresas - quemadas) > 0 ? convertidas / (impresas - quemadas) : 0;
 
+            double saldoJugador = bancoManager.obtenerSaldoMonedaJugador(jugador.getUniqueId().toString(), moneda.getEtiquetaReino());
+
             meta.setDisplayName(ChatColor.GOLD + moneda.getNombreMoneda());
             meta.setLore(List.of(
                     ChatColor.GRAY + "Reino: " + ChatColor.YELLOW + moneda.getEtiquetaReino(),
@@ -46,7 +48,8 @@ public class MenuMonedas {
                     ChatColor.GRAY + "Impresa: " + ChatColor.YELLOW + formato.format(impresas),
                     ChatColor.GRAY + "Quemada: " + ChatColor.RED + formato.format(quemadas),
                     ChatColor.GRAY + "Convertida: " + ChatColor.GREEN + formato.format(convertidas),
-                    ChatColor.GRAY + "Fecha: " + ChatColor.WHITE + moneda.getFechaCreacion()
+                    ChatColor.GRAY + "Fecha: " + ChatColor.WHITE + moneda.getFechaCreacion(),
+                    ChatColor.GRAY + "Tu saldo: " + ChatColor.LIGHT_PURPLE + formato.format(saldoJugador)
             ));
             item.setItemMeta(meta);
             menu.addItem(item);

@@ -3,6 +3,7 @@ package AndromeDraick.menuInteractivo.comandos;
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.model.Banco;
+import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

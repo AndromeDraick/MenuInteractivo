@@ -5,6 +5,10 @@ import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 
 import java.security.Timestamp;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +54,24 @@ public class BancoManager {
     public void sumarMonedaJugador(UUID uuid, String reinoEtiqueta, double cantidad) {
         db.actualizarSaldoMoneda(uuid, reinoEtiqueta, cantidad);
     }
+
+    public double obtenerSaldoMonedaJugador(String uuidJugador, String etiquetaReino) {
+        double saldo = 0.0;
+        try (Connection connection = db.getConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT saldo FROM monedas_jugadores WHERE uuid_jugador = ? AND etiqueta_reino = ?")) {
+            ps.setString(1, uuidJugador);
+            ps.setString(2, etiquetaReino);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                saldo = rs.getDouble("saldo");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return saldo;
+    }
+
 
     public boolean esMiembroOBancoPropietario(UUID jugador, String etiquetaBanco) {
         return db.esPropietarioBanco(jugador, etiquetaBanco) ||

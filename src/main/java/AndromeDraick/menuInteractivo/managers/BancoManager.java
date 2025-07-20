@@ -30,6 +30,19 @@ public class BancoManager {
         return db.aumentarMonedaQuemada(etiquetaReino, cantidad);
     }
 
+    public String obtenerBancoPropietario(UUID jugadorUUID) {
+        return db.obtenerBancoDeJugador(jugadorUUID);
+    }
+
+    public boolean reinoExiste(String etiquetaReino) {
+        return db.obtenerReino(etiquetaReino) != null;  // o contar filas con SELECT COUNT
+    }
+
+    public List<MonedasReinoInfo> obtenerMonedasReinoInfo() {
+        return db.obtenerMonedasReinoInfo();
+    }
+
+
     public boolean incrementarDineroConvertido(String etiquetaReino, double cantidad) {
         return db.aumentarDineroConvertido(etiquetaReino, cantidad);
     }

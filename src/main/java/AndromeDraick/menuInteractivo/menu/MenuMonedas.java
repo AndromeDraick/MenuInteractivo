@@ -25,9 +25,10 @@ public class MenuMonedas {
     }
 
     public void abrirMenu(Player jugador) {
-        List<MonedasReinoInfo> monedas = bancoManager.obtenerTodasLasMonedas();
+        // Usamos el nuevo método actualizado directamente desde BancoManager
+        List<MonedasReinoInfo> monedas = bancoManager.obtenerMonedasReinoInfo();
 
-        int size = ((monedas.size() / 9) + 1) * 9;
+        int size = Math.max(9, ((monedas.size() / 9) + 1) * 9);
         Inventory menu = Bukkit.createInventory(null, size, ChatColor.DARK_GREEN + "Monedas de los Reinos");
 
         for (MonedasReinoInfo moneda : monedas) {

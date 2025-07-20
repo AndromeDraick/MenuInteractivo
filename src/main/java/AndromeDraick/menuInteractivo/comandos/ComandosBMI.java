@@ -11,10 +11,8 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -245,11 +243,11 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 return;
             }
 
-            String monedaNombreMoneda = moneda.getNombreMoneda();
+            String nombreMoneda1 = moneda.getNombreMoneda();
             String jugadorNombre = p.getName();
             String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-            bancoManager.registrarMovimiento(nombreMoneda, "imprimir", jugadorNombre, cantidad, fecha);
+            bancoManager.registrarMovimiento(nombreMoneda1, "imprimir", jugadorNombre, cantidad, fecha);
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");
@@ -297,7 +295,16 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
 
         if (bancoManager.incrementarCantidadQuemada(reinoDelBanco, cantidad)) {
-            bancoManager.registrarMovimiento(banco, "quemar", cantidad, p.getUniqueId());
+            String etiquetaReino = bancoManager.obtenerReinoDeBanco(banco);
+            String nombreMoneda1 = bancoManager.obtenerNombreMonedaDeReino(etiquetaReino);
+            String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            bancoManager.registrarMovimiento(
+                    nombreMoneda1,
+                    "quemar",
+                    p.getName(),
+                    cantidad,
+                    fecha
+            );
             p.sendMessage(ChatColor.YELLOW + "Se quemaron " + cantidad + " " + nombreMoneda + " del reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al quemar moneda. Revisa la consola.");
@@ -351,7 +358,16 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         if (bancoManager.incrementarDineroConvertido(reinoDelBanco, dineroServidor)) {
             economia.withdrawPlayer(p, dineroServidor);
-            bancoManager.registrarMovimiento(banco, "convertir", dineroServidor, p.getUniqueId());
+
+            // Registrar movimiento en historial
+            String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            bancoManager.registrarMovimiento(
+                    monedaOficial,
+                    "convertir",
+                    p.getName(),
+                    dineroServidor,
+                    fecha
+            );
             p.sendMessage(ChatColor.GREEN + "Convertiste $" + dineroServidor + " del servidor en valor para la moneda del reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al convertir dinero. Revisa la consola.");

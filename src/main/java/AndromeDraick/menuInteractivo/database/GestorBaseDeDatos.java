@@ -870,6 +870,25 @@ public class GestorBaseDeDatos {
         return lista;
     }
 
+    public String obtenerReino(String etiquetaReino) {
+        String sql = "SELECT etiqueta FROM reinos WHERE etiqueta = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, etiquetaReino);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("etiqueta");
+                }
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("Error al verificar si el reino existe: " + e.getMessage());
+        }
+
+        return null;
+    }
+
     public MonedasReinoInfo obtenerMonedaPorNombre(String nombreMoneda) {
         String sql = "SELECT * FROM monedas_reino WHERE nombre = ?";
         try (Connection conn = getConnection();

@@ -2443,14 +2443,6 @@ items_custom:
     categoria: Food&_Drinks
     trabajo: Granjero, Cazador
 
-  ALLAY_SPAWN_EGG:
-    material: Item_Mobs
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: Spawn_Eggs
-    trabajo: Cazador, Alquimista
-
   IRON_GOLEM_SPAWN_EGG:
     material: Item_Mobs
     bioma: sabana
@@ -2470,6 +2462,150 @@ items_custom:
   CAMEL_SPAWN_EGG:
     material: Item_Mobs
     bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Cazador
+#------------------------------------------------------
+  STRIDER_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Cazador
+
+  PIGLIN_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: común
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Cazador, Guardia
+
+  ZOMBIFIED_PIGLIN_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: común
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Guardia, Cazador
+
+  MAGMA_CUBE_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Cazador, Alquimista
+
+  BLAZE_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Cazador, Alquimista
+
+  GHAST_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: legendario
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Cazador, Guardia
+
+  HOGLIN_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Cazador
+
+  ZOGLIN_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Guardia, Cazador
+
+  WITHER_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nether
+    rareza: legendario
+    dimension: nether
+    categoria: Spawn_Eggs
+    trabajo: Guardia, Alquimista
+
+  SNIFFER_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Agricultor, Granjero
+
+  FROG_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Alquimista
+
+  TADPOLE_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Agricultor
+
+  VEX_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Guardia, Alquimista
+
+  WANDERING_TRADER_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Agricultor
+
+  TRADER_LLAMA_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Granjero, Agricultor
+
+  ILLUSIONER_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: nevado
+    rareza: legendario
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Guardia, Alquimista
+
+  BREEZE_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Guardia, Alquimista
+
+  ARMADILLO_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: sabana
     rareza: raro
     dimension: overworld
     categoria: Spawn_Eggs

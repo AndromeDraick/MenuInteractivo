@@ -11,38 +11,117 @@ commands:
   menu:
     description: Abre el menú interactivo
     usage: /menu
+    permission: menuinteractivo.menu
+    permission-message: No tienes permiso para abrir el menú.
 
   tmi:
     description: Sistema de tienda personalizada
-    usage: /tmi <comprar|vender> <item> <cantidad>
+    usage: /tmi <comprar|vender|recientes> [args]
     aliases: [tienda, shop]
     permission: menuinteractivo.usar
     permission-message: No tienes permiso para usar la tienda.
     tab-completer: AndromeDraick.menuInteractivo.comandos.Comandos
 
   rnmi:
-    description: Comandos de reinos
-    usage: /rnmi <crear|unir|salir|eliminar|listar|info> [args]
+    description: Comandos de Reinos
+    usage: /rnmi <subcomando> [args]
     permission: menuinteractivo.reino.comandos
     permission-message: No tienes permiso para gestionar reinos.
+    aliases: [reino, reinoi]
+
   bmi:
-    description: Comandos de bancos
-    usage: /bmi <crear|pendientes|aprobar|rechazar|listar|unir|salir|saldo|depositar|retirar|banco|ayuda> [args]
+    description: Comandos de Bancos
+    usage: /bmi <subcomando> [args]
     permission: menuinteractivo.banco
     permission-message: No tienes permiso para gestionar bancos.
+
+
 permissions:
+  # — Menú principal
+  menuinteractivo.menu:
+    description: Permite abrir el menú principal.
+    default: true
+
+  # — Tienda (/tmi)
   menuinteractivo.usar:
-    description: Permite usar el sistema de tienda personalizada.
+    description: Permite usar el sistema de tienda.
     default: true
+  menuinteractivo.usar.comprar:
+    description: Permite comprar ítems en tienda.
+    default: op
+  menuinteractivo.usar.recientes:
+    description: Permite ver el historial de compras.
+    default: op
+  menuinteractivo.usar.vender:
+    description: Permite vender ítems en tienda.
+    default: op
 
+  # — Reinos (/rnmi)
   menuinteractivo.reino.comandos:
-    description: Permite gestionar reinos.
+    description: Permite usar el comando /rnmi.
+    default: true
+  menuinteractivo.reino.comandos.crear:
+    description: Permite crear nuevos reinos.
+    default: op
+  menuinteractivo.reino.comandos.eliminar:
+    description: Permite eliminar reinos existentes.
+    default: op
+  menuinteractivo.reino.comandos.exiliar:
+    description: Permite exiliar miembros de un reino.
+    default: op
+  menuinteractivo.reino.comandos.info:
+    description: Permite ver información detallada de un reino.
+    default: true
+  menuinteractivo.reino.comandos.listar:
+    description: Permite listar todos los reinos.
+    default: true
+  menuinteractivo.reino.comandos.salir:
+    description: Permite salir de un reino.
+    default: true
+  menuinteractivo.reino.comandos.transferir:
+    description: Permite transferir el liderazgo de un reino.
+    default: op
+  menuinteractivo.reino.comandos.unir:
+    description: Permite unirse a un reino.
     default: true
 
-  menuinteractivo.reino.comandos.crear:
-    description: Permite crear nuevos reinos
-    default: op
-
+  # — Bancos (/bmi)
   menuinteractivo.banco:
-    description: Permite crear y gestionar bancos.
+    description: Permite usar el comando /bmi.
+    default: true
+  menuinteractivo.banco.ayuda:
+    description: Permite usar /bmi ayuda.
+    default: true
+  menuinteractivo.banco.aprobar:
+    description: Permite aprobar solicitudes de banco.
     default: op
+  menuinteractivo.banco.banco:
+    description: Permite ver menú de banco específico.
+    default: true
+  menuinteractivo.banco.crear:
+    description: Permite solicitar creacion de nuevos bancos.
+    default: true
+  menuinteractivo.banco.depositar:
+    description: Permite depositar fondos a un banco.
+    default: true
+  menuinteractivo.banco.lista:
+    description: Permite lista bancos activos.
+    default: true
+  menuinteractivo.banco.pendientes:
+    description: Permite listar solicitudes de banco pendientes.
+    default: true
+  menuinteractivo.banco.rechazar:
+    description: Permite rechazar solicitudes de banco.
+    default: op
+  menuinteractivo.banco.retirar:
+    description: Permite retirar fondos de un banco.
+    default: true
+  menuinteractivo.banco.salir:
+    description: Permite abandonar un banco.
+    default: true
+  menuinteractivo.banco.saldo:
+    description: Permite consultar saldo de un banco.
+    default: true
+  menuinteractivo.banco.unirse:
+    description: Permite unirse como socio a un banco.
+    default: true

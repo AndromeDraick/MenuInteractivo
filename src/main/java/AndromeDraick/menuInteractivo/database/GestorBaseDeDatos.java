@@ -384,21 +384,50 @@ public class GestorBaseDeDatos {
 
     public List<Reino> listarReinos() {
         List<Reino> reinos = new ArrayList<>();
-        String sql = "SELECT etiqueta, nombre, uuid_rey FROM reinos";
+        String sql = """
+        SELECT 
+          etiqueta, 
+          nombre, 
+          descripcion, 
+          moneda, 
+          uuid_rey, 
+          fecha_creacion 
+        FROM reinos
+        """;
+
         try (Statement stmt = conexion.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+
             while (rs.next()) {
+                String etiqueta    = rs.getString("etiqueta");
+                String nombre      = rs.getString("nombre");
+                String descripcion = rs.getString("descripcion");
+                String moneda      = rs.getString("moneda");
+                UUID reyUUID       = UUID.fromString(rs.getString("uuid_rey"));
+
+                java.sql.Timestamp ts = rs.getTimestamp("fecha_creacion");
+                java.time.LocalDateTime fecha =
+                        ts != null
+                                ? ts.toLocalDateTime()
+                                : java.time.LocalDateTime.now();
+
                 reinos.add(new Reino(
-                        rs.getString("etiqueta"),
-                        rs.getString("nombre"),
-                        UUID.fromString(rs.getString("uuid_rey"))
+                        etiqueta,
+                        nombre,
+                        descripcion != null ? descripcion : "",
+                        moneda,
+                        reyUUID,
+                        fecha
                 ));
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return reinos;
     }
+
 
     /**
      * Elimina un reino por su etiqueta.

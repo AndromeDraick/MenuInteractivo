@@ -25,7 +25,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     private final ReinoManager manager;
 
     private static final List<String> SUBS = List.of(
-            "crear", "unir", "salir", "eliminar", "listar", "info", "transferir", "exiliar"
+            "crear", "unirse", "salir", "eliminar", "lista", "info", "transferir", "exiliar"
     );
 
     public ComandosReino(MenuInteractivo plugin) {

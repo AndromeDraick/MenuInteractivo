@@ -35,6 +35,22 @@ public class BancoManager {
         return db.obtenerMonedasReinoInfo();
     }
 
+    public MonedasReinoInfo obtenerInfoMonedaPorNombre(String nombreMoneda) {
+        return db.obtenerMonedaPorNombre(nombreMoneda);
+    }
+
+    public double getSaldoMonedaJugador(UUID uuid, String reinoEtiqueta) {
+        return db.obtenerSaldoMonedaJugador(uuid, reinoEtiqueta);
+    }
+
+    public void restarMonedaJugador(UUID uuid, String reinoEtiqueta, double cantidad) {
+        db.actualizarSaldoMoneda(uuid, reinoEtiqueta, -cantidad);
+    }
+
+    public void sumarMonedaJugador(UUID uuid, String reinoEtiqueta, double cantidad) {
+        db.actualizarSaldoMoneda(uuid, reinoEtiqueta, cantidad);
+    }
+
     public boolean esMiembroOBancoPropietario(UUID jugador, String etiquetaBanco) {
         return db.esPropietarioBanco(jugador, etiquetaBanco) ||
                 db.esMiembroDeBanco(jugador, etiquetaBanco);

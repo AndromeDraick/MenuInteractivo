@@ -69,6 +69,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 case "convertir" -> cmdConvertirMoneda(p, args);
                 case "monedas" -> plugin.getMenuMonedas().abrirMenu(p);
                 case "historial" -> cmdHistorialBanco(p, args);
+                case "intercambiar" -> cmdIntercambiarMonedas(p, args);
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
@@ -368,6 +369,67 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         historial.forEach(linea -> p.sendMessage(ChatColor.GRAY + "- " + linea));
     }
 
+    private void cmdIntercambiarMonedas(Player p, String[] args) {
+        // /bmi intercambiar <cantidad> <moneda_origen> a <moneda_destino>
+        if (args.length != 5 || !args[3].equalsIgnoreCase("a")) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi intercambiar <cantidad> <moneda_origen> a <moneda_destino>");
+            return;
+        }
+
+        double cantidad;
+        try {
+            cantidad = Double.parseDouble(args[1]);
+            if (cantidad <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            p.sendMessage(ChatColor.RED + "Cantidad inválida.");
+            return;
+        }
+
+        String monedaOrigen = args[2];
+        String monedaDestino = args[4];
+
+        // Obtener info de ambas monedas
+        MonedasReinoInfo origen = bancoManager.obtenerInfoMonedaPorNombre(monedaOrigen);
+        MonedasReinoInfo destino = bancoManager.obtenerInfoMonedaPorNombre(monedaDestino);
+
+        if (origen == null || destino == null) {
+            p.sendMessage(ChatColor.RED + "Alguna de las monedas no existe.");
+            return;
+        }
+
+        double valorOrigen = origen.getCantidadImpresa() - origen.getCantidadQuemada() > 0
+                ? origen.getDineroConvertido() / (origen.getCantidadImpresa() - origen.getCantidadQuemada())
+                : 0;
+
+        double valorDestino = destino.getCantidadImpresa() - destino.getCantidadQuemada() > 0
+                ? destino.getDineroConvertido() / (destino.getCantidadImpresa() - destino.getCantidadQuemada())
+                : 0;
+
+        if (valorOrigen <= 0 || valorDestino <= 0) {
+            p.sendMessage(ChatColor.RED + "Alguna de las monedas tiene valor nulo o negativo.");
+            return;
+        }
+
+        // Calcular valor intermedio en dinero del servidor y convertirlo
+        double enDineroServidor = cantidad * valorOrigen;
+        double cantidadDestino = enDineroServidor / valorDestino;
+
+        UUID uuid = p.getUniqueId();
+
+        // Verificar saldo
+        double saldoOrigen = bancoManager.getSaldoMonedaJugador(uuid, origen.getEtiquetaReino());
+        if (saldoOrigen < cantidad) {
+            p.sendMessage(ChatColor.RED + "No tienes suficiente saldo de " + monedaOrigen + " (" + saldoOrigen + ")");
+            return;
+        }
+
+        // Realizar intercambio
+        bancoManager.restarMonedaJugador(uuid, origen.getEtiquetaReino(), cantidad);
+        bancoManager.sumarMonedaJugador(uuid, destino.getEtiquetaReino(), cantidadDestino);
+
+        p.sendMessage(ChatColor.GREEN + "Intercambiaste " + cantidad + " " + monedaOrigen +
+                " por " + String.format("%.2f", cantidadDestino) + " " + monedaDestino);
+    }
 
     private void cmdUnirSalir(Player p, String[] args, boolean unir) {
         // /bmi unir|salir <Etiqueta>

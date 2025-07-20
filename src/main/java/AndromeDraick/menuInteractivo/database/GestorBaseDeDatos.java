@@ -137,6 +137,13 @@ public class GestorBaseDeDatos {
                     "uuid_jugador TEXT NOT NULL, " +
                     "fecha DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
+            // Saldos de monedas de reinos por jugador
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS monederos_jugador (" +
+                    "uuid TEXT NOT NULL, " +
+                    "reino_etiqueta TEXT NOT NULL, " +
+                    "cantidad REAL DEFAULT 0, " +
+                    "PRIMARY KEY(uuid, reino_etiqueta)" +
+                    ")");
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
         }
@@ -863,6 +870,82 @@ public class GestorBaseDeDatos {
         return lista;
     }
 
+    public MonedasReinoInfo obtenerMonedaPorNombre(String nombreMoneda) {
+        String sql = "SELECT * FROM monedas_reino WHERE nombre = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, nombreMoneda);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                MonedasReinoInfo info = new MonedasReinoInfo(
+                        rs.getString("nombre"),
+                        rs.getString("reino_etiqueta"),
+                        rs.getLong("cantidad_impresa"),
+                        rs.getLong("cantidad_quemada"),
+                        rs.getLong("dinero_convertido"),
+                        rs.getString("fecha_creacion")
+                );
+                return info;
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener moneda: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public double obtenerSaldoMonedaJugador(UUID uuid, String reinoEtiqueta) {
+        String sql = "SELECT cantidad FROM monederos_jugador WHERE uuid = ? AND reino_etiqueta = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, uuid.toString());
+            ps.setString(2, reinoEtiqueta);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("cantidad");
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener saldo de moneda: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public void actualizarSaldoMoneda(UUID uuid, String reinoEtiqueta, double diferencia) {
+        String select = "SELECT cantidad FROM monederos_jugador WHERE uuid = ? AND reino_etiqueta = ?";
+        String update = "UPDATE monederos_jugador SET cantidad = ? WHERE uuid = ? AND reino_etiqueta = ?";
+        String insert = "INSERT INTO monederos_jugador (uuid, reino_etiqueta, cantidad) VALUES (?, ?, ?)";
+
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement psSelect = conn.prepareStatement(select)) {
+                psSelect.setString(1, uuid.toString());
+                psSelect.setString(2, reinoEtiqueta);
+                ResultSet rs = psSelect.executeQuery();
+
+                if (rs.next()) {
+                    double actual = rs.getDouble("cantidad");
+                    double nuevo = actual + diferencia;
+                    try (PreparedStatement psUpdate = conn.prepareStatement(update)) {
+                        psUpdate.setDouble(1, nuevo);
+                        psUpdate.setString(2, uuid.toString());
+                        psUpdate.setString(3, reinoEtiqueta);
+                        psUpdate.executeUpdate();
+                    }
+                } else {
+                    try (PreparedStatement psInsert = conn.prepareStatement(insert)) {
+                        psInsert.setString(1, uuid.toString());
+                        psInsert.setString(2, reinoEtiqueta);
+                        psInsert.setDouble(3, diferencia);
+                        psInsert.executeUpdate();
+                    }
+                }
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al actualizar saldo de moneda: " + e.getMessage());
+        }
+    }
 
     public String obtenerTrabajo(UUID uuid) {
         try (PreparedStatement ps = conexion.prepareStatement(

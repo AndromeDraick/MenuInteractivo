@@ -3,12 +3,10 @@ package AndromeDraick.menuInteractivo.managers;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
+import org.bukkit.Bukkit;
 
-import java.security.Timestamp;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,10 +32,6 @@ public class BancoManager {
 
     public boolean incrementarDineroConvertido(String etiquetaReino, double cantidad) {
         return db.aumentarDineroConvertido(etiquetaReino, cantidad);
-    }
-
-    public List<MonedasReinoInfo> obtenerTodasLasMonedas() {
-        return db.obtenerMonedasReinoInfo();
     }
 
     public MonedasReinoInfo obtenerInfoMonedaPorNombre(String nombreMoneda) {
@@ -73,40 +67,6 @@ public class BancoManager {
         return saldo;
     }
 
-    public List<MonedasReinoInfo> obtenerTodasLasMonedas() {
-        List<MonedasReinoInfo> lista = new ArrayList<>();
-
-        String sql = "SELECT r.etiqueta, r.moneda, " +
-                "COALESCE(SUM(m.impreso), 0) AS total_impreso, " +
-                "COALESCE(SUM(m.quemado), 0) AS total_quemado, " +
-                "COALESCE(SUM(m.convertido), 0) AS total_convertido, " +
-                "MIN(m.fecha) AS fecha_creacion " +
-                "FROM reinos r " +
-                "LEFT JOIN monedas_banco_movimientos m ON r.etiqueta = m.reino " +
-                "GROUP BY r.etiqueta, r.moneda";
-
-        try (Connection conn = db.getConnection();
-             PreparedStatement st = conn.prepareStatement(sql);
-             ResultSet rs = st.executeQuery()) {
-
-            while (rs.next()) {
-                String etiqueta = rs.getString("etiqueta");
-                String moneda = rs.getString("moneda");
-                double impreso = rs.getDouble("total_impreso");
-                double quemado = rs.getDouble("total_quemado");
-                double convertido = rs.getDouble("total_convertido");
-                String fecha = rs.getString("fecha_creacion");
-
-                lista.add(new MonedasReinoInfo(etiqueta, moneda, impreso, quemado, convertido, fecha));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return lista;
-    }
-
 
     public boolean esMiembroOBancoPropietario(UUID jugador, String etiquetaBanco) {
         return db.esPropietarioBanco(jugador, etiquetaBanco) ||
@@ -117,11 +77,20 @@ public class BancoManager {
         return db.obtenerHistorialBanco(etiquetaBanco, limite);
     }
 
-
-    public void registrarMovimiento(String banco, String tipo, double cantidad, UUID jugador) {
-        db.registrarMovimientoMoneda(banco, tipo, cantidad, jugador);
+    public void registrarMovimiento(String nombreMoneda, String accion, String jugador, double cantidad, String fecha) {
+        try (Connection connection = db.getConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "INSERT INTO movimientos_monedas (nombre_moneda, accion, jugador, cantidad, fecha) VALUES (?, ?, ?, ?, ?)")) {
+            ps.setString(1, nombreMoneda);
+            ps.setString(2, accion);
+            ps.setString(3, jugador);
+            ps.setDouble(4, cantidad);
+            ps.setString(5, fecha);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("Error al registrar movimiento de moneda: " + e.getMessage());
+        }
     }
-
 
 
 

@@ -10,12 +10,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ComandosBMI implements CommandExecutor, TabCompleter {
 
@@ -237,7 +239,17 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         // Realizar impresión
         if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)) {
-            bancoManager.registrarMovimiento(banco, "imprimir", cantidad, p.getUniqueId());
+            MonedasReinoInfo moneda = bancoManager.obtenerInfoMonedaPorNombre(nombreMoneda);
+            if (moneda == null) {
+                p.sendMessage(ChatColor.RED + "No se encontró la moneda asociada al banco.");
+                return;
+            }
+
+            String monedaNombreMoneda = moneda.getNombreMoneda();
+            String jugadorNombre = p.getName();
+            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+            bancoManager.registrarMovimiento(nombreMoneda, "imprimir", jugadorNombre, cantidad, fecha);
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");

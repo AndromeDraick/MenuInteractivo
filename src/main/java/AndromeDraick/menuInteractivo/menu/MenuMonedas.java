@@ -1,4 +1,4 @@
-package AndromeDraick.menuInteractivo.menus;
+package AndromeDraick.menuInteractivo.menu;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;

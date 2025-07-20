@@ -1027,4 +1027,9 @@ public class GestorBaseDeDatos {
             return false;
         }
     }
+
+    public Connection getConnection() {
+        return this.conexion;
+    }
+
 }

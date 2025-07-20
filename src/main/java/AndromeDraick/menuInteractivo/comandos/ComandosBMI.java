@@ -68,6 +68,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 case "quemar" -> cmdQuemarMoneda(p, args);
                 case "convertir" -> cmdConvertirMoneda(p, args);
                 case "monedas" -> plugin.getMenuMonedas().abrirMenu(p);
+                case "historial" -> cmdHistorialBanco(p, args);
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
@@ -234,6 +235,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         // Realizar impresión
         if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)) {
+            bancoManager.registrarMovimiento(banco, "imprimir", cantidad, p.getUniqueId());
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");
@@ -281,6 +283,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
 
         if (bancoManager.incrementarCantidadQuemada(reinoDelBanco, cantidad)) {
+            bancoManager.registrarMovimiento(banco, "quemar", cantidad, p.getUniqueId());
             p.sendMessage(ChatColor.YELLOW + "Se quemaron " + cantidad + " " + nombreMoneda + " del reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al quemar moneda. Revisa la consola.");
@@ -334,12 +337,36 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         if (bancoManager.incrementarDineroConvertido(reinoDelBanco, dineroServidor)) {
             economia.withdrawPlayer(p, dineroServidor);
+            bancoManager.registrarMovimiento(banco, "convertir", dineroServidor, p.getUniqueId());
             p.sendMessage(ChatColor.GREEN + "Convertiste $" + dineroServidor + " del servidor en valor para la moneda del reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al convertir dinero. Revisa la consola.");
         }
     }
 
+    private void cmdHistorialBanco(Player p, String[] args) {
+        if (args.length != 2) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi historial <etiqueta_banco>");
+            return;
+        }
+
+        String etiqueta = args[1].toLowerCase();
+
+        // Verifica si el jugador es miembro o dueño
+        if (!bancoManager.esMiembroOBancoPropietario(p.getUniqueId(), etiqueta)) {
+            p.sendMessage(ChatColor.RED + "No tienes acceso al historial de este banco.");
+            return;
+        }
+
+        List<String> historial = bancoManager.obtenerHistorialBanco(etiqueta, 10);
+        if (historial.isEmpty()) {
+            p.sendMessage(ChatColor.YELLOW + "No hay movimientos registrados aún para " + etiqueta + ".");
+            return;
+        }
+
+        p.sendMessage(ChatColor.GOLD + "— Historial de " + etiqueta + " —");
+        historial.forEach(linea -> p.sendMessage(ChatColor.GRAY + "- " + linea));
+    }
 
 
     private void cmdUnirSalir(Player p, String[] args, boolean unir) {

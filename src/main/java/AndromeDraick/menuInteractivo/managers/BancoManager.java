@@ -35,6 +35,21 @@ public class BancoManager {
         return db.obtenerMonedasReinoInfo();
     }
 
+    public boolean esMiembroOBancoPropietario(UUID jugador, String etiquetaBanco) {
+        return db.esPropietarioBanco(jugador, etiquetaBanco) ||
+                db.esMiembroDeBanco(jugador, etiquetaBanco);
+    }
+
+    public List<String> obtenerHistorialBanco(String etiquetaBanco, int limite) {
+        return db.obtenerHistorialBanco(etiquetaBanco, limite);
+    }
+
+
+    public void registrarMovimiento(String banco, String tipo, double cantidad, UUID jugador) {
+        db.registrarMovimientoMoneda(banco, tipo, cantidad, jugador);
+    }
+
+
 
 
     public String obtenerReinoDeBanco(String etiquetaBanco) {

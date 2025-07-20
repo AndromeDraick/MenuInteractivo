@@ -4,6 +4,7 @@ import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 import AndromeDraick.menuInteractivo.model.Reino;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -126,6 +127,15 @@ public class GestorBaseDeDatos {
                     "cantidad_quemada REAL DEFAULT 0, " +
                     "dinero_convertido REAL DEFAULT 0, " +
                     "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+            // Historial de movimientos de moneda por banco
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS historial_monedas_banco (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "banco_etiqueta TEXT NOT NULL, " +
+                    "tipo TEXT NOT NULL, " + // "imprimir", "quemar", "convertir"
+                    "cantidad REAL NOT NULL, " +
+                    "uuid_jugador TEXT NOT NULL, " +
+                    "fecha DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
@@ -259,6 +269,71 @@ public class GestorBaseDeDatos {
             plugin.getLogger().warning("Error agregando jugador a banco: " + e.getMessage());
             return false;
         }
+    }
+
+    public void registrarMovimientoMoneda(String bancoEtiqueta, String tipo, double cantidad, UUID uuidJugador) {
+        String sql = "INSERT INTO historial_monedas_banco " +
+                "(banco_etiqueta, tipo, cantidad, uuid_jugador) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, bancoEtiqueta);
+            stmt.setString(2, tipo.toLowerCase());
+            stmt.setDouble(3, cantidad);
+            stmt.setString(4, uuidJugador.toString());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al registrar movimiento de moneda: " + e.getMessage());
+        }
+    }
+
+    public boolean esMiembroDeBanco(UUID jugador, String bancoEtiqueta) {
+        String sql = "SELECT 1 FROM jugadores_banco WHERE uuid = ? AND etiqueta_banco = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, jugador.toString());
+            stmt.setString(2, bancoEtiqueta);
+            return stmt.executeQuery().next();
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al verificar miembro del banco: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean esPropietarioBanco(UUID jugador, String bancoEtiqueta) {
+        String sql = "SELECT 1 FROM bancos WHERE etiqueta = ? AND uuid_propietario = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, bancoEtiqueta);
+            stmt.setString(2, jugador.toString());
+            return stmt.executeQuery().next();
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al verificar propietario del banco: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<String> obtenerHistorialBanco(String etiquetaBanco, int limite) {
+        List<String> lista = new ArrayList<>();
+        String sql = "SELECT tipo, cantidad, uuid_jugador, fecha " +
+                "FROM historial_monedas_banco WHERE banco_etiqueta = ? " +
+                "ORDER BY fecha DESC LIMIT ?";
+
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaBanco);
+            stmt.setInt(2, limite);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String tipo = rs.getString("tipo");
+                double cantidad = rs.getDouble("cantidad");
+                String uuid = rs.getString("uuid_jugador");
+                String fecha = rs.getString("fecha");
+
+                String jugador = Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName();
+                lista.add(jugador + " -> " + tipo + " $" + cantidad + " (" + fecha + ")");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al obtener historial del banco: " + e.getMessage());
+        }
+
+        return lista;
     }
 
     public boolean eliminarJugadorDeBanco(UUID jugadorUUID, String etiquetaBanco) {

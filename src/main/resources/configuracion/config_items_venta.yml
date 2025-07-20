@@ -2610,3 +2610,816 @@ items_custom:
     dimension: overworld
     categoria: Spawn_Eggs
     trabajo: Granjero, Cazador
+  GOAT_HORN:
+    material: Item_Mobs
+    bioma: nevado
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Cazador, Alquimista
+
+  BLAZE_POWDER:
+    material: Item_Mobs
+    bioma: nether
+    rareza: común
+    dimension: nether
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+  DIRT:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  COARSE_DIRT:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  PODZOL:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  ROOTED_DIRT:
+    material: Tierra
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  MUD:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  MUDDY_MANGROVE_ROOTS:
+    material: Tierra
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  FARMLAND:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Agricultor
+
+  GRASS_BLOCK:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  MYCELIUM:
+    material: Tierra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Alquimista
+
+  GRASS_PATH:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Agricultor
+  CLAY:
+    material: Tierra
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Alquimista, Agricultor
+
+  DRIED_KELP_BLOCK:
+    material: Tierra
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Food&_Drinks
+    trabajo: Agricultor, Granjero
+
+  MOSS_BLOCK:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Alquimista
+
+  MOSS_CARPET:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Carpintero
+
+  SUSPICIOUS_GRAVEL:
+    material: Tierra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Alquimista
+
+  SUSPICIOUS_SAND:
+    material: Tierra
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Minero, Alquimista
+
+  DIRT_PATH:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Carpintero
+
+  GRASS:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  TALL_GRASS:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  SEA_PICKLE:
+    material: Tierra
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Alquimista
+
+  SEAGRASS:
+    material: Tierra
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  KELP:
+    material: Tierra
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Alquimista
+
+  BROWN_MUSHROOM:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Agricultor
+
+  RED_MUSHROOM:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Agricultor
+
+  HANGING_ROOTS:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  MANGROVE_ROOTS:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Carpintero, Agricultor
+
+  MANGROVE_PROPAGULE:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  SPORE_BLOSSOM:
+    material: Tierra
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Alquimista, Agricultor
+  AZALEA:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  FLOWERING_AZALEA:
+    material: Tierra
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Alquimista
+
+  CHERRY_LEAVES:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  CHERRY_SAPLING:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Granjero
+
+  CHERRY_HANGING_SIGN:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Carpintero, Granjero
+  SAND:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Minero
+
+  RED_SAND:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Minero
+
+  SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  CHISELED_SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  CUT_SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  SMOOTH_SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  RED_SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  CHISELED_RED_SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  CUT_RED_SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+
+  SMOOTH_RED_SANDSTONE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Minero
+  GLASS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  TINTED_GLASS:
+    material: Arena
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Alquimista, Carpintero
+
+  GLASS_PANE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WHITE_STAINED_GLASS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  ORANGE_STAINED_GLASS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  MAGENTA_STAINED_GLASS:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIGHT_BLUE_STAINED_GLASS:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  YELLOW_STAINED_GLASS:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIME_STAINED_GLASS:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  PINK_STAINED_GLASS:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+  GRAY_STAINED_GLASS:
+    material: Arena
+    bioma: nevado
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIGHT_GRAY_STAINED_GLASS:
+    material: Arena
+    bioma: nevado
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  CYAN_STAINED_GLASS:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  PURPLE_STAINED_GLASS:
+    material: Arena
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  BLUE_STAINED_GLASS:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  BROWN_STAINED_GLASS:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  GREEN_STAINED_GLASS:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  RED_STAINED_GLASS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  BLACK_STAINED_GLASS:
+    material: Arena
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  WHITE_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+  ORANGE_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  MAGENTA_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIGHT_BLUE_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  YELLOW_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIME_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  PINK_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  GRAY_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: nevado
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIGHT_GRAY_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: nevado
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  CYAN_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  PURPLE_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+  BLUE_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  BROWN_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  GREEN_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  RED_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  BLACK_STAINED_GLASS_PANE:
+    material: Arena
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  GLASS_BOTTLE:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Agricultor
+
+  BEACON:
+    material: Arena
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Alquimista, Guardia
+  END_CRYSTAL:
+    material: Arena
+    bioma: end
+    rareza: legendario
+    dimension: end
+    categoria: Functional_Blocks
+    trabajo: Alquimista, Guardia
+
+  STAINED_GLASS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  STAINED_GLASS_PANE:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+  WHITE_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  ORANGE_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  MAGENTA_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIGHT_BLUE_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  YELLOW_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIME_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  PINK_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  GRAY_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: nevado
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  LIGHT_GRAY_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: nevado
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  CYAN_GLAZED_TERRACOTTA:
+    material: Arena
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Colored_Blocks
+    trabajo: Carpintero, Alquimista
+
+  SANDSTONE_SLAB:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  CUT_SANDSTONE_SLAB:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  SMOOTH_SANDSTONE_SLAB:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  RED_SANDSTONE_SLAB:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  CUT_RED_SANDSTONE_SLAB:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  SMOOTH_RED_SANDSTONE_SLAB:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  SANDSTONE_WALL:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Guardia
+
+  RED_SANDSTONE_WALL:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Guardia

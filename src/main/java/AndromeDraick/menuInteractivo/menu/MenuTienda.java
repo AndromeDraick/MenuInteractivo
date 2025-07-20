@@ -33,7 +33,7 @@ public class MenuTienda {
             Map.entry("Redstone_Blocks", "Bloques de Redstone"),
             Map.entry("Tools_&_Utilities", "Herramientas y Utilidades"),
             Map.entry("Combat", "Combate"),
-            Map.entry("Food_&_Drinks", "Comida y Bebidas"),
+            Map.entry("Food_&_Drinks", "Comidas"),
             Map.entry("Ingredients", "Ingredientes"),
             Map.entry("Spawn_Eggs", "Huevos de Spawn")
     );
@@ -134,17 +134,14 @@ public class MenuTienda {
 
             ItemStack item = new ItemStack(mat);
             ItemMeta im = item.getItemMeta();
-            Map<String,Object> datos = cfg.getDatosItemVenta(key);
-            String nombre = datos.containsKey("material")
-                    ? String.valueOf(datos.get("material"))
-                    : key.replace("_", " ");
-            im.setDisplayName(ChatColor.GOLD + nombre);
+
             im.setLore(List.of(
                     ChatColor.GRAY + "Precio: " + ChatColor.GREEN + "$" +
                             FormateadorNumeros.formatear(precio),
                     ChatColor.YELLOW + "Clic para comprar 1"
             ));
             item.setItemMeta(im);
+
             tienda.setItem(slotsDeVenta[slot++], item);
         }
 

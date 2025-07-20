@@ -96,6 +96,10 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.RED + "La etiqueta solo puede contener minúsculas, números, '-' o '_'.");
             return;
         }
+        if (bancoManager.existeBanco(etiqueta)) {
+            p.sendMessage(ChatColor.RED + "Ya existe un banco con esa etiqueta.");
+            return;
+        }
         String reino = bancoManager.obtenerReinoJugador(p.getUniqueId());
         if (reino == null) {
             p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");

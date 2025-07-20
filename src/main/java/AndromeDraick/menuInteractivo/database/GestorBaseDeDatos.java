@@ -150,20 +150,6 @@ public class GestorBaseDeDatos {
     }
 
 
-    // —— Métodos para Reinos ——
-    public boolean crearReino(String etiqueta, String nombre, UUID reyUUID) {
-        String sql = "INSERT INTO reinos (etiqueta, nombre, uuid_rey) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, etiqueta);
-            ps.setString(2, nombre);
-            ps.setString(3, reyUUID.toString());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error creando reino: " + e.getMessage());
-            return false;
-        }
-    }
-
     public String obtenerReinoJugador(UUID jugadorUUID) {
         String sql = "SELECT etiqueta_reino FROM jugadores_reino WHERE uuid = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
@@ -175,19 +161,6 @@ public class GestorBaseDeDatos {
             plugin.getLogger().warning("Error obteniendo reino jugador: " + e.getMessage());
         }
         return null;
-    }
-
-    public boolean agregarJugadorAReino(UUID jugadorUUID, String etiquetaReino, String rol) {
-        String sql = "REPLACE INTO jugadores_reino (uuid, etiqueta_reino, rol) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, jugadorUUID.toString());
-            ps.setString(2, etiquetaReino);
-            ps.setString(3, rol);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error uniendo jugador a reino: " + e.getMessage());
-            return false;
-        }
     }
 
     public boolean eliminarJugadorDeReino(UUID jugadorUUID) {
@@ -212,6 +185,19 @@ public class GestorBaseDeDatos {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             plugin.getLogger().warning("Error creando banco: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean existeBanco(String etiqueta) {
+        String sql = "SELECT 1 FROM bancos WHERE etiqueta = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, etiqueta);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error verificando banco: " + e.getMessage());
             return false;
         }
     }
@@ -552,7 +538,7 @@ public class GestorBaseDeDatos {
     }
 
     public boolean agregarJugadorAReino(UUID jugadorUUID, String etiquetaReino, String rol, String titulo) {
-        String sql = "REPLACE INTO jugadores_reino (uuid, etiqueta_reino, rol, titulo) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO jugadores_reino (uuid, etiqueta_reino, rol, titulo) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
             ps.setString(2, etiquetaReino);
@@ -1034,18 +1020,34 @@ public class GestorBaseDeDatos {
     }
 
     public boolean crearReino(String etiqueta, String nombre, String moneda, UUID reyUUID) {
-        String sql = "INSERT INTO reinos (etiqueta, nombre, uuid_rey, moneda) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, etiqueta);
-            ps.setString(2, nombre);
-            ps.setString(3, reyUUID.toString());
-            ps.setString(4, moneda);
-            return ps.executeUpdate() > 0;
+        String sqlReino = "INSERT INTO reinos (etiqueta, nombre, uuid_rey, moneda) VALUES (?, ?, ?, ?)";
+        String sqlMoneda = "INSERT INTO monedas_reino (reino_etiqueta) VALUES (?)";
+
+        try (
+                PreparedStatement psReino = conexion.prepareStatement(sqlReino);
+                PreparedStatement psMoneda = conexion.prepareStatement(sqlMoneda)
+        ) {
+            // Insertar reino
+            psReino.setString(1, etiqueta);
+            psReino.setString(2, nombre);
+            psReino.setString(3, reyUUID.toString());
+            psReino.setString(4, moneda);
+            int rowsInserted = psReino.executeUpdate();
+
+            // Insertar moneda del reino si se insertó correctamente el reino
+            if (rowsInserted > 0) {
+                psMoneda.setString(1, etiqueta);
+                psMoneda.executeUpdate();
+                return true;
+            }
+
+            return false;
         } catch (SQLException e) {
-            plugin.getLogger().warning("Error creando reino: " + e.getMessage());
+            plugin.getLogger().warning("Error creando reino o moneda: " + e.getMessage());
             return false;
         }
     }
+
 
     public Connection getConnection() {
         return this.conexion;

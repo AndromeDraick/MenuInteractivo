@@ -17,11 +17,6 @@ public class ReinoManager {
         this.db = db;
     }
 
-    /** Crea un nuevo reino y devuelve true si tuvo éxito. */
-    public boolean crearReino(String etiqueta, String nombre, UUID reyUUID) {
-        return db.crearReino(etiqueta, nombre, reyUUID);
-    }
-
     /** Lista todos los reinos registrados. */
     public List<Reino> listarReinos() {
         return db.listarReinos();
@@ -30,11 +25,6 @@ public class ReinoManager {
     /** Elimina un reino por su etiqueta. */
     public boolean eliminarReino(String etiqueta) {
         return db.eliminarReino(etiqueta);
-    }
-
-    /** Une a un jugador a un reino (rol \"miembro\"). */
-    public boolean unirReino(UUID jugadorUUID, String etiquetaReino) {
-        return db.agregarJugadorAReino(jugadorUUID, etiquetaReino, "miembro");
     }
 
     /** Saca a un jugador de su reino. */

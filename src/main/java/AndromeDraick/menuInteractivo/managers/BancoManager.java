@@ -134,6 +134,10 @@ public class BancoManager {
         return db.crearBanco(etiqueta, nombre, reinoEtiqueta, propietario);
     }
 
+    public boolean existeBanco(String etiqueta) {
+        return db.existeBanco(etiqueta);
+    }
+
     /** Aprueba una solicitud de banco. */
     public boolean aprobarBanco(String etiquetaBanco) {
         return db.setEstadoBanco(etiquetaBanco, "aprobado");

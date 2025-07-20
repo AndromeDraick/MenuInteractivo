@@ -42,4 +42,10 @@ public class MonedasReinoInfo {
     public String getFechaCreacion() {
         return fechaCreacion;
     }
+
+    // Opcional: Método de ayuda para calcular valor actual de la moneda
+    public double calcularValorActual() {
+        double neto = cantidadImpresa - cantidadQuemada;
+        return neto > 0 ? dineroConvertido / neto : 0;
+    }
 }

@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -70,6 +71,40 @@ public class BancoManager {
             e.printStackTrace();
         }
         return saldo;
+    }
+
+    public List<MonedasReinoInfo> obtenerTodasLasMonedas() {
+        List<MonedasReinoInfo> lista = new ArrayList<>();
+
+        String sql = "SELECT r.etiqueta, r.moneda, " +
+                "COALESCE(SUM(m.impreso), 0) AS total_impreso, " +
+                "COALESCE(SUM(m.quemado), 0) AS total_quemado, " +
+                "COALESCE(SUM(m.convertido), 0) AS total_convertido, " +
+                "MIN(m.fecha) AS fecha_creacion " +
+                "FROM reinos r " +
+                "LEFT JOIN monedas_banco_movimientos m ON r.etiqueta = m.reino " +
+                "GROUP BY r.etiqueta, r.moneda";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement st = conn.prepareStatement(sql);
+             ResultSet rs = st.executeQuery()) {
+
+            while (rs.next()) {
+                String etiqueta = rs.getString("etiqueta");
+                String moneda = rs.getString("moneda");
+                double impreso = rs.getDouble("total_impreso");
+                double quemado = rs.getDouble("total_quemado");
+                double convertido = rs.getDouble("total_convertido");
+                String fecha = rs.getString("fecha_creacion");
+
+                lista.add(new MonedasReinoInfo(etiqueta, moneda, impreso, quemado, convertido, fecha));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
     }
 
 

@@ -65,6 +65,9 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 case "banco"      -> cmdBanco(p, args);
                 case "contrato" -> cmdContrato(p, args);
                 case "imprimir" -> cmdImprimirMoneda(p, args);
+                case "quemar" -> cmdQuemarMoneda(p, args);
+                case "convertir" -> cmdConvertirMoneda(p, args);
+                case "monedas" -> plugin.getMenuMonedas().abrirMenu(p);
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
@@ -234,6 +237,106 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");
+        }
+    }
+
+    private void cmdQuemarMoneda(Player p, String[] args) {
+        // /bmi quemar <moneda> <cantidad>
+        if (args.length != 3) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi quemar <moneda> <cantidad>");
+            return;
+        }
+
+        String nombreMoneda = args[1];
+        double cantidad;
+        try {
+            cantidad = Double.parseDouble(args[2]);
+            if (cantidad <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            p.sendMessage(ChatColor.RED + "Cantidad inválida.");
+            return;
+        }
+
+        String banco = bancoManager.obtenerBancoPropietario(p.getUniqueId());
+        if (banco == null) {
+            p.sendMessage(ChatColor.RED + "No eres propietario de ningún banco aprobado.");
+            return;
+        }
+
+        String reinoDelBanco = bancoManager.obtenerReinoDeBanco(banco);
+        if (reinoDelBanco == null) {
+            p.sendMessage(ChatColor.RED + "No se pudo determinar el reino del banco.");
+            return;
+        }
+
+        String monedaOficial = bancoManager.obtenerNombreMonedaDeReino(reinoDelBanco);
+        if (!nombreMoneda.equalsIgnoreCase(monedaOficial)) {
+            p.sendMessage(ChatColor.RED + "Solo puedes quemar la moneda oficial del reino: " + monedaOficial);
+            return;
+        }
+
+        if (!bancoManager.tienePermisoContrato(banco, reinoDelBanco, "quemar")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para quemar moneda. Contrato no autorizado.");
+            return;
+        }
+
+        if (bancoManager.incrementarCantidadQuemada(reinoDelBanco, cantidad)) {
+            p.sendMessage(ChatColor.YELLOW + "Se quemaron " + cantidad + " " + nombreMoneda + " del reino " + reinoDelBanco);
+        } else {
+            p.sendMessage(ChatColor.RED + "Error al quemar moneda. Revisa la consola.");
+        }
+    }
+
+    private void cmdConvertirMoneda(Player p, String[] args) {
+        // /bmi convertir <dineroServidor> a <moneda>
+        if (args.length != 4 || !args[2].equalsIgnoreCase("a")) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi convertir <dineroServidor> a <moneda>");
+            return;
+        }
+
+        double dineroServidor;
+        try {
+            dineroServidor = Double.parseDouble(args[1]);
+            if (dineroServidor <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            p.sendMessage(ChatColor.RED + "Cantidad inválida.");
+            return;
+        }
+
+        String nombreMoneda = args[3];
+        String banco = bancoManager.obtenerBancoPropietario(p.getUniqueId());
+        if (banco == null) {
+            p.sendMessage(ChatColor.RED + "No eres propietario de ningún banco aprobado.");
+            return;
+        }
+
+        String reinoDelBanco = bancoManager.obtenerReinoDeBanco(banco);
+        if (reinoDelBanco == null) {
+            p.sendMessage(ChatColor.RED + "No se pudo determinar el reino del banco.");
+            return;
+        }
+
+        String monedaOficial = bancoManager.obtenerNombreMonedaDeReino(reinoDelBanco);
+        if (!nombreMoneda.equalsIgnoreCase(monedaOficial)) {
+            p.sendMessage(ChatColor.RED + "Solo puedes convertir dinero a la moneda oficial del reino: " + monedaOficial);
+            return;
+        }
+
+        if (!bancoManager.tienePermisoContrato(banco, reinoDelBanco, "convertir")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para convertir dinero. Contrato no autorizado.");
+            return;
+        }
+
+        if (economia.getBalance(p) < dineroServidor) {
+            p.sendMessage(ChatColor.RED + "No tienes suficiente dinero en tu cuenta.");
+            return;
+        }
+
+        if (bancoManager.incrementarDineroConvertido(reinoDelBanco, dineroServidor)) {
+            economia.withdrawPlayer(p, dineroServidor);
+            p.sendMessage(ChatColor.GREEN + "Convertiste $" + dineroServidor + " del servidor en valor para la moneda del reino " + reinoDelBanco);
+        } else {
+            p.sendMessage(ChatColor.RED + "Error al convertir dinero. Revisa la consola.");
         }
     }
 

@@ -2,6 +2,7 @@ package AndromeDraick.menuInteractivo.database;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.model.Banco;
+import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 import AndromeDraick.menuInteractivo.model.Reino;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -626,6 +627,165 @@ public class GestorBaseDeDatos {
             plugin.getLogger().severe("Error al insertar contrato banco-reino: " + e.getMessage());
             return false;
         }
+    }
+
+    public String obtenerReinoDeBanco(String etiquetaBanco) {
+        String sql = "SELECT reino_etiqueta FROM bancos WHERE etiqueta = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaBanco);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("reino_etiqueta");
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al obtener reino del banco: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public String obtenerMonedaDeReino(String etiquetaReino) {
+        String sql = "SELECT moneda FROM reinos WHERE etiqueta = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaReino);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("moneda");
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al obtener moneda del reino: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean tienePermisoContrato(String banco, String reino, String permisoBuscado) {
+        String sql = "SELECT permisos, fecha_fin FROM contratos_banco_reino " +
+                "WHERE banco_etiqueta = ? AND reino_etiqueta = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, banco);
+            stmt.setString(2, reino);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Timestamp fin = rs.getTimestamp("fecha_fin");
+                if (fin.before(new Timestamp(System.currentTimeMillis()))) return false;
+                String permisos = rs.getString("permisos");
+                return Arrays.stream(permisos.split(","))
+                        .map(String::trim)
+                        .anyMatch(p -> p.equalsIgnoreCase(permisoBuscado));
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al verificar permisos de contrato: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean aumentarMonedaImpresa(String etiquetaReino, double cantidad) {
+        String selectSql = "SELECT cantidad_impresa FROM monedas_reino WHERE reino_etiqueta = ?";
+        String updateSql = "UPDATE monedas_reino SET cantidad_impresa = cantidad_impresa + ? WHERE reino_etiqueta = ?";
+        String insertSql = "INSERT INTO monedas_reino (reino_etiqueta, cantidad_impresa) VALUES (?, ?)";
+
+        try (PreparedStatement select = conexion.prepareStatement(selectSql)) {
+            select.setString(1, etiquetaReino);
+            ResultSet rs = select.executeQuery();
+            if (rs.next()) {
+                try (PreparedStatement update = conexion.prepareStatement(updateSql)) {
+                    update.setDouble(1, cantidad);
+                    update.setString(2, etiquetaReino);
+                    update.executeUpdate();
+                    return true;
+                }
+            } else {
+                try (PreparedStatement insert = conexion.prepareStatement(insertSql)) {
+                    insert.setString(1, etiquetaReino);
+                    insert.setDouble(2, cantidad);
+                    insert.executeUpdate();
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al aumentar moneda impresa: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean aumentarMonedaQuemada(String etiquetaReino, double cantidad) {
+        String selectSql = "SELECT cantidad_quemada FROM monedas_reino WHERE reino_etiqueta = ?";
+        String updateSql = "UPDATE monedas_reino SET cantidad_quemada = cantidad_quemada + ? WHERE reino_etiqueta = ?";
+        String insertSql = "INSERT INTO monedas_reino (reino_etiqueta, cantidad_quemada) VALUES (?, ?)";
+
+        try (PreparedStatement select = conexion.prepareStatement(selectSql)) {
+            select.setString(1, etiquetaReino);
+            ResultSet rs = select.executeQuery();
+            if (rs.next()) {
+                try (PreparedStatement update = conexion.prepareStatement(updateSql)) {
+                    update.setDouble(1, cantidad);
+                    update.setString(2, etiquetaReino);
+                    update.executeUpdate();
+                    return true;
+                }
+            } else {
+                try (PreparedStatement insert = conexion.prepareStatement(insertSql)) {
+                    insert.setString(1, etiquetaReino);
+                    insert.setDouble(2, cantidad);
+                    insert.executeUpdate();
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al aumentar moneda quemada: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean aumentarDineroConvertido(String etiquetaReino, double cantidad) {
+        String selectSql = "SELECT dinero_convertido FROM monedas_reino WHERE reino_etiqueta = ?";
+        String updateSql = "UPDATE monedas_reino SET dinero_convertido = dinero_convertido + ? WHERE reino_etiqueta = ?";
+        String insertSql = "INSERT INTO monedas_reino (reino_etiqueta, dinero_convertido) VALUES (?, ?)";
+
+        try (PreparedStatement select = conexion.prepareStatement(selectSql)) {
+            select.setString(1, etiquetaReino);
+            ResultSet rs = select.executeQuery();
+            if (rs.next()) {
+                try (PreparedStatement update = conexion.prepareStatement(updateSql)) {
+                    update.setDouble(1, cantidad);
+                    update.setString(2, etiquetaReino);
+                    update.executeUpdate();
+                    return true;
+                }
+            } else {
+                try (PreparedStatement insert = conexion.prepareStatement(insertSql)) {
+                    insert.setString(1, etiquetaReino);
+                    insert.setDouble(2, cantidad);
+                    insert.executeUpdate();
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al aumentar dinero convertido: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<MonedasReinoInfo> obtenerMonedasReinoInfo() {
+        List<MonedasReinoInfo> lista = new ArrayList<>();
+
+        String sql = "SELECT m.reino_etiqueta, r.moneda AS nombre_moneda, " +
+                "m.cantidad_impresa, m.cantidad_quemada, m.dinero_convertido, m.fecha_creacion " +
+                "FROM monedas_reino m " +
+                "JOIN reinos r ON m.reino_etiqueta = r.etiqueta";
+
+        try (PreparedStatement stmt = conexion.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String etiqueta = rs.getString("reino_etiqueta");
+                String nombre = rs.getString("nombre_moneda");
+                double impresa = rs.getDouble("cantidad_impresa");
+                double quemada = rs.getDouble("cantidad_quemada");
+                double convertida = rs.getDouble("dinero_convertido");
+                String fecha = rs.getString("fecha_creacion");
+
+                lista.add(new MonedasReinoInfo(etiqueta, nombre, impresa, quemada, convertida, fecha));
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al obtener información de monedas: " + e.getMessage());
+        }
+
+        return lista;
     }
 
 

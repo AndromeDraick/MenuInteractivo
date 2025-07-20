@@ -2,6 +2,7 @@ package AndromeDraick.menuInteractivo.managers;
 
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.model.Banco;
+import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 
 import java.security.Timestamp;
 import java.util.List;
@@ -19,23 +20,37 @@ public class BancoManager {
     }
 
     public boolean crearContrato(String bancoEtiqueta, String reinoEtiqueta, Timestamp fechaInicio, Timestamp fechaFin, String permisos) {
-        return baseDeDatos.insertarContratoBancoReino(bancoEtiqueta, reinoEtiqueta, fechaInicio, fechaFin, permisos);
+        return db.insertarContratoBancoReino(bancoEtiqueta, reinoEtiqueta, fechaInicio, fechaFin, permisos);
     }
 
+    public boolean incrementarCantidadQuemada(String etiquetaReino, double cantidad) {
+        return db.aumentarMonedaQuemada(etiquetaReino, cantidad);
+    }
+
+    public boolean incrementarDineroConvertido(String etiquetaReino, double cantidad) {
+        return db.aumentarDineroConvertido(etiquetaReino, cantidad);
+    }
+
+    public List<MonedasReinoInfo> obtenerTodasLasMonedas() {
+        return db.obtenerMonedasReinoInfo();
+    }
+
+
+
     public String obtenerReinoDeBanco(String etiquetaBanco) {
-        return baseDeDatos.obtenerReinoDeBanco(etiquetaBanco);
+        return db.obtenerReinoDeBanco(etiquetaBanco);
     }
 
     public String obtenerNombreMonedaDeReino(String etiquetaReino) {
-        return baseDeDatos.obtenerMonedaDeReino(etiquetaReino);
+        return db.obtenerMonedaDeReino(etiquetaReino);
     }
 
     public boolean tienePermisoContrato(String banco, String reino, String permiso) {
-        return baseDeDatos.tienePermisoContrato(banco, reino, permiso);
+        return db.tienePermisoContrato(banco, reino, permiso);
     }
 
     public boolean incrementarCantidadImpresa(String etiquetaReino, double cantidad) {
-        return baseDeDatos.aumentarMonedaImpresa(etiquetaReino, cantidad);
+        return db.aumentarMonedaImpresa(etiquetaReino, cantidad);
     }
 
 

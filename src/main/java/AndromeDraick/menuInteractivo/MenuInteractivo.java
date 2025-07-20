@@ -28,6 +28,8 @@ public final class MenuInteractivo extends JavaPlugin {
     private MenuTrabajos  menuTrabajos;
     private MenuReino menuReino;
     private MenuMiembrosReino menuMiembrosReino;
+    private AndromeDraick.menuInteractivo.menus.MenuMonedas menuMonedas;
+
 
     @Override
     public void onEnable() {
@@ -85,6 +87,7 @@ public final class MenuInteractivo extends JavaPlugin {
         this.menuPrincipal = new MenuPrincipal(this);
         this.menuTrabajos  = new MenuTrabajos(this);
         this.menuReino     = new MenuReino(this);
+        menuMonedas = new AndromeDraick.menuInteractivo.menus.MenuMonedas(this);
 
         getLogger().info("MenuInteractivo activado correctamente.");
     }
@@ -101,6 +104,9 @@ public final class MenuInteractivo extends JavaPlugin {
         economia = rsp.getProvider();
         return economia != null;
     }
+
+    public AndromeDraick.menuInteractivo.menus.MenuMonedas getMenuMonedas() {
+        return menuMonedas; }
 
     public static MenuInteractivo getInstancia() {
         return instancia;

@@ -663,37 +663,37 @@ items_custom:
     dimension: overworld
     categoria: RedstoneBlocks
     trabajo: Guardia, Alquimista
-  STRUCTURE_BLOCK:
-    material: Piedra
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: Functional_Blocks
-    trabajo: Guardia, Carpintero
+#  STRUCTURE_BLOCK:
+#    material: Piedra
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: Functional_Blocks
+#    trabajo: Guardia, Carpintero
+#
+#  STRUCTURE_VOID:
+#    material: Piedra
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: Functional_Blocks
+#    trabajo: Guardia, Alquimista
 
-  STRUCTURE_VOID:
-    material: Piedra
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: Functional_Blocks
-    trabajo: Guardia, Alquimista
-
-  JIGSAW:
-    material: Piedra
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: Functional_Blocks
-    trabajo: Carpintero, Guardia
-
-  LIGHT:
-    material: Piedra
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: Functional_Blocks
-    trabajo: Alquimista, Guardia
+#  JIGSAW:
+#    material: Piedra
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: Functional_Blocks
+#    trabajo: Carpintero, Guardia
+#
+#  LIGHT:
+#    material: Piedra
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: Functional_Blocks
+#    trabajo: Alquimista, Guardia
 
   DECORATED_POT:
     material: Piedra

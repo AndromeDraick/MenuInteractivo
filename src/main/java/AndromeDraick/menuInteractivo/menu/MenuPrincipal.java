@@ -21,7 +21,7 @@ import java.util.*;
 public class MenuPrincipal implements Listener {
 
     private final MenuInteractivo plugin;
-    private static final String TITULO_BASE = ChatColor.DARK_GREEN + "Menú Interactivo";
+    private static final String TITULO_BASE = ChatColor.DARK_GREEN + "Menú";
 
     public MenuPrincipal(MenuInteractivo plugin) {
         this.plugin = plugin;
@@ -41,9 +41,10 @@ public class MenuPrincipal implements Listener {
         borde.setItemMeta(metaBorde);
 
         int[] slotsBorde = {
-                0, 1, 2, 3, 4, 5, 6, 7, 8,
+                0, 1, 7, 8,
                 9, 17,
-                18, 19, 20, 22, 23, 24, 25, 26
+                44,
+                45 ,46, 52, 53
         };
         for (int slot : slotsBorde) {
             menu.setItem(slot, borde);
@@ -85,7 +86,7 @@ public class MenuPrincipal implements Listener {
         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(jugador.getUniqueId()));
 
         // == Ítem de gestión del reino ==
-        ItemStack reino = new ItemStack(Material.GOLDEN_SWORD);
+        ItemStack reino = new ItemStack(Material.CREEPER_BANNER_PATTERN);
         ItemMeta metaReino = reino.getItemMeta();
         metaReino.setDisplayName(ChatColor.GOLD + "Gestión del Reino");
         metaReino.setLore(Collections.singletonList(ChatColor.GRAY + "Haz clic para administrar tu reino"));

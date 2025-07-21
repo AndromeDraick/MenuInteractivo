@@ -43,8 +43,10 @@ public class GestorBaseDeDatos {
                 String base = config.getString("mysql.base");
                 String usuario = config.getString("mysql.usuario");
                 String contrasena = config.getString("mysql.contrasena");
-                String url = "jdbc:mysql://" + host + ":" + puerto + "/" + base + "?useSSL=false&autoReconnect=true";
+                String url = "jdbc:mysql://" + host + ":" + puerto + "/" + base + "?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8";
                 conexion = DriverManager.getConnection(url, usuario, contrasena);
+
+                MenuInteractivo.getInstancia().getLogger().info("[MenuInteractivo] Conectado a MySQL correctamente.");
             } else {
                 File sqliteFile = new File(plugin.getDataFolder(), "base_jugadores.db");
                 conexion = DriverManager.getConnection("jdbc:sqlite:" + sqliteFile.getPath());
@@ -148,6 +150,18 @@ public class GestorBaseDeDatos {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
         }
     }
+
+    private void verificarConexion() {
+        try {
+            if (conexion == null || conexion.isClosed() || !conexion.isValid(1)) {
+                plugin.getLogger().warning("[MI] Conexión cerrada o inválida. Reintentando conexión...");
+                cargarConfiguracionYConectar();
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al verificar conexión a la base de datos: " + e.getMessage());
+        }
+    }
+
 
 
     public String obtenerReinoJugador(UUID jugadorUUID) {
@@ -967,6 +981,7 @@ public class GestorBaseDeDatos {
     }
 
     public boolean actualizarTrabajo(UUID jugadorUUID, String trabajo) {
+        verificarConexion();
         String sql = "UPDATE jugadores SET trabajo = ? WHERE uuid = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, trabajo);
@@ -1050,7 +1065,9 @@ public class GestorBaseDeDatos {
 
 
     public Connection getConnection() {
+        verificarConexion();
         return this.conexion;
     }
+
 
 }

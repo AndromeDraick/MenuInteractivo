@@ -10,7 +10,6 @@ import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -35,10 +34,15 @@ public final class MenuInteractivo extends JavaPlugin {
     public void onEnable() {
         instancia = this;
 
+        getServer().getConsoleSender().sendMessage("§8===============================");
+        getServer().getConsoleSender().sendMessage("§6  Plugin §eMenuInteractivo §7por §bAndromeDraick");
+        ColoryEstado(true);
+
         // 1) Vault
         if (!setupEconomy()) {
-            getLogger().severe("No se encontró Vault o un plugin de economía. Desactivando.");
+            getLogger().severe("§c  No se encontró Vault o un plugin de economía. Desactivando.");
             getServer().getPluginManager().disablePlugin(this);
+            getServer().getConsoleSender().sendMessage("§8===============================");
             return;
         }
 
@@ -46,7 +50,7 @@ public final class MenuInteractivo extends JavaPlugin {
         try {
             permisos = LuckPermsProvider.get();
         } catch (IllegalStateException e) {
-            getLogger().severe("LuckPerms no cargó correctamente.");
+            getLogger().severe("§c LuckPerms no cargó correctamente.");
         }
 
         // 3) Sistema de trabajos
@@ -89,7 +93,18 @@ public final class MenuInteractivo extends JavaPlugin {
         this.menuReino     = new MenuReino(this);
         menuMonedas = new MenuMonedas(this);
 
-        getLogger().info("MenuInteractivo activado correctamente.");
+        getLogger().info("  MenuInteractivo activado correctamente.");
+
+        getServer().getConsoleSender().sendMessage("§6  Apóyanos en: ");
+        getServer().getConsoleSender().sendMessage("§b  https://www.patreon.com/c/andromedraick/membership");
+        getServer().getConsoleSender().sendMessage("§8===============================");
+    }
+
+    private void ColoryEstado(boolean activado) {
+        String estado = activado ? "ACTIVADO" : "DESACTIVADO";
+        String color = activado ? "§a" : "§c";
+        getServer().getConsoleSender().sendMessage("§7  Versión: §f" + getDescription().getVersion());
+        getServer().getConsoleSender().sendMessage("§7  Estado: " + color + estado);
     }
 
     @Override

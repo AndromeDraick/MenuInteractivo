@@ -59,7 +59,7 @@ public class MenuTrabajos implements Listener {
 
         // Botón Volver al final (centro de la última fila)
         int volverSlot = filas * 9 - 5;
-        ItemStack volver = new ItemStack(Material.ARROW);
+        ItemStack volver = new ItemStack(Material.BELL);
         ItemMeta mv = volver.getItemMeta();
         mv.setDisplayName(ChatColor.RED + "Volver al Menú Principal");
         volver.setItemMeta(mv);

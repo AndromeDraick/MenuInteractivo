@@ -58,7 +58,7 @@ public class CalculadoraPrecios {
 
     public static double calcularPrecioVenta(Material material, Player jugador) {
         double precioCompra = calcularPrecioCompra(material, jugador);
-        return precioCompra < 0 ? -1 : precioCompra * 0.8;
+        return precioCompra < 0 ? -1 : precioCompra * 0.55;
     }
 
 }

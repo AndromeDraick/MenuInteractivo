@@ -1,5 +1,5 @@
-name: MenuInteractivo
-version: '1.0.0.30-SNAPSHOT'
+name: MI
+version: '1.0.0.31-SNAPSHOT'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
 api-version: '1.21.1'
 softdepend: [Vault]
@@ -13,11 +13,9 @@ commands:
     usage: /menu
     permission: menuinteractivo.menu
     permission-message: No tienes permiso para abrir el menú.
-
   tmi:
     description: Sistema de tienda personalizada
     usage: /tmi <comprar|vender|recientes> [args]
-    aliases: [tienda, shop]
     permission: menuinteractivo.usar
     permission-message: No tienes permiso para usar la tienda.
     tab-completer: AndromeDraick.menuInteractivo.comandos.Comandos
@@ -27,7 +25,6 @@ commands:
     usage: /rnmi <subcomando> [args]
     permission: menuinteractivo.reino.comandos
     permission-message: No tienes permiso para gestionar reinos.
-    aliases: [reino, reinoi]
 
   bmi:
     description: Comandos de Bancos
@@ -81,7 +78,7 @@ permissions:
   menuinteractivo.reino.comandos.transferir:
     description: Permite transferir el liderazgo de un reino.
     default: op
-  menuinteractivo.reino.comandos.unir:
+  menuinteractivo.reino.comandos.unirse:
     description: Permite unirse a un reino.
     default: true
 

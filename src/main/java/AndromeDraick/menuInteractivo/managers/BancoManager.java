@@ -67,19 +67,18 @@ public class BancoManager {
         double saldo = 0.0;
         try (Connection connection = db.getConnection();
              PreparedStatement ps = connection.prepareStatement(
-                     "SELECT saldo FROM monedas_jugadores WHERE uuid_jugador = ? AND etiqueta_reino = ?")) {
+                     "SELECT cantidad FROM monederos_jugador WHERE uuid = ? AND reino_etiqueta = ?")) {
             ps.setString(1, uuidJugador);
             ps.setString(2, etiquetaReino);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                saldo = rs.getDouble("saldo");
+                saldo = rs.getDouble("cantidad");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return saldo;
     }
-
 
     public boolean esMiembroOBancoPropietario(UUID jugador, String etiquetaBanco) {
         return db.esPropietarioBanco(jugador, etiquetaBanco) ||

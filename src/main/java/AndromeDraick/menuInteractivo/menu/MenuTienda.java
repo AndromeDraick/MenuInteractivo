@@ -20,6 +20,7 @@ public class MenuTienda {
     private static final Map<UUID, String> categoriaPorJugador = new HashMap<>();
 
     private static final int[] slotsDeVenta = {
+            9,10,11,12,13,14,15,16,17,
             18,19,20,21,22,23,24,25,26,
             27,28,29,30,31,32,33,34,35,
             36,37,38,39,40,41,42,43,44
@@ -75,7 +76,7 @@ public class MenuTienda {
         mm.setDisplayName(ChatColor.YELLOW + "Mostrar todo");
         mm.setLore(List.of(ChatColor.GRAY + "Ver todos los ítems"));
         mapa.setItemMeta(mm);
-        tienda.setItem(13, mapa);
+        tienda.setItem(50, mapa);
 
         // — Filtro por categoría seleccionada —
         Set<String> claves = new HashSet<>(cfg.getItemsEnVenta());
@@ -149,7 +150,7 @@ public class MenuTienda {
         if (pagina > 0)    tienda.setItem(45, crearBoton(Material.ARROW, "§ePágina anterior"));
         if (fin < lista.size()) tienda.setItem(53, crearBoton(Material.ARROW, "§ePágina siguiente"));
 
-        ItemStack volver = new ItemStack(Material.ARROW);
+        ItemStack volver = new ItemStack(Material.BELL);
         ItemMeta mv = volver.getItemMeta();
         mv.setDisplayName(ChatColor.RED + "Volver al Menú Principal");
         mv.setLore(List.of(ChatColor.GRAY + "Haz clic para regresar"));
@@ -186,7 +187,7 @@ public class MenuTienda {
         int pagina = paginaPorJugador.getOrDefault(uuid, 0);
         int slot = event.getRawSlot();
 
-        if (slot >= 0 && slot <= 9 && item.hasItemMeta()) {
+        if (slot >= 0 && slot <= 8 && item.hasItemMeta()) {
             String nombreTraducido = ChatColor.stripColor(item.getItemMeta().getDisplayName());
             String nombreOriginal = obtenerNombreOriginalDesdeTraducido(nombreTraducido);
             categoriaPorJugador.put(uuid, nombreOriginal);
@@ -194,7 +195,7 @@ public class MenuTienda {
             return;
         }
 
-        if (slot == 9) {
+        if (slot == 8) {
             categoriaPorJugador.remove(uuid);
             abrir(jugador, 0);
             return;
@@ -216,7 +217,7 @@ public class MenuTienda {
         }
 
         if (slot == 49) {
-            venderInventario(jugador);
+            MenuVentaVisual.abrir(jugador);
             return;
         }
 
@@ -240,79 +241,6 @@ public class MenuTienda {
         item.setItemMeta(meta);
         return item;
     }
-
-    private static void venderInventario(Player jugador) {
-        var cfg      = MenuInteractivo.getInstancia().getConfigTienda();
-        var economia = MenuInteractivo.getInstancia().getEconomia();
-        var inventario = jugador.getInventory();
-
-        // Determinar grupo y trabajo del jugador
-        String grupo = "default";
-        var lp = MenuInteractivo.getInstancia().getPermisos();
-        if (lp != null) {
-            var user = lp.getUserManager().getUser(jugador.getUniqueId());
-            if (user != null) grupo = user.getPrimaryGroup();
-        }
-        String trabajo = MenuInteractivo.getInstancia()
-                .getSistemaTrabajos()
-                .getTrabajo(jugador.getUniqueId());
-
-        // Lista de rarezas que desbloquea este grupo
-        List<String> rarezasVIP = cfg.getRarezasDesbloqueadas(grupo);
-        boolean esVIP = !rarezasVIP.isEmpty();
-
-        double total = 0;
-        int vendidos = 0;
-
-        for (ItemStack item : inventario.getContents()) {
-            if (item == null || item.getType() == Material.AIR) continue;
-            String nombre = item.getType().name();
-
-            // Solo ítems configurados en venta
-            if (!cfg.getItemsEnVenta().contains(nombre)) continue;
-
-            // Obtener datos del ítem
-            Map<String,Object> datos = cfg.getDatosItemVenta(nombre);
-            if (datos.isEmpty()) continue;
-
-            // Si no es VIP, validar requisito de trabajo
-            if (!esVIP && datos.containsKey("trabajo")) {
-                String[] trabajosPermitidos = ((String) datos.get("trabajo")).split(",");
-                boolean coincide = Arrays.stream(trabajosPermitidos)
-                        .map(String::trim)
-                        .anyMatch(t -> t.equalsIgnoreCase(trabajo));
-                if (!coincide) continue;
-            }
-
-            // Validar rareza (común o desbloqueada para VIP)
-            String rareza = ((String) datos.getOrDefault("rareza", "comun"))
-                    .toLowerCase(Locale.ROOT);
-            if (!rareza.equals("comun") && !rarezasVIP.contains(rareza)) continue;
-
-            // Calcular precio de venta
-            double precio = CalculadoraPrecios.calcularPrecioVenta(item.getType(), jugador);
-            if (precio <= 0) continue;
-
-            // Sumar al total y marcar como vendido
-            total += precio * item.getAmount();
-            vendidos += item.getAmount();
-            inventario.remove(item);
-        }
-
-        if (vendidos == 0) {
-            jugador.sendMessage(ChatColor.RED + "No tienes ítems válidos para vender.");
-            jugador.playSound(jugador.getLocation(),
-                    Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.7f);
-            return;
-        }
-
-        economia.depositPlayer(jugador, total);
-        jugador.sendMessage(ChatColor.GREEN + "Vendiste " + vendidos +
-                " ítems por $" + FormateadorNumeros.formatear(total));
-        jugador.playSound(jugador.getLocation(),
-                Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
-    }
-
 
     public static int getPagina(Player jugador) {
         return paginaPorJugador.getOrDefault(jugador.getUniqueId(), 0);

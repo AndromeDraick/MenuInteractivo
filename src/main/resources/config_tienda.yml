@@ -1,49 +1,51 @@
 materiales:
-  Piedra: 300.0
-  Madera: 20.0
-  Item_Mobs: 35.0
-  Tierra: 10.0
-  Arena: 15.0
-  Hierro: 150.0
-  Oro: 250.0
-  Diamante: 500.0
-  Netherite: 1000.0
+  Piedra: 18.0
+  Madera: 10.0
+  Item_Mobs: 15.5
+  Tierra: 5.9
+  Arena: 7.2
+  Hierro: 22.0
+  Oro: 50.0
+  Diamante: 44.0
+  Netherite: 970.3
 
 biomas:
   nevado: 80.0
   desierto: 50.0
-  mar: 100.0
-  sabana: 120.0
-  jungla: 180.0
-  cueva: 90.0
+  mar: 120.0
+  sabana: 80.0
+  jungla: 80.0
+  cueva: 100.0
 
 rareza:
-  comun: 0.0
-  raro: 400.0
-  legendario: 1000.0
+  comun: 8.0
+  raro: 3370.0
+  legendario: 18799.5
 
 dimensiones:
-  nether: 500.0
+  nether: 799.0
   end: 3000.0
   overworld: 10.0
 
 categorias:
-  Building_Blocks: 150.0
-  Colored_Blocks: 70.0
-  Natural_Blocks: 20.0
-  Functional_Blocks: 130.0
-  Redstone_Blocks: 300.0
-  Tools_&_Utilities: 390.0
-  Combat: 900.0
-  Food_&_Drinks: 200.0
-  Ingredients: 290.0
+  Building_Blocks: 25.0
+  Colored_Blocks: 20.0
+  Natural_Blocks: 7.0
+  Functional_Blocks: 22.0
+  Redstone_Blocks: 33.0
+  Tools_&_Utilities: 27.0
+  Combat: 178.0
+  Food_&_Drinks: 70.0
+  Ingredients: 39.0
   Spawn_Eggs: 1000000.0
 
 descuentos_grupos:
-  default: 5.0
-  vip: 20.0
-  vip+: 40.0
-  vip++: 70.0
+  default: 1.0
+  piedra: 8.0
+  platino: 20.0
+  diamante: 40.0
+  esmeralda: 70.0
+  netherita: 90.0
 
 trabajos:
   Granjero: 10
@@ -56,5 +58,8 @@ trabajos:
   Cazador: 10
 
 grupos_desbloqueos:
-  vip+: 'raro'
-  vip++: 'raro, legendario'
+  piedra: 'comun'
+  platino: 'comun, raro'
+  diamante: 'comun, raro, legendario'
+  esmeralda: 'comun, raro, legendario'
+  netherita: 'comun, raro, legendario'

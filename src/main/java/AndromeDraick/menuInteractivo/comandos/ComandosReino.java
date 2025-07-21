@@ -221,6 +221,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
 
 
     private void cmdSalir(Player p) {
+        if (!p.hasPermission("menuinteractivo.reino.comandos.salir")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para salirte del reino.");
+            return;
+        }
         String miReino = manager.obtenerReinoJugador(p.getUniqueId());
         if (miReino == null) {
             p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
@@ -244,6 +248,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
 
 
     private void cmdEliminar(Player p, String[] args) {
+        if (!p.hasPermission("menuinteractivo.reino.comandos.eliminar")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para eliminar reinos.");
+            return;
+        }
         if (args.length < 2) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi eliminar <etiqueta>");
             return;
@@ -268,6 +276,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
     }
 
     private void cmdLista(Player p) {
+        if (!p.hasPermission("menuinteractivo.reino.comandos.listar")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para unirte a reinos.");
+            return;
+        }
         List<Reino> reinos = manager.listarReinos();
         if (reinos.isEmpty()) {
             p.sendMessage(ChatColor.YELLOW + "No hay reinos creados.");
@@ -323,6 +335,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
 
 
     private void cmdInfo(Player p, String[] args) {
+        if (!p.hasPermission("menuinteractivo.reino.comandos.info")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para checar información de reinos.");
+            return;
+        }
         if (args.length < 2) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi info <etiqueta>");
             return;
@@ -383,6 +399,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
 
 
     private void cmdTransferir(Player p, String[] args) {
+        if (!p.hasPermission("menuinteractivo.reino.comandos.transferir")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para transferir liderazgo del reino.");
+            return;
+        }
         if (args.length < 3) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi transferir <etiqueta> <jugador>");
             return;

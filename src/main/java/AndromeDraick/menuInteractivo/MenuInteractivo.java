@@ -91,7 +91,7 @@ public final class MenuInteractivo extends JavaPlugin {
         this.menuPrincipal = new MenuPrincipal(this);
         this.menuTrabajos  = new MenuTrabajos(this);
         this.menuReino     = new MenuReino(this);
-        menuMonedas = new MenuMonedas(this);
+        this.menuMonedas = new MenuMonedas(this);
 
         getLogger().info("  MenuInteractivo activado correctamente.");
 

@@ -3,11 +3,8 @@ package AndromeDraick.menuInteractivo.managers;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
-import org.bukkit.Bukkit;
-
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,22 +60,10 @@ public class BancoManager {
         db.actualizarSaldoMoneda(uuid, reinoEtiqueta, cantidad);
     }
 
-    public double obtenerSaldoMonedaJugador(String uuidJugador, String etiquetaReino) {
-        double saldo = 0.0;
-        try (Connection connection = db.getConnection();
-             PreparedStatement ps = connection.prepareStatement(
-                     "SELECT cantidad FROM monederos_jugador WHERE uuid = ? AND reino_etiqueta = ?")) {
-            ps.setString(1, uuidJugador);
-            ps.setString(2, etiquetaReino);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                saldo = rs.getDouble("cantidad");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return saldo;
+    public double obtenerSaldoMonedasJugador(String uuidJugador, String etiquetaReino) {
+        return db.obtenerSaldoMonedasJugador(uuidJugador, etiquetaReino);
     }
+
 
     public boolean esMiembroOBancoPropietario(UUID jugador, String etiquetaBanco) {
         return db.esPropietarioBanco(jugador, etiquetaBanco) ||
@@ -90,21 +75,8 @@ public class BancoManager {
     }
 
     public void registrarMovimiento(String nombreMoneda, String accion, String jugador, double cantidad, String fecha) {
-        try (Connection connection = db.getConnection();
-             PreparedStatement ps = connection.prepareStatement(
-                     "INSERT INTO movimientos_monedas (nombre_moneda, accion, jugador, cantidad, fecha) VALUES (?, ?, ?, ?, ?)")) {
-            ps.setString(1, nombreMoneda);
-            ps.setString(2, accion);
-            ps.setString(3, jugador);
-            ps.setDouble(4, cantidad);
-            ps.setString(5, fecha);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            Bukkit.getLogger().warning("Error al registrar movimiento de moneda: " + e.getMessage());
-        }
+        db.registrarMovimiento(nombreMoneda, accion, jugador, cantidad, fecha);
     }
-
-
 
     public String obtenerReinoDeBanco(String etiquetaBanco) {
         return db.obtenerReinoDeBanco(etiquetaBanco);

@@ -7,13 +7,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.text.DecimalFormat;
 import java.util.List;
 
-public class MenuMonedas {
+public class MenuMonedas implements Listener {
 
     private final MenuInteractivo plugin;
     private final BancoManager bancoManager;
@@ -22,10 +25,12 @@ public class MenuMonedas {
     public MenuMonedas(MenuInteractivo plugin) {
         this.plugin = plugin;
         this.bancoManager = new BancoManager(plugin.getBaseDeDatos());
+
+        // Registrar este listener directamente
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public void abrirMenu(Player jugador) {
-        // Usamos el nuevo método actualizado directamente desde BancoManager
         List<MonedasReinoInfo> monedas = bancoManager.obtenerMonedasReinoInfo();
 
         int size = Math.max(9, ((monedas.size() / 9) + 1) * 9);
@@ -40,7 +45,7 @@ public class MenuMonedas {
             double convertidas = moneda.getDineroConvertido();
             double valor = (impresas - quemadas) > 0 ? convertidas / (impresas - quemadas) : 0;
 
-            double saldoJugador = bancoManager.obtenerSaldoMonedaJugador(jugador.getUniqueId().toString(), moneda.getEtiquetaReino());
+            double saldoJugador = bancoManager.obtenerSaldoMonedasJugador(jugador.getUniqueId().toString(), moneda.getEtiquetaReino());
 
             meta.setDisplayName(ChatColor.GOLD + moneda.getNombreMoneda());
             meta.setLore(List.of(
@@ -57,5 +62,12 @@ public class MenuMonedas {
         }
 
         jugador.openInventory(menu);
+    }
+
+    @EventHandler
+    public void alClickearInventario(InventoryClickEvent event) {
+        if (event.getView().getTitle().equals(ChatColor.DARK_GREEN + "Monedas de los Reinos")) {
+            event.setCancelled(true);
+        }
     }
 }

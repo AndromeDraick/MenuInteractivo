@@ -343,7 +343,7 @@ items_custom:
   GILDED_BLACKSTONE:
     material: Piedra
     bioma: cueva
-    rareza: legendario
+    rareza: raro
     dimension: Nether
     categoria: Natural_Blocks
     trabajo: Minero, Guardia

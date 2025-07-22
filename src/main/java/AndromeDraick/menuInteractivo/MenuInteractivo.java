@@ -5,6 +5,7 @@ import AndromeDraick.menuInteractivo.comandos.ComandosBMI;
 import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
+import AndromeDraick.menuInteractivo.database.HikariProvider;
 import AndromeDraick.menuInteractivo.menu.*;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
 import net.luckperms.api.LuckPerms;
@@ -110,6 +111,7 @@ public final class MenuInteractivo extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("MenuInteractivo desactivado.");
+        HikariProvider.closePool();
     }
 
     private boolean setupEconomy() {

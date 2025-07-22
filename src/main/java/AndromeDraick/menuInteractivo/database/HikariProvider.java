@@ -12,6 +12,7 @@ import java.sql.SQLException;
 
 public class HikariProvider {
     private static HikariDataSource ds;
+    private static boolean esMySQL = false;
 
     public static void init(MenuInteractivo plugin) {
         File cfgDir = new File(plugin.getDataFolder(), "configuracion");
@@ -20,11 +21,10 @@ public class HikariProvider {
         if (!configFile.exists()) plugin.saveResource("configuracion/config_basededatos.yml", false);
 
         FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
-        boolean isMySQL = config.getString("tipo", "sqlite")
-                .equalsIgnoreCase("mysql");
+        esMySQL = config.getString("tipo", "sqlite").equalsIgnoreCase("mysql");
 
         HikariConfig hikariConfig = new HikariConfig();
-        if (isMySQL) {
+        if (esMySQL) {
             String host = config.getString("mysql.host");
             int port = config.getInt("mysql.puerto");
             String db = config.getString("mysql.base");
@@ -50,9 +50,10 @@ public class HikariProvider {
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
+
         ds = new HikariDataSource(hikariConfig);
         plugin.getLogger().info("[MenuInteractivo] HikariCP inicializado (" +
-                (isMySQL ? "MySQL" : "SQLite") + ").");
+                (esMySQL ? "MySQL" : "SQLite") + ").");
     }
 
     public static Connection getConnection() throws SQLException {
@@ -60,6 +61,10 @@ public class HikariProvider {
             throw new IllegalStateException("HikariProvider no inicializado");
         }
         return ds.getConnection();
+    }
+
+    public static boolean esMySQL() {
+        return esMySQL;
     }
 
     public static void closePool() {

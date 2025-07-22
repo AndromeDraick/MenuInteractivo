@@ -5,8 +5,8 @@ import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 
 import java.sql.*;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Encapsula operaciones de banco usando GestorBaseDeDatos.
@@ -163,4 +163,18 @@ public class BancoManager {
     public String obtenerBancoDeJugador(UUID jugadorUUID) {
         return db.obtenerBancoDeJugador(jugadorUUID);
     }
+
+    public List<String> obtenerMonedasJugables() {
+        // Devuelve una lista con los nombres de todas las monedas disponibles en el servidor
+        return db.obtenerTodasLasMonedas().stream()
+                .map(MonedasReinoInfo::getNombreMoneda)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> obtenerReinosDisponibles() {
+        // Devuelve una lista con los nombres/etiquetas de todos los reinos conocidos
+        return db.obtenerTodosLosReinos(); // este debe devolver List<String>
+    }
+
+
 }

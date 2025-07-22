@@ -228,7 +228,7 @@ public class GestorBaseDeDatos {
     }
 
     public boolean agregarJugadorABanco(UUID jugadorUUID, String etiquetaBanco) {
-        String sql = "INSERT INTO jugadores_banco (uuid, etiqueta_banco) VALUES (?, ?)";
+        String sql = "INSERT OR IGNORE INTO jugadores_banco (uuid, etiqueta_banco) VALUES (?, ?)";
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
@@ -993,6 +993,57 @@ public class GestorBaseDeDatos {
             Bukkit.getLogger().warning("[MenuInteractivo] Error al actualizar saldo de moneda: " + e.getMessage());
         }
     }
+
+    public List<MonedasReinoInfo> obtenerTodasLasMonedas() {
+        List<MonedasReinoInfo> lista = new ArrayList<>();
+        String sql = "SELECT r.etiqueta AS etiqueta_reino, r.moneda AS nombre_moneda, " +
+                "m.cantidad_impresa, m.cantidad_quemada, m.dinero_convertido, m.fecha_creacion " +
+                "FROM monedas_reino m " +
+                "JOIN reinos r ON m.reino_etiqueta = r.etiqueta " +
+                "ORDER BY (CASE WHEN (m.cantidad_impresa - m.cantidad_quemada) > 0 " +
+                "THEN m.dinero_convertido / (m.cantidad_impresa - m.cantidad_quemada) ELSE 0 END) DESC, " +
+                "m.fecha_creacion DESC";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                MonedasReinoInfo moneda = new MonedasReinoInfo(
+                        rs.getString("etiqueta_reino"),
+                        rs.getString("nombre_moneda"),
+                        rs.getDouble("cantidad_impresa"),
+                        rs.getDouble("cantidad_quemada"),
+                        rs.getDouble("dinero_convertido"),
+                        rs.getString("fecha_creacion")
+                );
+                lista.add(moneda);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+
+    public List<String> obtenerTodosLosReinos() {
+        List<String> lista = new ArrayList<>();
+        String sql = "SELECT etiqueta_reino FROM reinos";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                lista.add(rs.getString("etiqueta_reino"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+
 
     public String obtenerTrabajo(UUID uuid) {
         try (Connection conn = HikariProvider.getConnection();

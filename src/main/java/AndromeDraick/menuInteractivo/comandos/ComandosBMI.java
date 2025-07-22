@@ -90,22 +90,30 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.YELLOW + "Uso: /bmi crear banco <Nombre> <Etiqueta>");
             return;
         }
+
         String nombre   = args[2];
         String etiqueta = args[3].toLowerCase();
+
         if (!etiqueta.matches("[a-z0-9_-]+")) {
             p.sendMessage(ChatColor.RED + "La etiqueta solo puede contener minúsculas, números, '-' o '_'.");
             return;
         }
+
         if (bancoManager.existeBanco(etiqueta)) {
             p.sendMessage(ChatColor.RED + "Ya existe un banco con esa etiqueta.");
             return;
         }
+
         String reino = bancoManager.obtenerReinoJugador(p.getUniqueId());
         if (reino == null) {
             p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
             return;
         }
-        if (bancoManager.crearBanco(etiqueta, nombre, reino, p.getUniqueId())) {
+
+        // Crear banco y agregar al jugador como miembro
+        boolean creado = bancoManager.crearBanco(etiqueta, nombre, reino, p.getUniqueId());
+        if (creado) {
+            bancoManager.agregarJugadorABanco(p.getUniqueId(), etiqueta); // nuevo paso para registrar al dueño como miembro
             p.sendMessage(ChatColor.GREEN + "Solicitud de banco '" + nombre + "' enviada.");
         } else {
             p.sendMessage(ChatColor.RED + "Error al solicitar banco. Revisa la consola.");
@@ -471,10 +479,22 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                     "Uso: /bmi " + (unir ? "unir" : "salir") + " <Etiqueta>");
             return;
         }
+
         String etiqueta = args[1].toLowerCase();
+
+        if (!unir) {
+            // Evitar que el propietario se salga de su propio banco
+            String bancoPropio = bancoManager.obtenerBancoPropietario(p.getUniqueId());
+            if (bancoPropio != null && bancoPropio.equalsIgnoreCase(etiqueta)) {
+                p.sendMessage(ChatColor.RED + "No puedes salir de tu propio banco. Eres el propietario.");
+                return;
+            }
+        }
+
         boolean ok = unir
                 ? bancoManager.agregarJugadorABanco(p.getUniqueId(), etiqueta)
                 : bancoManager.eliminarJugadorDeBanco(p.getUniqueId(), etiqueta);
+
         if (ok) {
             p.sendMessage(ChatColor.GREEN +
                     (unir ? "Te uniste a " : "Saliste de ") + etiqueta);
@@ -540,6 +560,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         // /bmi banco <Etiqueta> | /bmi banco cuenta <Etiqueta>
         if (args.length == 2) {
             String etiqueta = args[1].toLowerCase();
+
+            if (!bancoManager.esMiembroOBancoPropietario(p.getUniqueId(), etiqueta)) {
+                p.sendMessage(ChatColor.RED + "No eres miembro ni dueño de este banco.");
+                return;
+            }
+
             plugin.getMenuBancos().abrirIndividual(p, etiqueta);
         } else if (args.length == 3 && args[1].equalsIgnoreCase("cuenta")) {
             cmdSaldo(p, new String[]{ "saldo", args[2] });
@@ -568,6 +594,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
         if (!(sender instanceof Player p)) return Collections.emptyList();
+
         String reino = bancoManager.obtenerReinoJugador(p.getUniqueId());
 
         if (args.length == 1) {
@@ -577,22 +604,22 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
 
         String sub = args[0].toLowerCase();
-        if (!SUBS.contains(sub) || reino == null) return Collections.emptyList();
+        if (!SUBS.contains(sub)) return Collections.emptyList();
 
         switch (sub) {
             case "crear" -> {
                 if (args.length == 2) return List.of("banco");
             }
             case "aprobar", "rechazar" -> {
-                if (args.length == 2) {
+                if (args.length == 2 && reino != null) {
                     return bancoManager.obtenerBancosPendientes(reino).stream()
                             .map(Banco::getEtiqueta)
                             .filter(e -> e.startsWith(args[1].toLowerCase()))
                             .collect(Collectors.toList());
                 }
             }
-            case "unir", "salir", "saldo" -> {
-                if (args.length == 2) {
+            case "unir", "salir", "saldo", "historial" -> {
+                if (args.length == 2 && reino != null) {
                     return bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
                             .filter(e -> e.startsWith(args[1].toLowerCase()))
@@ -600,7 +627,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
             }
             case "depositar", "retirar" -> {
-                if (args.length == 2) {
+                if (args.length == 2 && reino != null) {
                     return bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
                             .filter(e -> e.startsWith(args[1].toLowerCase()))
@@ -613,7 +640,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
             }
             case "banco" -> {
-                if (args.length == 2) {
+                if (args.length == 2 && reino != null) {
                     List<String> etiquetas = bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
                             .collect(Collectors.toList());
@@ -622,12 +649,52 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                             .filter(e -> e.startsWith(args[1].toLowerCase()))
                             .collect(Collectors.toList());
                 }
-                if (args.length == 3 && args[1].equalsIgnoreCase("cuenta")) {
+                if (args.length == 3 && args[1].equalsIgnoreCase("cuenta") && reino != null) {
                     return bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
                             .filter(e -> e.startsWith(args[2].toLowerCase()))
                             .collect(Collectors.toList());
                 }
+            }
+            case "contrato" -> {
+                if (args.length == 2) {
+                    return bancoManager.obtenerReinosDisponibles().stream()
+                            .filter(r -> r.startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 3) return List.of("1d", "7d", "1w", "1m", "1y");
+                if (args.length == 4) return List.of("permite");
+                if (args.length == 5) return List.of("\"imprimir, quemar\"", "\"imprimir, convertir\"", "\"imprimir, quemar, convertir\"");
+            }
+            case "imprimir", "quemar" -> {
+                if (args.length == 2) {
+                    return bancoManager.obtenerMonedasJugables().stream()
+                            .filter(m -> m.startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 3) {
+                    return List.of("100", "500", "1000").stream()
+                            .filter(m -> m.startsWith(args[2]))
+                            .collect(Collectors.toList());
+                }
+            }
+            case "convertir" -> {
+                if (args.length == 2) return List.of("100", "500", "1000");
+                if (args.length == 3) return List.of("a");
+                if (args.length == 4) {
+                    return bancoManager.obtenerMonedasJugables().stream()
+                            .filter(m -> m.startsWith(args[3].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+            }
+            case "intercambiar" -> {
+                if (args.length == 2) return List.of("100", "500", "1000");
+                if (args.length == 3 || args.length == 5) {
+                    return bancoManager.obtenerMonedasJugables().stream()
+                            .filter(m -> m.startsWith(args[args.length - 1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 4) return List.of("a");
             }
         }
 

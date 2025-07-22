@@ -109,6 +109,11 @@ public class MenuBancos implements Listener {
             return;
         }
         Banco b = bancoManager.obtenerBanco(etiqueta);
+        if (b == null) {
+            p.sendMessage(ChatColor.RED + "Error: el banco no fue encontrado.");
+            return;
+        }
+
         Inventory inv = Bukkit.createInventory(null, 27, TITULO_INDIVIDUAL + etiqueta);
 
         // Saldo

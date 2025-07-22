@@ -36,28 +36,34 @@ public class MenuTrabajos implements Listener {
     /** Abre el inventario de trabajos para el jugador */
     public void abrir(Player jugador) {
         List<String> trabajos = sistema.getTrabajosValidos();
-        // filas = ceil(trabajos.size()/9), al menos 1 fila
         int filas = Math.max(1, (trabajos.size() + 8) / 9);
-        // dejamos siempre al menos 3 filas para estética; hasta un máximo de 6
         filas = Math.min(Math.max(filas, 3), 6);
         Inventory menu = Bukkit.createInventory(null, filas * 9, TITULO);
 
-        // Rellenar con items de trabajo
+        String trabajoActual = sistema.getTrabajo(jugador.getUniqueId());
+
         for (int i = 0; i < trabajos.size(); i++) {
             String nombre = trabajos.get(i);
             TrabajoVisual visual = TrabajoVisual.of(nombre);
             ItemStack item = new ItemStack(visual.material());
             ItemMeta meta = item.getItemMeta();
             meta.setDisplayName(visual.color() + nombre);
-            meta.setLore(List.of(
-                    ChatColor.GRAY + "Haz clic para unirte como " + nombre + ".",
-                    ChatColor.YELLOW + "Desbloquea ventajas únicas."
-            ));
+
+            if (trabajoActual != null && !trabajoActual.isEmpty()) {
+                // Ya tiene trabajo → cambiar descripción
+                meta.setLore(List.of(ChatColor.RED + "Ya estás en un trabajo.",
+                        ChatColor.RED + "No puedes unirte a otro."));
+            } else {
+                // Aún puede elegir
+                meta.setLore(List.of(ChatColor.GRAY + "Haz clic para unirte como " + nombre + ".",
+                        ChatColor.YELLOW + "Desbloquea ventajas únicas."));
+            }
+
             item.setItemMeta(meta);
             menu.setItem(i, item);
         }
 
-        // Botón Volver al final (centro de la última fila)
+        // Botón volver
         int volverSlot = filas * 9 - 5;
         ItemStack volver = new ItemStack(Material.BELL);
         ItemMeta mv = volver.getItemMeta();

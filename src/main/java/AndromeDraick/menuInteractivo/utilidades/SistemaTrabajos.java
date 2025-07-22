@@ -11,7 +11,6 @@ import org.bukkit.plugin.PluginManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Gestiona el trabajo asignado a cada jugador en memoria, con carga automática al join.
@@ -38,7 +37,9 @@ public class SistemaTrabajos implements Listener {
         String cap = capitalizar(trabajo);
         if (!TRABAJOS_VALIDOS.contains(cap)) return false;
         trabajosJugadores.put(uuid, cap);
-        // Podrías aquí llamar a la BBDD: plugin.getBaseDeDatos().actualizarTrabajo(uuid, cap);
+        // Guardar tambien en base de datos.
+        MenuInteractivo.getInstancia().getBaseDeDatos().actualizarTrabajo(uuid, cap);
+
         return true;
     }
 

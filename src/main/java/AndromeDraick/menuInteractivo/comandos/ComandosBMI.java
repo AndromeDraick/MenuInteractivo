@@ -291,6 +291,10 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
+        Bukkit.getLogger().info("[DEBUG] Banco: " + banco);
+        Bukkit.getLogger().info("[DEBUG] Reino del banco: " + reinoDelBanco);
+        Bukkit.getLogger().info("[DEBUG] Moneda oficial: " + monedaOficial);
+
         // Realizar impresión
         if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)) {
             MonedasReinoInfo moneda = bancoManager.obtenerInfoMonedaPorNombre(nombreMoneda);

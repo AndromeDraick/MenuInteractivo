@@ -47,6 +47,12 @@ public class MenuBancos implements Listener {
             p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
             return;
         }
+
+        if (!bancoManager.esReyDeReino(p.getUniqueId(), reino)) {
+            p.sendMessage(ChatColor.RED + "Solo el rey del reino puede revisar las solicitudes.");
+            return;
+        }
+
         List<Banco> pendientes = bancoManager.obtenerBancosPendientes(reino);
         if (pendientes.isEmpty()) {
             p.sendMessage(ChatColor.YELLOW + "No hay solicitudes pendientes.");

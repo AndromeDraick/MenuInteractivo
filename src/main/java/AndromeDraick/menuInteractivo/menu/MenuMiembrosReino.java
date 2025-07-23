@@ -44,8 +44,10 @@ public class MenuMiembrosReino implements Listener {
             return;
         }
 
+        int size = ((miembros.size() - 1) / 9 + 1) * 9;
+        size = Math.min(size, 54); // máximo tamaño permitido (6 filas)
         Inventory menu = Bukkit.createInventory(
-                null, 36,
+                null, size,
                 ChatColor.AQUA + "Miembros del Reino " + reino
         );
 
@@ -54,6 +56,8 @@ public class MenuMiembrosReino implements Listener {
             OfflinePlayer miembro = Bukkit.getOfflinePlayer(uuid);
             String rol    = db.obtenerRolJugadorEnReino(uuid);
             String titulo = db.getTituloJugador(uuid);
+            String trabajo = db.obtenerTrabajoJugador(uuid);
+            ChatColor colorTrabajo = obtenerColorTrabajo(trabajo);
 
             ItemStack cabeza = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta   = (SkullMeta) cabeza.getItemMeta();
@@ -61,7 +65,8 @@ public class MenuMiembrosReino implements Listener {
             meta.setDisplayName(ChatColor.YELLOW + miembro.getName());
             meta.setLore(List.of(
                     ChatColor.GRAY + "Rol: "    + ChatColor.GOLD + rol,
-                    ChatColor.GRAY + "Título: " + ChatColor.AQUA + titulo
+                    ChatColor.GRAY + "Título: " + ChatColor.AQUA + titulo,
+                    ChatColor.GRAY + "Trabajo: " + colorTrabajo + trabajo
             ));
             cabeza.setItemMeta(meta);
 
@@ -70,6 +75,27 @@ public class MenuMiembrosReino implements Listener {
 
         jugador.openInventory(menu);
         jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
+    }
+
+    /**
+     * Asigna un color dependiendo del trabajo del jugador.
+     */
+    private ChatColor obtenerColorTrabajo(String trabajo) {
+        if (trabajo == null || trabajo.equalsIgnoreCase("Sin trabajo") || trabajo.isEmpty()) {
+            return ChatColor.DARK_GRAY;
+        }
+
+        return switch (trabajo.toLowerCase()) {
+            case "minero"     -> ChatColor.GRAY;
+            case "herrero"    -> ChatColor.RED;
+            case "alquimista" -> ChatColor.LIGHT_PURPLE;
+            case "agricultor" -> ChatColor.GREEN;
+            case "pescador"   -> ChatColor.BLUE;
+            case "leñador"    -> ChatColor.DARK_GREEN;
+            case "cazador"    -> ChatColor.GOLD;
+            case "mago"       -> ChatColor.DARK_PURPLE;
+            default           -> ChatColor.WHITE; // Trabajo desconocido
+        };
     }
 
     @EventHandler

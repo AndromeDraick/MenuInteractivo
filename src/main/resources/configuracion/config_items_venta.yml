@@ -15,13 +15,14 @@ items_custom:
     categoria: Building_Blocks
     trabajo: Cazador
 
-  SPAWNER:
-    material: Item_Mobs
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: Spawn_Eggs
-    trabajo: Cazador
+#  SPAWNER:
+#    material: Item_Mobs
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: Spawn_Eggs
+#    trabajo: Cazador
+
   STONE:
     material: Piedra
     bioma: cueva
@@ -382,7 +383,7 @@ items_custom:
   REINFORCED_DEEPSLATE:
     material: Piedra
     bioma: cueva
-    rareza: legendario
+    rareza: raro
     dimension: overworld
     categoria: Building_Blocks
     trabajo: Guardia, Minero
@@ -561,51 +562,12 @@ items_custom:
     categoria: Functional_Blocks
     trabajo: Herrero, Minero
 
-  DISPENSER:
-    material: Piedra
-    bioma: cueva
-    rareza: raro
-    dimension: overworld
-    categoria: RedstoneBlocks
-    trabajo: Alquimista, Guardia
-  DROPPER:
-    material: Piedra
-    bioma: cueva
-    rareza: raro
-    dimension: overworld
-    categoria: RedstoneBlocks
-    trabajo: Alquimista, Guardia
-
-  OBSERVER:
-    material: Piedra
-    bioma: jungla
-    rareza: raro
-    dimension: overworld
-    categoria: RedstoneBlocks
-    trabajo: Alquimista, Carpintero
-
-  PISTON:
-    material: Piedra
-    bioma: cueva
-    rareza: raro
-    dimension: overworld
-    categoria: RedstoneBlocks
-    trabajo: Carpintero, Herrero
-
-  STICKY_PISTON:
-    material: Piedra
-    bioma: cueva
-    rareza: raro
-    dimension: overworld
-    categoria: RedstoneBlocks
-    trabajo: Carpintero, Alquimista
-
   LEVER:
     material: Piedra
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Minero
 
   REDSTONE_REPEATER:
@@ -613,7 +575,7 @@ items_custom:
     bioma: cueva
     rareza: raro
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   REDSTONE_COMPARATOR:
@@ -621,7 +583,7 @@ items_custom:
     bioma: cueva
     rareza: raro
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   NOTE_BLOCK:
@@ -629,7 +591,7 @@ items_custom:
     bioma: cueva
     rareza: raro
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
 #  REPEATING_COMMAND_BLOCK:
@@ -1822,7 +1784,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   SPRUCE_BUTTON:
@@ -1830,7 +1792,7 @@ items_custom:
     bioma: nevado
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   BIRCH_BUTTON:
@@ -1838,7 +1800,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   JUNGLE_BUTTON:
@@ -1846,7 +1808,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Agricultor
 
   ACACIA_BUTTON:
@@ -1854,7 +1816,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Cazador
 
   DARK_OAK_BUTTON:
@@ -1862,7 +1824,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Cazador
 
   MANGROVE_BUTTON:
@@ -1870,7 +1832,7 @@ items_custom:
     bioma: mar
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Agricultor
 
   CHERRY_BUTTON:
@@ -1878,7 +1840,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Agricultor
 
   CRIMSON_BUTTON:
@@ -1886,7 +1848,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: Nether
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   WARPED_BUTTON:
@@ -1894,14 +1856,14 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: Nether
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
   OAK_PRESSURE_PLATE:
     material: Madera
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   SPRUCE_PRESSURE_PLATE:
@@ -1909,7 +1871,7 @@ items_custom:
     bioma: nevado
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   BIRCH_PRESSURE_PLATE:
@@ -1917,7 +1879,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   JUNGLE_PRESSURE_PLATE:
@@ -1925,7 +1887,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Agricultor
 
   ACACIA_PRESSURE_PLATE:
@@ -1933,7 +1895,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Cazador
 
   DARK_OAK_PRESSURE_PLATE:
@@ -1941,7 +1903,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Cazador
 
   MANGROVE_PRESSURE_PLATE:
@@ -1949,7 +1911,7 @@ items_custom:
     bioma: mar
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Agricultor
 
   CHERRY_PRESSURE_PLATE:
@@ -1957,7 +1919,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Agricultor
 
   CRIMSON_PRESSURE_PLATE:
@@ -1965,7 +1927,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: Nether
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
 
   WARPED_PRESSURE_PLATE:
@@ -1973,14 +1935,14 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: Nether
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Alquimista
   OAK_BOAT:
     material: Madera
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   SPRUCE_BOAT:
@@ -1988,7 +1950,7 @@ items_custom:
     bioma: nevado
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   BIRCH_BOAT:
@@ -1996,7 +1958,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   JUNGLE_BOAT:
@@ -2004,7 +1966,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Agricultor
 
   ACACIA_BOAT:
@@ -2012,7 +1974,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   DARK_OAK_BOAT:
@@ -2020,7 +1982,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   MANGROVE_BOAT:
@@ -2028,7 +1990,7 @@ items_custom:
     bioma: mar
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Agricultor
 
   CHERRY_BOAT:
@@ -2036,7 +1998,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Agricultor
 
   BAMBOO_RAFT:
@@ -2044,7 +2006,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Agricultor
 
   BAMBOO_RAFT_WITH_CHEST:
@@ -2052,7 +2014,7 @@ items_custom:
     bioma: jungla
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Agricultor
   OAK_SIGN:
     material: Madera
@@ -2138,7 +2100,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Cazador, Alquimista
 
   SPIDER_EYE:
@@ -2288,7 +2250,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Agricultor, Alquimista
 
   MILK_BUCKET:
@@ -2296,7 +2258,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Alquimista
 
   EGG:
@@ -2304,7 +2266,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
   FEATHER:
@@ -2320,7 +2282,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
   PORKCHOP:
@@ -2328,7 +2290,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
   MUTTON:
@@ -2336,7 +2298,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
   CHICKEN:
@@ -2344,7 +2306,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
   RABBIT:
@@ -2352,7 +2314,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
   BONE_MEAL:
@@ -2400,7 +2362,7 @@ items_custom:
     bioma: jungla
     rareza: raro
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Granjero, Cazador
 
   FROGSPAWN:
@@ -2424,7 +2386,7 @@ items_custom:
     bioma: jungla
     rareza: raro
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
   IRON_GOLEM_SPAWN_EGG:
@@ -2701,7 +2663,7 @@ items_custom:
     bioma: mar
     rareza: común
     dimension: overworld
-    categoria: Food&_Drinks
+    categoria: Food_&_Drinks
     trabajo: Agricultor, Granjero
 
   MOSS_BLOCK:
@@ -3444,7 +3406,7 @@ items_custom:
     bioma: desierto
     rareza: raro
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Ingeniero
 
   RED_SANDSTONE_BUTTON:
@@ -3452,7 +3414,7 @@ items_custom:
     bioma: desierto
     rareza: raro
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Ingeniero
 
   SANDSTONE_PRESSURE_PLATE:
@@ -3460,7 +3422,7 @@ items_custom:
     bioma: desierto
     rareza: raro
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Ingeniero
 
   RED_SANDSTONE_PRESSURE_PLATE:
@@ -3468,7 +3430,7 @@ items_custom:
     bioma: desierto
     rareza: raro
     dimension: overworld
-    categoria: RedstoneBlocks
+    categoria: Redstone_Blocks
     trabajo: Carpintero, Ingeniero
 
   DECORATED_POT_BLOCK:
@@ -3707,7 +3669,7 @@ items_custom:
     bioma: desierto
     rareza: raro
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Arqueólogo, Excavador
   WOODEN_SWORD:
     material: Madera
@@ -3722,7 +3684,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Minero, Carpintero
 
   WOODEN_AXE:
@@ -3730,7 +3692,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   WOODEN_SHOVEL:
@@ -3738,7 +3700,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Minero
 
   WOODEN_HOE:
@@ -3746,7 +3708,7 @@ items_custom:
     bioma: sabana
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
 
   LEATHER_HELMET:
@@ -3793,7 +3755,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Minero, Herrero
 
   STONE_AXE:
@@ -3801,7 +3763,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   STONE_SHOVEL:
@@ -3809,7 +3771,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Minero
 
   STONE_HOE:
@@ -3817,7 +3779,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
 
   CHAINMAIL_HELMET:
@@ -3865,14 +3827,14 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Minero, Herrero
   IRON_AXE:
     material: Hierro
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Cazador
 
   IRON_SHOVEL:
@@ -3880,7 +3842,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Minero
 
   IRON_HOE:
@@ -3888,7 +3850,7 @@ items_custom:
     bioma: cueva
     rareza: comun
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
 
   IRON_HELMET:
@@ -3936,14 +3898,14 @@ items_custom:
     bioma: nether
     rareza: raro
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Minero, Herrero
   GOLDEN_AXE:
     material: Oro
     bioma: nether
     rareza: raro
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Herrero
 
   GOLDEN_SHOVEL:
@@ -3951,7 +3913,7 @@ items_custom:
     bioma: nether
     rareza: raro
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
 
   GOLDEN_HOE:
@@ -3959,7 +3921,7 @@ items_custom:
     bioma: nether
     rareza: raro
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Granjero, Agricultor
 
   GOLDEN_HELMET:
@@ -4007,7 +3969,7 @@ items_custom:
     bioma: cueva
     rareza: legendario
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Minero, Herrero
 
   DIAMOND_AXE:
@@ -4015,14 +3977,14 @@ items_custom:
     bioma: cueva
     rareza: legendario
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Herrero
   DIAMOND_SHOVEL:
     material: Diamante
     bioma: cueva
     rareza: legendario
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
 
   DIAMOND_HOE:
@@ -4030,7 +3992,7 @@ items_custom:
     bioma: cueva
     rareza: legendario
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Granjero, Agricultor
 
   DIAMOND_HELMET:
@@ -4078,7 +4040,7 @@ items_custom:
     bioma: cueva
     rareza: legendario
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Minero, Herrero
 
   NETHERITE_AXE:
@@ -4086,7 +4048,7 @@ items_custom:
     bioma: cueva
     rareza: legendario
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Carpintero, Herrero
 
   NETHERITE_SHOVEL:
@@ -4094,14 +4056,14 @@ items_custom:
     bioma: cueva
     rareza: legendario
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
   NETHERITE_HOE:
     material: Netherite
     bioma: cueva
     rareza: legendario
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Granjero, Agricultor
 
   NETHERITE_HELMET:
@@ -4149,7 +4111,7 @@ items_custom:
     bioma: sabana
     rareza: raro
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Granjero, Cazador
 
   WARPED_FUNGUS_ON_A_STICK:
@@ -4157,7 +4119,7 @@ items_custom:
     bioma: nether
     rareza: raro
     dimension: nether
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Cazador, Agricultor
 
   FISHING_ROD:
@@ -4165,7 +4127,7 @@ items_custom:
     bioma: mar
     rareza: común
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Cazador, Granjero
 
   SHEARS:
@@ -4173,7 +4135,7 @@ items_custom:
     bioma: sabana
     rareza: común
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
 
   ELYTRA:
@@ -4189,7 +4151,7 @@ items_custom:
     bioma: cueva
     rareza: común
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Herrero, Cazador
 
   CLOCK:
@@ -4197,7 +4159,7 @@ items_custom:
     bioma: sabana
     rareza: raro
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Herrero, Agricultor
 
   COMPASS:
@@ -4205,7 +4167,7 @@ items_custom:
     bioma: sabana
     rareza: común
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Herrero, Cazador
 
   RECOVERY_COMPASS:
@@ -4213,7 +4175,7 @@ items_custom:
     bioma: cueva
     rareza: raro
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Cazador, Guardia
 
   SPYGLASS:
@@ -4221,7 +4183,7 @@ items_custom:
     bioma: cueva
     rareza: raro
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Cazador, Guardia
 
   LEAD:
@@ -4229,6 +4191,809 @@ items_custom:
     bioma: sabana
     rareza: común
     dimension: overworld
-    categoria: Tools&Utilities
+    categoria: Tools_&_Utilities
     trabajo: Agricultor, Granjero
-  
+
+  SHIELD:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guerrero, Guardia
+  TRIDENT:
+    material: Item_Mobs
+    bioma: mar
+    rareza: raro
+    dimension: Overworld
+    categoria: Combat
+    trabajo: Guerrero, Cazador
+
+  BREEZE_ROD:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Herrero
+
+  HEAVY_CORE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Alquimista
+
+  MACE:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guerrero, Cazador
+
+  FLOW_BERRY:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Cazador
+
+  FLOW_BERRY_BUSH:
+    material: Tierra
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Botánico
+
+  TRIAL_KEY:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Functional_Blocks
+    trabajo: Minero, Guerrero
+
+#  TRIAL_SPAWNER:
+#    material: Piedra
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: Functional_Blocks
+#    trabajo: Cazador, Minero
+
+  BOGGLE_SPAWN_EGG:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Spawn_Eggs
+    trabajo: Agricultor, Cazador
+
+  BOGGLE_HIDE:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Sastre, Agricultor
+  BUNDLE:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Tools_&_Utilities
+    trabajo: Cazador, Agricultor
+
+  TRIAL_CHAMBER_BLOCK:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  CHISELED_TUFF:
+    material: Piedra
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  POLISHED_TUFF:
+    material: Piedra
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Carpintero
+
+  TUFF_BRICKS:
+    material: Piedra
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Minero, Constructor
+
+  SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  HOST_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  BOLT_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+  RAISER_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  FLOW_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  EYE_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: End
+    rareza: legendario
+    dimension: end
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: Nether
+    rareza: raro
+    dimension: nether
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: End
+    rareza: raro
+    dimension: end
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  RIB_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: Nether
+    rareza: raro
+    dimension: nether
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  WARD_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  COAST_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+  DUNE_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  TIDE_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  VEX_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+
+  WILD_ARMOR_TRIM_SMITHING_TEMPLATE:
+    material: Piedra
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Herrero, Guerrero
+  GUSTER_BANNER_PATTERN:
+    material: Item_Mobs
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Carpintero, Cazador
+
+  FLOW_BANNER_PATTERN:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Carpintero, Cazador
+  APPLE:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Cazador
+
+  BREAD:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Granjero
+
+  COOKED_BEEF:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Cazador, Agricultor
+
+  COOKED_CHICKEN:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Cazador, Granjero
+
+  COOKED_PORKCHOP:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cazador
+
+  COOKED_COD:
+    material: Comida
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Cazador, Agricultor
+
+  COOKED_SALMON:
+    material: Comida
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Cazador, Agricultor
+
+  CARROT:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Agricultor
+
+  POTATO:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Agricultor
+
+  BEETROOT:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Agricultor
+  GOLDEN_APPLE:
+    material: Comida
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Cazador
+
+  ENCHANTED_GOLDEN_APPLE:
+    material: Comida
+    bioma: sabana
+    rareza: legendario
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Cazador
+
+  MELON_SLICE:
+    material: Comida
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Granjero
+
+  GLISTERING_MELON_SLICE:
+    material: Comida
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Agricultor
+
+  PUFFERFISH:
+    material: Comida
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Cazador, Alquimista
+
+  TROPICAL_FISH:
+    material: Comida
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Cazador, Agricultor
+
+  RABBIT_STEW:
+    material: Comida
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cazador
+
+  BEETROOT_SOUP:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Agricultor
+
+  MUSHROOM_STEW:
+    material: Comida
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Alquimista
+
+  SUSPICIOUS_STEW:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Cazador
+
+  COOKED_RABBIT:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cazador
+
+  COOKED_MUTTON:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cazador
+
+  DRIED_KELP:
+    material: Comida
+    bioma: mar
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cazador
+
+  POTION:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Cazador
+
+  SPLASH_POTION:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Cazador
+  LINGERING_POTION:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Cazador
+
+  SUGAR:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Granjero, Alquimista
+
+  TURTLE_EGG:
+    material: Item_Mobs
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Granjero, Cazador
+
+  GLOW_BERRIES:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Granjero
+
+  SWEET_BERRIES:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Granjero
+
+  CHORUS_FRUIT:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: end
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Alquimista
+  CHORUS_FRUIT_POPPED:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: end
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Granjero
+
+  NAUTILUS_SHELL:
+    material: Item_Mobs
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  HEART_OF_THE_SEA:
+    material: Item_Mobs
+    bioma: mar
+    rareza: legendario
+    dimension: overworld
+    categoria: Ingredients
+    trabajo: Alquimista, Cazador
+
+  TIPPED_ARROW:
+    material: Comida
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  GOLDEN_CARROT:
+    material: Comida
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Alquimista
+
+  POISONOUS_POTATO:
+    material: Comida
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Agricultor, Alquimista
+
+  BAKED_POTATO:
+    material: Comida
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cocinero
+
+  CAKE:
+    material: Comida
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cocinero
+
+  COOKIE:
+    material: Comida
+    bioma: jungla
+    rareza: comun
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Granjero, Cocinero
+  REDSTONE:
+    material: Redstone
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Alquimista
+
+  REDSTONE_TORCH:
+    material: Redstone
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Carpintero
+
+  REDSTONE_BLOCK:
+    material: Redstone
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Constructor
+
+  REPEATER:
+    material: Redstone
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Alquimista
+
+  COMPARATOR:
+    material: Redstone
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Alquimista
+
+  BUTTON:
+    material: Piedra
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Carpintero
+
+  WOODEN_BUTTON:
+    material: Madera
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Carpintero, Ingeniero
+
+  PRESSURE_PLATE:
+    material: Piedra
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Minero
+
+  WOODEN_PRESSURE_PLATE:
+    material: Madera
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Carpintero, Ingeniero
+  TRIPWIRE_HOOK:
+    material: Hierro
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Cazador, Ingeniero
+
+  TRIPWIRE:
+    material: Item_Mobs
+    bioma: jungla
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Cazador, Ingeniero
+
+  OBSERVER:
+    material: Piedra
+    bioma: jungla
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Agricultor
+
+  DISPENSER:
+    material: Piedra
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Cazador
+
+  DROPPER:
+    material: Piedra
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Agricultor
+
+  PISTON:
+    material: Hierro
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Carpintero
+
+  STICKY_PISTON:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Carpintero
+
+  SLIME_BLOCK:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Alquimista
+
+  HOPPER:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Agricultor
+
+  REDSTONE_LAMP:
+    material: Redstone
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Herrero
+
+  JUKEBOX:
+    material: Madera
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Carpintero, Músico
+
+  DAYLIGHT_DETECTOR:
+    material: Vidrio
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Agricultor
+
+  TARGET:
+    material: Tierra
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Cazador, Granjero
+
+  LECTERN:
+    material: Madera
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Carpintero, Bibliotecario
+
+  SCULK_SENSOR:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Alquimista, Ingeniero
+
+  CALIBRATED_SCULK_SENSOR:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Redstone_Blocks
+    trabajo: Ingeniero, Alquimista
+  POTION_OF_UNLEASHED_POTENTIAL:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Food_&_Drinks
+    trabajo: Alquimista, Cazador

@@ -8,10 +8,13 @@ import org.bukkit.Bukkit;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class GestorBaseDeDatos {
     private final MenuInteractivo plugin;
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 
     public GestorBaseDeDatos(MenuInteractivo plugin) {
         this.plugin = plugin;
@@ -69,7 +72,8 @@ public class GestorBaseDeDatos {
                     "trabajo TEXT, " +
                     "nivel INTEGER DEFAULT 1, " +
                     "puntos INTEGER DEFAULT 0, " +
-                    "estadisticas TEXT DEFAULT ''" +
+                    "estadisticas TEXT DEFAULT '', " +
+                    "fecha_trabajo DATETIME" +
                     ")");
 
             // Género de jugador
@@ -116,32 +120,6 @@ public class GestorBaseDeDatos {
                     ")");
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
-        }
-    }
-
-    public String obtenerReinoJugador(UUID jugadorUUID) {
-        String sql = "SELECT etiqueta_reino FROM jugadores_reino WHERE uuid = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, jugadorUUID.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getString("etiqueta_reino");
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error obteniendo reino jugador: " + e.getMessage());
-        }
-        return null;
-    }
-
-    public boolean eliminarJugadorDeReino(UUID jugadorUUID) {
-        String sql = "DELETE FROM jugadores_reino WHERE uuid = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, jugadorUUID.toString());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error eliminando jugador de reino: " + e.getMessage());
-            return false;
         }
     }
 
@@ -427,10 +405,11 @@ public class GestorBaseDeDatos {
     public String getGenero(UUID uuid) {
         String sql = "SELECT genero FROM genero_jugador WHERE uuid = ?";
         try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) { // falta setString(1...)
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());
-            if (rs.next()) return rs.getString("genero");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("genero");
+            }
         } catch (SQLException e) {
             plugin.getLogger().warning("Error obteniendo género: " + e.getMessage());
         }
@@ -452,20 +431,6 @@ public class GestorBaseDeDatos {
             plugin.getLogger().warning("Error al obtener título del jugador: " + e.getMessage());
         }
         return "plebeyo";
-    }
-
-    public void guardarJugador(UUID uuid, String nombre, String trabajo) {
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                "INSERT OR REPLACE INTO jugadores (uuid, nombre, trabajo) VALUES (?, ?, ?)"
-        )) {
-            ps.setString(1, uuid.toString());
-            ps.setString(2, nombre);
-            ps.setString(3, trabajo);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error al guardar jugador: " + e.getMessage());
-        }
     }
 
     public List<Reino> listarReinos() {
@@ -515,42 +480,11 @@ public class GestorBaseDeDatos {
         return reinos;
     }
 
-
-    /**
-     * Elimina un reino por su etiqueta.
-     */
-    public boolean eliminarReino(String etiqueta) {
-        String sql = "DELETE FROM reinos WHERE etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, etiqueta);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean agregarJugadorAReino(UUID jugadorUUID, String etiquetaReino, String rol, String titulo) {
-        String sql = "INSERT INTO jugadores_reino (uuid, etiqueta_reino, rol, titulo) VALUES (?, ?, ?, ?)";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, jugadorUUID.toString());
-            ps.setString(2, etiquetaReino);
-            ps.setString(3, rol);
-            ps.setString(4, titulo);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error uniendo jugador al reino: " + e.getMessage());
-            return false;
-        }
-    }
-
     /**
      * Elimina la pertenencia de un jugador a un reino.
      */
     public boolean salirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
-        String sql = "DELETE FROM jugadores_reino WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+        String sql = "DELETE FROM jugadores_reino WHERE uuid = ? AND etiqueta_reino = ?";
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
@@ -715,17 +649,35 @@ public class GestorBaseDeDatos {
     }
 
     public String obtenerMonedaDeReino(String etiquetaReino) {
-        String sql = "SELECT moneda FROM reinos WHERE etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        // 1. Primero buscar en la subbase de datos económica (monedas_reino)
+        String sqlMonedasReino = "SELECT moneda FROM monedas_reino WHERE reino_etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection(); // subbase de economía
+             PreparedStatement stmt = conn.prepareStatement(sqlMonedasReino)) {
+
             stmt.setString(1, etiquetaReino);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) return rs.getString("moneda");
+
         } catch (SQLException e) {
-            plugin.getLogger().severe("Error al obtener moneda del reino: " + e.getMessage());
+            plugin.getLogger().warning("No se encontró en monedas_reino: " + e.getMessage());
         }
+
+        // 2. Si no se encontró, intentar en la base principal (reinos)
+        String sqlReinos = "SELECT moneda FROM reinos WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection(); // conexión principal
+             PreparedStatement stmt = conn.prepareStatement(sqlReinos)) {
+
+            stmt.setString(1, etiquetaReino);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("moneda");
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al obtener moneda desde reinos: " + e.getMessage());
+        }
+
         return null;
     }
+
 
     public boolean tienePermisoContrato(String banco, String reino, String permisoBuscado) {
         String sql = "SELECT permisos, fecha_fin FROM contratos_banco_reino " +
@@ -865,24 +817,6 @@ public class GestorBaseDeDatos {
         }
 
         return lista;
-    }
-
-    public String obtenerReino(String etiquetaReino) {
-        String sql = "SELECT etiqueta FROM reinos WHERE etiqueta = ?";
-
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, etiquetaReino);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("etiqueta");
-                }
-            }
-        } catch (SQLException e) {
-            Bukkit.getLogger().warning("Error al verificar si el reino existe: " + e.getMessage());
-        }
-
-        return null;
     }
 
     public double obtenerSaldoMonedasJugador(String uuidJugador, String etiquetaReino) {
@@ -1074,16 +1008,136 @@ public class GestorBaseDeDatos {
 //        }
 //    }
 
+//-------------------------------------------------------------------------------------------------------------------------------
+
+    // ------------------------------------------Metodos de Reino-------------------------------------------------------------
+
+    public boolean crearReino(String etiqueta, String nombre, String descripcion, String moneda, UUID reyUUID) {
+        etiqueta = etiqueta.toLowerCase();
+
+        String sqlReino = "INSERT INTO reinos (etiqueta, nombre, descripcion, uuid_rey, moneda) VALUES (?, ?, ?, ?, ?)";
+        String sqlMoneda = "INSERT INTO monedas_reino (reino_etiqueta, moneda) VALUES (?, ?)";
+
+        try (
+                Connection conn = HikariProvider.getConnection();
+                PreparedStatement psReino = conn.prepareStatement(sqlReino);
+                PreparedStatement psMoneda = conn.prepareStatement(sqlMoneda)
+        ) {
+            psReino.setString(1, etiqueta);
+            psReino.setString(2, nombre);
+            psReino.setString(3, descripcion != null ? descripcion : "");
+            psReino.setString(4, reyUUID.toString());
+            psReino.setString(5, moneda);
+            int filasInsertadas = psReino.executeUpdate();
+
+            if (filasInsertadas > 0) {
+                psMoneda.setString(1, etiqueta);
+                psMoneda.setString(2, moneda);
+                psMoneda.executeUpdate();
+                return true;
+            }
+
+            return false;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error creando reino o moneda: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean esReyDeReino(UUID jugadorUUID, String etiquetaReino) {
+        etiquetaReino = etiquetaReino.toLowerCase();
+
+        String sql = "SELECT uuid_rey FROM reinos WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, etiquetaReino);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return jugadorUUID.toString().equals(rs.getString("uuid_rey"));
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error comprobando si es rey: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public String obtenerRolJugadorEnReino(UUID uuidJugador) {
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT rol FROM jugadores_reino WHERE uuid = ?")) {
+            stmt.setString(1, uuidJugador.toString());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("rol");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al obtener el rol del jugador: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean transferirLiderazgoReino(String etiquetaReino, UUID nuevoReyUUID) {
+        etiquetaReino = etiquetaReino.toLowerCase();
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE reinos SET uuid_rey = ? WHERE etiqueta = ?")) {
+            stmt.setString(1, nuevoReyUUID.toString());
+            stmt.setString(2, etiquetaReino);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al transferir liderazgo de reino: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public List<UUID> obtenerMiembrosDeReino(String etiquetaReino) {
+        etiquetaReino = etiquetaReino.toLowerCase();
+
+        List<UUID> miembros = new ArrayList<>();
+        String sqlMiembros = "SELECT uuid FROM jugadores_reino WHERE etiqueta_reino = ?";
+        String sqlRey      = "SELECT uuid_rey FROM reinos WHERE etiqueta = ?";
+
+        try (Connection conn = HikariProvider.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(sqlMiembros)) {
+                ps.setString(1, etiquetaReino);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        miembros.add(UUID.fromString(rs.getString("uuid")));
+                    }
+                }
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(sqlRey)) {
+                ps.setString(1, etiquetaReino);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        UUID uuidRey = UUID.fromString(rs.getString("uuid_rey"));
+                        if (!miembros.contains(uuidRey)) {
+                            miembros.add(uuidRey);
+                        }
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al obtener miembros del reino: " + e.getMessage());
+        }
+
+        System.out.println("Miembros del reino " + etiquetaReino + ": " + miembros);
+
+        return miembros;
+    }
+
     public List<String> obtenerTodosLosReinos() {
         List<String> lista = new ArrayList<>();
-        String sql = "SELECT etiqueta_reino FROM reinos";
+        String sql = "SELECT etiqueta FROM reinos";
 
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                lista.add(rs.getString("etiqueta_reino"));
+                lista.add(rs.getString("etiqueta"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1092,20 +1146,117 @@ public class GestorBaseDeDatos {
         return lista;
     }
 
+    public String obtenerReino(String etiquetaReino) {
+        etiquetaReino = etiquetaReino.toLowerCase();
 
-    public String obtenerTrabajo(UUID uuid) {
+        String sql = "SELECT etiqueta FROM reinos WHERE etiqueta = ?";
         try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                "SELECT trabajo FROM jugadores WHERE uuid = ?"
-        )) {
-            ps.setString(1, uuid.toString());
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, etiquetaReino);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getString("trabajo");
+                if (rs.next()) {
+                    return rs.getString("etiqueta");
+                }
             }
         } catch (SQLException e) {
-            plugin.getLogger().warning("Error al obtener trabajo: " + e.getMessage());
+            Bukkit.getLogger().warning("Error al verificar si el reino existe: " + e.getMessage());
         }
-        return "Sin trabajo";
+        return null;
+    }
+
+    public boolean eliminarReino(String etiqueta) {
+        etiqueta = etiqueta.toLowerCase();
+
+        String sql = "DELETE FROM reinos WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, etiqueta);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean agregarJugadorAReino(UUID jugadorUUID, String etiquetaReino, String rol, String titulo) {
+        etiquetaReino = etiquetaReino.toLowerCase();
+
+        String sql = "INSERT INTO jugadores_reino (uuid, etiqueta_reino, rol, titulo) VALUES (?, ?, ?, ?)";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            ps.setString(2, etiquetaReino);
+            ps.setString(3, rol);
+            ps.setString(4, titulo);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error uniendo jugador al reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public String obtenerReinoJugador(UUID jugadorUUID) {
+        String sql = "SELECT etiqueta_reino FROM jugadores_reino WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("etiqueta_reino");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error obteniendo reino jugador: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean eliminarJugadorDeReino(UUID jugadorUUID) {
+        String sql = "DELETE FROM jugadores_reino WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, jugadorUUID.toString());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error eliminando jugador de reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+
+    //--------------------------------------------Metodos de Trabajo-----------------------------------------
+
+    /** Obtiene la fecha de último trabajo del jugador */
+    public LocalDateTime obtenerFechaTrabajo(UUID uuid) {
+        String sql = "SELECT fecha_trabajo FROM jugadores WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String fechaStr = rs.getString("fecha_trabajo");
+                    if (fechaStr != null) {
+                        return LocalDateTime.parse(fechaStr, FORMATO_FECHA);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al obtener fecha_trabajo de jugador: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /** Actualiza la fecha de asignación de trabajo de un jugador */
+    public boolean actualizarFechaTrabajo(UUID uuid, LocalDateTime fecha) {
+        String sql = "UPDATE jugadores SET fecha_trabajo = ? WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, fecha.format(FORMATO_FECHA));
+            ps.setString(2, uuid.toString());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al actualizar fecha_trabajo: " + e.getMessage());
+            return false;
+        }
     }
 
     public boolean actualizarTrabajo(UUID jugadorUUID, String trabajo) {
@@ -1130,80 +1281,22 @@ public class GestorBaseDeDatos {
         }
     }
 
-
-    public String obtenerRolJugadorEnReino(UUID uuidJugador) {
+    public String obtenerTrabajoJugador(UUID uuid) {
+        String sql = "SELECT trabajo FROM jugadores WHERE uuid = ?";
         try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT rol FROM jugadores_reino WHERE uuid = ?")) {
-            stmt.setString(1, uuidJugador.toString());
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("rol");
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error al obtener el rol del jugador: " + e.getMessage());
-        }
-        return null;
-    }
-
-    public boolean transferirLiderazgoReino(String etiquetaReino, UUID nuevoReyUUID) {
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("UPDATE reinos SET uuid_rey = ? WHERE etiqueta = ?")) {
-            stmt.setString(1, nuevoReyUUID.toString());
-            stmt.setString(2, etiquetaReino);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error al transferir liderazgo de reino: " + e.getMessage());
-        }
-        return false;
-    }
-
-    public List<UUID> obtenerMiembrosDeReino(String etiquetaReino) {
-        List<UUID> miembros = new ArrayList<>();
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                "SELECT uuid FROM jugadores_reino WHERE etiqueta_reino = ?"
-        )) {
-            ps.setString(1, etiquetaReino);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    miembros.add(UUID.fromString(rs.getString("uuid")));
+                if (rs.next()) {
+                    String trabajo = rs.getString("trabajo");
+                    return (trabajo != null && !trabajo.isEmpty()) ? trabajo : "Sin trabajo";
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().warning("Error al obtener miembros del reino: " + e.getMessage());
+            plugin.getLogger().warning("Error obteniendo trabajo del jugador: " + e.getMessage());
         }
-        return miembros;
+        return "Sin trabajo";
     }
 
-    public boolean crearReino(String etiqueta, String nombre, String moneda, UUID reyUUID) {
-        String sqlReino = "INSERT INTO reinos (etiqueta, nombre, uuid_rey, moneda) VALUES (?, ?, ?, ?)";
-        String sqlMoneda = "INSERT INTO monedas_reino (reino_etiqueta, moneda) VALUES (?, ?)";
-
-        try (
-                Connection conn = HikariProvider.getConnection();
-                PreparedStatement psReino = conn.prepareStatement(sqlReino);
-                PreparedStatement psMoneda = conn.prepareStatement(sqlMoneda)
-        ) {
-            // Insertar en la tabla 'reinos'
-            psReino.setString(1, etiqueta);
-            psReino.setString(2, nombre);
-            psReino.setString(3, reyUUID.toString());
-            psReino.setString(4, moneda);
-            int filasInsertadas = psReino.executeUpdate();
-
-            // Insertar en la tabla 'monedas_reino'
-            if (filasInsertadas > 0) {
-                psMoneda.setString(1, etiqueta); // reino_etiqueta
-                psMoneda.setString(2, moneda);   // moneda
-                psMoneda.executeUpdate();
-                return true;
-            }
-
-            return false;
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error creando reino o moneda: " + e.getMessage());
-            return false;
-        }
-    }
 
 }

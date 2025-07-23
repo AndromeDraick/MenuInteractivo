@@ -134,6 +134,10 @@ public class BancoManager {
         return db.obtenerBancosPendientes(etiquetaReino);
     }
 
+    public boolean esReyDeReino(UUID jugadorUUID, String etiquetaReino) {
+        return db.esReyDeReino(jugadorUUID, etiquetaReino);
+    }
+
     /** Deposita un monto en el banco. */
     public boolean depositarBanco(String etiquetaBanco, double monto) {
         return db.depositarBanco(etiquetaBanco, monto);

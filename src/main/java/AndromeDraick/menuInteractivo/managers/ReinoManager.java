@@ -37,8 +37,8 @@ public class ReinoManager {
         return db.obtenerReinoJugador(jugadorUUID);
     }
 
-    public boolean crearReino(String etiqueta, String nombre, String moneda, UUID reyUUID) {
-        return db.crearReino(etiqueta, nombre, moneda, reyUUID);
+    public boolean crearReino(String etiqueta, String nombre, String descripcion, String moneda, UUID reyUUID) {
+        return db.crearReino(etiqueta, nombre, descripcion, moneda, reyUUID);
     }
 
     /** Asocia un jugador a un reino con rol y título custom */

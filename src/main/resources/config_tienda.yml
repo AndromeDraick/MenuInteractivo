@@ -1,8 +1,8 @@
 materiales:
-  Piedra: 18.0
-  Madera: 10.0
-  Item_Mobs: 15.5
-  Tierra: 5.9
+  Piedra: 8.0
+  Madera: 5.0
+  Item_Mobs: 10.5
+  Tierra: 3.9
   Arena: 7.2
   Hierro: 22.0
   Oro: 50.0
@@ -28,15 +28,15 @@ dimensiones:
   overworld: 10.0
 
 categorias:
-  Building_Blocks: 25.0
-  Colored_Blocks: 20.0
+  Building_Blocks: 15.0
+  Colored_Blocks: 15.0
   Natural_Blocks: 7.0
-  Functional_Blocks: 22.0
+  Functional_Blocks: 62.0
   Redstone_Blocks: 33.0
-  Tools_&_Utilities: 27.0
+  Tools_&_Utilities: 561.0
   Combat: 178.0
-  Food_&_Drinks: 70.0
-  Ingredients: 39.0
+  Food_&_Drinks: 30.0
+  Ingredients: 69.0
   Spawn_Eggs: 1000000.0
 
 descuentos_grupos:

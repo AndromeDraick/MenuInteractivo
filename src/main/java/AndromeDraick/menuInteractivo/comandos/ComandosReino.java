@@ -10,13 +10,11 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
 
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ComandosReino implements CommandExecutor, TabCompleter {
@@ -86,9 +84,9 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.RED + "No tienes permiso para crear reinos.");
             return;
         }
-        // Ahora esperamos: etiqueta, nombre, moneda
+
         if (args.length < 4) {
-            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi crear <etiqueta> <nombre> <moneda>");
+            p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi crear <etiqueta> <nombre> <moneda> [descripcion]");
             return;
         }
 
@@ -97,48 +95,47 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String etiqueta  = args[1];
+        String etiqueta = args[1];
         String nombreArg = args[2];
-        String moneda    = args[3];
+        String moneda = args[3];
 
-        // 1) Validar etiqueta: hasta 5 chars, letras, dígitos o [ ]
         if (!etiqueta.matches("^[A-Za-z0-9\\[\\]]{1,5}$")) {
             p.sendMessage(ChatColor.RED + "Etiqueta inválida. Máximo 5 caracteres, sólo letras, dígitos o []");
             return;
         }
 
-        // 2) Nombre: '_' → espacio, al menos 1 char
         String nombre = nombreArg.replace("_", " ");
         if (nombre.isBlank()) {
             p.sendMessage(ChatColor.RED + "Nombre inválido. Usa '_' para espacios, mínimo 1 carácter.");
             return;
         }
 
-        // 3) Moneda: sólo letras, hasta 8 chars
-        if (!moneda.matches("^[A-Za-z]{1,8}$")) {
-            p.sendMessage(ChatColor.RED + "Moneda inválida. Máximo 8 letras, sólo A–Z.");
+        moneda = moneda.replace("_", " ");
+        if (!moneda.matches("^[A-Za-z_]{1,18}$")) {
+            p.sendMessage(ChatColor.RED + "Moneda inválida. Máximo 18 letras o guiones bajos (usa _ como espacio).");
             return;
         }
 
-        // 4) Etiqueta única
         if (manager.listarReinos().stream()
                 .anyMatch(r -> r.getEtiqueta().equalsIgnoreCase(etiqueta))) {
             p.sendMessage(ChatColor.RED + "Ya existe un reino con esa etiqueta.");
             return;
         }
 
-        // 5) Crear el reino en la tabla 'reinos'
-        if (!manager.crearReino(etiqueta, nombre, moneda, p.getUniqueId())) {
+        // Concatenar descripción si hay más args
+        String descripcion = args.length > 4
+                ? String.join(" ", Arrays.copyOfRange(args, 4, args.length)).replace("_", " ")
+                : "";
+
+        if (!manager.crearReino(etiqueta, nombre, descripcion, moneda, p.getUniqueId())) {
             p.sendMessage(ChatColor.RED + "Error al crear el reino. ¿Has revisado la consola?");
             return;
         }
 
-        // 6) Determinar rol (Rey/Reina) según género, y título social "realeza"
-        String genero    = plugin.getBaseDeDatos().getGenero(p.getUniqueId());
+        String genero = plugin.getBaseDeDatos().getGenero(p.getUniqueId());
         String rolJugador = genero.equalsIgnoreCase("Femenino") ? "Reina" : "Rey";
         String tituloSocial = "realeza";
 
-        // 7) Asociar al creador con rol y título en 'jugadores_reino'
         manager.unirReino(p.getUniqueId(), etiqueta, rolJugador, tituloSocial);
 
         p.sendMessage(ChatColor.GREEN +
@@ -456,8 +453,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
-        if (!(sender instanceof Player)) return Collections.emptyList();
-        Player p = (Player) sender;
+        if (!(sender instanceof Player p)) return Collections.emptyList();
 
         if (args.length == 1) {
             return SUBS.stream()
@@ -470,47 +466,71 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         }
 
         String sub = args[0].toLowerCase();
+
+        // —— Subcomando 'crear' —— //
+        if (sub.equals("crear")) {
+            switch (args.length) {
+                case 2 -> {
+                    // Sugerencias para etiqueta
+                    return List.of("REI01", "[XYZ]", "ABCD").stream()
+                            .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .toList();
+                }
+                case 3 -> {
+                    // Sugerencias para nombre del reino
+                    return List.of("Mexico", "Azteca", "Condenados", "Strados").stream()
+                            .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .toList();
+                }
+                case 4 -> {
+                    // Sugerencias para nombre de moneda
+                    return List.of("Quetzales", "platas", "cobre_Aztecas", "gemas_Condenadas").stream()
+                            .filter(s -> s.toLowerCase().startsWith(args[3].toLowerCase()))
+                            .toList();
+                }
+                case 5 -> {
+                    // Sugerencias para descripción inicial
+                    return List.of("Un_reino_poderoso", "Cuna_de_héroes", "Dominio_de_la_magia").stream()
+                            .filter(s -> s.toLowerCase().startsWith(args[4].toLowerCase()))
+                            .toList();
+                }
+                default -> {
+                    return List.of(); // Nada para args[6+] (descripción libre)
+                }
+            }
+        }
+
+        // —— Otros subcomandos —— //
         if (args.length == 2) {
             switch (sub) {
-                case "salir", "eliminar", "info", "lista" -> {
+                case "salir", "eliminar", "info", "lista", "unirse" -> {
                     return manager.listarReinos().stream()
                             .map(Reino::getEtiqueta)
                             .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
+                            .toList();
                 }
                 case "transferir" -> {
-                    if (args.length == 2) {
-                        return manager.listarReinos().stream()
-                                .map(Reino::getEtiqueta)
-                                .filter(e -> e.startsWith(args[1].toLowerCase()))
-                                .collect(Collectors.toList());
-                    }
+                    return manager.listarReinos().stream()
+                            .map(Reino::getEtiqueta)
+                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .toList();
                 }
-                case "unirse" -> {
-                    if (args.length == 2) {
-                        return manager.listarReinos().stream()
-                                .map(Reino::getEtiqueta)
-                                .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
-                                .collect(Collectors.toList());
-                    }
-                }
-
                 case "exiliar" -> {
-                    return manager.obtenerMiembros(
-                                    manager.obtenerReinoJugador(p.getUniqueId())
-                            ).stream()
+                    return manager.obtenerMiembros(manager.obtenerReinoJugador(p.getUniqueId())).stream()
                             .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
-                            .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
+                            .filter(name -> name != null && name.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .toList();
                 }
             }
-        } else if (args.length == 3 && sub.equals("transferir")) {
+        }
+
+        if (args.length == 3 && sub.equals("transferir")) {
             String etiqueta = args[1].toLowerCase();
             return manager.obtenerMiembros(etiqueta).stream()
                     .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
                     .filter(Objects::nonNull)
                     .filter(n -> n.toLowerCase().startsWith(args[2].toLowerCase()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return Collections.emptyList();

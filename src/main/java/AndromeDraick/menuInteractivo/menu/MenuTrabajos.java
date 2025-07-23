@@ -15,12 +15,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
-/**
- * Menú de selección de trabajos.
- * - Dinámico en tamaño
- * - Usa la lista ordenada de SistemaTrabajos
- * - Maneja clics internamente
- */
 public class MenuTrabajos implements Listener {
     private static final String TITULO = ChatColor.GOLD + "Elige un trabajo";
     private final MenuInteractivo plugin;
@@ -29,11 +23,9 @@ public class MenuTrabajos implements Listener {
     public MenuTrabajos(MenuInteractivo plugin) {
         this.plugin = plugin;
         this.sistema = plugin.getSistemaTrabajos();
-        // Registrar este listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    /** Abre el inventario de trabajos para el jugador */
     public void abrir(Player jugador) {
         List<String> trabajos = sistema.getTrabajosValidos();
         int filas = Math.max(1, (trabajos.size() + 8) / 9);
@@ -41,6 +33,7 @@ public class MenuTrabajos implements Listener {
         Inventory menu = Bukkit.createInventory(null, filas * 9, TITULO);
 
         String trabajoActual = sistema.getTrabajo(jugador.getUniqueId());
+        boolean puedeCambiar = sistema.puedeCambiarTrabajo(jugador.getUniqueId());
 
         for (int i = 0; i < trabajos.size(); i++) {
             String nombre = trabajos.get(i);
@@ -49,12 +42,11 @@ public class MenuTrabajos implements Listener {
             ItemMeta meta = item.getItemMeta();
             meta.setDisplayName(visual.color() + nombre);
 
-            if (trabajoActual != null && !trabajoActual.isEmpty()) {
-                // Ya tiene trabajo → cambiar descripción
-                meta.setLore(List.of(ChatColor.RED + "Ya estás en un trabajo.",
-                        ChatColor.RED + "No puedes unirte a otro."));
+            if (!trabajoActual.equalsIgnoreCase("Sin trabajo") && !puedeCambiar) {
+                String tiempo = sistema.tiempoRestante(jugador.getUniqueId());
+                meta.setLore(List.of(ChatColor.RED + "Ya tienes un trabajo.",
+                        ChatColor.RED + "Puedes cambiar en: " + tiempo));
             } else {
-                // Aún puede elegir
                 meta.setLore(List.of(ChatColor.GRAY + "Haz clic para unirte como " + nombre + ".",
                         ChatColor.YELLOW + "Desbloquea ventajas únicas."));
             }
@@ -63,7 +55,6 @@ public class MenuTrabajos implements Listener {
             menu.setItem(i, item);
         }
 
-        // Botón volver
         int volverSlot = filas * 9 - 5;
         ItemStack volver = new ItemStack(Material.BELL);
         ItemMeta mv = volver.getItemMeta();
@@ -85,23 +76,30 @@ public class MenuTrabajos implements Listener {
         if (item == null || !item.hasItemMeta()) return;
 
         String clicked = ChatColor.stripColor(item.getItemMeta().getDisplayName());
-        // Volver al menú principal
         if (clicked.equalsIgnoreCase("Volver al Menú Principal")) {
             plugin.getMenuPrincipal().abrir(p);
             p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             return;
         }
 
-        // Intentar asignar trabajo
+        // Si ya tiene trabajo y no puede cambiarlo, mostrar advertencia
+        if (!sistema.getTrabajo(p.getUniqueId()).equalsIgnoreCase("Sin trabajo")
+                && !sistema.puedeCambiarTrabajo(p.getUniqueId())) {
+            p.sendMessage(ChatColor.RED + "Aún no puedes cambiar de trabajo. Espera " +
+                    sistema.tiempoRestante(p.getUniqueId()) + ".");
+            return;
+        }
+
         String trabajo = clicked;
-        // Primero validamos en memoria
         boolean valido = sistema.setTrabajo(p.getUniqueId(), trabajo);
         if (!valido) {
             p.sendMessage(ChatColor.RED + "Trabajo desconocido: " + trabajo);
             return;
         }
-        // Luego persistimos
+
         boolean guardado = plugin.getBaseDeDatos().actualizarTrabajo(p.getUniqueId(), trabajo);
+        plugin.getBaseDeDatos().actualizarFechaTrabajo(p.getUniqueId(), java.time.LocalDateTime.now());
+
         if (!guardado) {
             p.sendMessage(ChatColor.RED + "No se pudo guardar tu trabajo. Inténtalo de nuevo más tarde.");
             return;
@@ -112,7 +110,6 @@ public class MenuTrabajos implements Listener {
         p.closeInventory();
     }
 
-    /** Define el icono y color para cada trabajo. */
     private enum TrabajoVisual {
         GRANJERO   ("Granjero",   Material.WHEAT,           ChatColor.GREEN),
         MINERO     ("Minero",     Material.IRON_PICKAXE,    ChatColor.GRAY),
@@ -133,7 +130,7 @@ public class MenuTrabajos implements Listener {
             this.color = col;
         }
         public Material material() { return material; }
-        public ChatColor color()     { return color; }
+        public ChatColor color()   { return color; }
         public static TrabajoVisual of(String clave) {
             for (TrabajoVisual tv : values()) {
                 if (tv.name.equalsIgnoreCase(clave)) return tv;

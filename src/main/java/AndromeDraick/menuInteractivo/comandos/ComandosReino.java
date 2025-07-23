@@ -92,6 +92,11 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return;
         }
 
+        if (manager.obtenerReinoJugador(p.getUniqueId()) != null) {
+            p.sendMessage(ChatColor.RED + "Ya perteneces a un reino. No puedes crear otro.");
+            return;
+        }
+
         String etiqueta  = args[1];
         String nombreArg = args[2];
         String moneda    = args[3];

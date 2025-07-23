@@ -15,22 +15,6 @@ items_custom:
     categoria: Building_Blocks
     trabajo: Cazador
 
-  DIAMOND_SWORD:
-    material: Diamante
-    bioma: cueva
-    rareza: raro
-    dimension: overworld
-    categoria: Combat
-    trabajo: Guardia, Cazador
-
-  NETHERITE_SWORD:
-    material: Netherite
-    bioma: nether
-    rareza: legendario
-    dimension: nether
-    categoria: Combat
-    trabajo: Guardia
-
   SPAWNER:
     material: Item_Mobs
     bioma: cueva
@@ -648,21 +632,21 @@ items_custom:
     categoria: RedstoneBlocks
     trabajo: Carpintero, Alquimista
 
-  REPEATING_COMMAND_BLOCK:
-    material: Piedra
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: RedstoneBlocks
-    trabajo: Guardia, Alquimista
+#  REPEATING_COMMAND_BLOCK:
+#    material: Piedra
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: RedstoneBlocks
+#    trabajo: Guardia, Alquimista
 
-  CHAIN_COMMAND_BLOCK:
-    material: Piedra
-    bioma: cueva
-    rareza: legendario
-    dimension: overworld
-    categoria: RedstoneBlocks
-    trabajo: Guardia, Alquimista
+#  CHAIN_COMMAND_BLOCK:
+#    material: Piedra
+#    bioma: cueva
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: RedstoneBlocks
+#    trabajo: Guardia, Alquimista
 #  STRUCTURE_BLOCK:
 #    material: Piedra
 #    bioma: cueva
@@ -3423,3 +3407,828 @@ items_custom:
     dimension: overworld
     categoria: Building_Blocks
     trabajo: Carpintero, Guardia
+  SANDSTONE_STAIRS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  SMOOTH_SANDSTONE_STAIRS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  RED_SANDSTONE_STAIRS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  SMOOTH_RED_SANDSTONE_STAIRS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Carpintero, Constructor
+
+  SANDSTONE_BUTTON:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Ingeniero
+
+  RED_SANDSTONE_BUTTON:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Ingeniero
+
+  SANDSTONE_PRESSURE_PLATE:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Ingeniero
+
+  RED_SANDSTONE_PRESSURE_PLATE:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: RedstoneBlocks
+    trabajo: Carpintero, Ingeniero
+
+  DECORATED_POT_BLOCK:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Arqueólogo, Escultor
+
+  SANDSTONE_BRICKS:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  CHISELED_SANDSTONE_BRICKS:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_BRICKS:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  CHISELED_RED_SANDSTONE_BRICKS:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  CUT_SANDSTONE_STAIRS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  CUT_RED_SANDSTONE_STAIRS:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SAND_LAYER:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Cazador
+
+  RED_SAND_LAYER:
+    material: Arena
+    bioma: desierto
+    rareza: común
+    dimension: overworld
+    categoria: Natural_Blocks
+    trabajo: Agricultor, Cazador
+
+  SANDSTONE_SLAB_BRICKS:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_SLAB_BRICKS:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SANDSTONE_COLUMN:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_COLUMN:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SANDSTONE_MOSAIC:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_MOSAIC:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SMOOTH_SANDSTONE_MOSAIC:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SMOOTH_RED_SANDSTONE_MOSAIC:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SANDSTONE_FRIEZE:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_FRIEZE:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+  SANDSTONE_TRIM:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_TRIM:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SMOOTH_SANDSTONE_TRIM:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SMOOTH_RED_SANDSTONE_TRIM:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SANDSTONE_PILLAR:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_PILLAR:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SANDSTONE_CAPITAL:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_CAPITAL:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  SANDSTONE_BASE:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  RED_SANDSTONE_BASE:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Building_Blocks
+    trabajo: Escultor, Constructor
+
+  BRUSH:
+    material: Arena
+    bioma: desierto
+    rareza: raro
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Arqueólogo, Excavador
+  WOODEN_SWORD:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Cazador, Guardia
+
+  WOODEN_PICKAXE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Minero, Carpintero
+
+  WOODEN_AXE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  WOODEN_SHOVEL:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Minero
+
+  WOODEN_HOE:
+    material: Madera
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+
+  LEATHER_HELMET:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Cazador, Granjero
+
+  LEATHER_CHESTPLATE:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Cazador, Granjero
+
+  LEATHER_LEGGINGS:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Cazador, Granjero
+
+  LEATHER_BOOTS:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Cazador, Granjero
+
+  STONE_SWORD:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+  STONE_PICKAXE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Minero, Herrero
+
+  STONE_AXE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  STONE_SHOVEL:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Minero
+
+  STONE_HOE:
+    material: Piedra
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+
+  CHAINMAIL_HELMET:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  CHAINMAIL_CHESTPLATE:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  CHAINMAIL_LEGGINGS:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  CHAINMAIL_BOOTS:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  IRON_SWORD:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  IRON_PICKAXE:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Minero, Herrero
+  IRON_AXE:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Cazador
+
+  IRON_SHOVEL:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Minero
+
+  IRON_HOE:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+
+  IRON_HELMET:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  IRON_CHESTPLATE:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  IRON_LEGGINGS:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  IRON_BOOTS:
+    material: Hierro
+    bioma: cueva
+    rareza: comun
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  GOLDEN_SWORD:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  GOLDEN_PICKAXE:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Minero, Herrero
+  GOLDEN_AXE:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Herrero
+
+  GOLDEN_SHOVEL:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+
+  GOLDEN_HOE:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Granjero, Agricultor
+
+  GOLDEN_HELMET:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  GOLDEN_CHESTPLATE:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  GOLDEN_LEGGINGS:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  GOLDEN_BOOTS:
+    material: Oro
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  DIAMOND_SWORD:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  DIAMOND_PICKAXE:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Minero, Herrero
+
+  DIAMOND_AXE:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Herrero
+  DIAMOND_SHOVEL:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+
+  DIAMOND_HOE:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Granjero, Agricultor
+
+  DIAMOND_HELMET:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  DIAMOND_CHESTPLATE:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  DIAMOND_LEGGINGS:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  DIAMOND_BOOTS:
+    material: Diamante
+    bioma: cueva
+    rareza: legendario
+    dimension: overworld
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  NETHERITE_SWORD:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Cazador
+
+  NETHERITE_PICKAXE:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Minero, Herrero
+
+  NETHERITE_AXE:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Carpintero, Herrero
+
+  NETHERITE_SHOVEL:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+  NETHERITE_HOE:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Granjero, Agricultor
+
+  NETHERITE_HELMET:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  NETHERITE_CHESTPLATE:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  NETHERITE_LEGGINGS:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  NETHERITE_BOOTS:
+    material: Netherite
+    bioma: cueva
+    rareza: legendario
+    dimension: nether
+    categoria: Combat
+    trabajo: Guardia, Herrero
+
+  TURTLE_HELMET:
+    material: Item_Mobs
+    bioma: mar
+    rareza: raro
+    dimension: overworld
+    categoria: Combat
+    trabajo: Cazador, Agricultor
+
+  CARROT_ON_A_STICK:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Granjero, Cazador
+
+  WARPED_FUNGUS_ON_A_STICK:
+    material: Item_Mobs
+    bioma: nether
+    rareza: raro
+    dimension: nether
+    categoria: Tools&Utilities
+    trabajo: Cazador, Agricultor
+
+  FISHING_ROD:
+    material: Item_Mobs
+    bioma: mar
+    rareza: común
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Cazador, Granjero
+
+  SHEARS:
+    material: Hierro
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+
+  ELYTRA:
+    material: Item_Mobs
+    bioma: cueva
+    rareza: legendario
+    dimension: end
+    categoria: Combat
+    trabajo: Cazador, Guardia
+
+  FLINT_AND_STEEL:
+    material: Hierro
+    bioma: cueva
+    rareza: común
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Herrero, Cazador
+
+  CLOCK:
+    material: Oro
+    bioma: sabana
+    rareza: raro
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Herrero, Agricultor
+
+  COMPASS:
+    material: Hierro
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Herrero, Cazador
+
+  RECOVERY_COMPASS:
+    material: Hierro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Cazador, Guardia
+
+  SPYGLASS:
+    material: Oro
+    bioma: cueva
+    rareza: raro
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Cazador, Guardia
+
+  LEAD:
+    material: Item_Mobs
+    bioma: sabana
+    rareza: común
+    dimension: overworld
+    categoria: Tools&Utilities
+    trabajo: Agricultor, Granjero
+  

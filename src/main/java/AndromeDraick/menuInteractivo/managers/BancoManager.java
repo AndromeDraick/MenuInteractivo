@@ -176,5 +176,17 @@ public class BancoManager {
         return db.obtenerTodosLosReinos(); // este debe devolver List<String>
     }
 
+    public boolean confirmarContrato(String bancoEtiqueta, String reinoEtiqueta) {
+        return db.aceptarContratoBancoReino(bancoEtiqueta, reinoEtiqueta);
+    }
+
+    public boolean rechazarContrato(String bancoEtiqueta, String reinoEtiqueta) {
+        return db.rechazarContratoBancoReino(bancoEtiqueta, reinoEtiqueta);
+    }
+
+
+    public String obtenerRolJugadorEnReino(UUID uuid) {
+        return db.obtenerRolJugadorEnReino(uuid);
+    }
 
 }

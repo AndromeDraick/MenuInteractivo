@@ -37,7 +37,7 @@ public class MenuMonedas implements Listener {
         Inventory menu = Bukkit.createInventory(null, size, ChatColor.DARK_GREEN + "Monedas de los Reinos");
 
         for (MonedasReinoInfo moneda : monedas) {
-            ItemStack item = new ItemStack(Material.GOLD_NUGGET);
+            ItemStack item = new ItemStack(Material.YELLOW_BUNDLE);
             ItemMeta meta = item.getItemMeta();
 
             double impresas = moneda.getCantidadImpresa();

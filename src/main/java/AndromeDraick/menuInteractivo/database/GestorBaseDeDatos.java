@@ -85,7 +85,8 @@ public class GestorBaseDeDatos {
                     "fecha_inicio DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                     "fecha_fin DATETIME NOT NULL, " +
                     "permisos TEXT NOT NULL, " + // Ejemplo: 'imprimir,quemar'
-                    "PRIMARY KEY(banco_etiqueta, reino_etiqueta)" +
+                    "estado TEXT DEFAULT 'pendiente', " +
+                    "PRIMARY KEY(banco_etiqueta, reino_etiqueta) " +
                     ")");
 
             // Monedas del reino (movimiento económico)
@@ -94,6 +95,7 @@ public class GestorBaseDeDatos {
                     "cantidad_impresa REAL DEFAULT 0, " +
                     "cantidad_quemada REAL DEFAULT 0, " +
                     "dinero_convertido REAL DEFAULT 0, " +
+                    "moneda TEXT NOT NULL, " +
                     "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
             // Historial de movimientos de moneda por banco
@@ -917,27 +919,30 @@ public class GestorBaseDeDatos {
 
 
     public MonedasReinoInfo obtenerMonedaPorNombre(String nombreMoneda) {
-        String sql = "SELECT * FROM monedas_reino WHERE nombre = ?";
+        String sql = "SELECT * FROM monedas_reino WHERE moneda = ?";
+
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, nombreMoneda);
             ResultSet rs = ps.executeQuery();
+
             if (rs.next()) {
                 return new MonedasReinoInfo(
-                        rs.getString("nombre"),
                         rs.getString("reino_etiqueta"),
-                        rs.getLong("cantidad_impresa"),
-                        rs.getLong("cantidad_quemada"),
-                        rs.getLong("dinero_convertido"),
+                        rs.getString("moneda"),
+                        rs.getDouble("cantidad_impresa"),
+                        rs.getDouble("cantidad_quemada"),
+                        rs.getDouble("dinero_convertido"),
                         rs.getString("fecha_creacion")
                 );
             }
         } catch (SQLException e) {
-            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener moneda: " + e.getMessage());
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener moneda por nombre: " + e.getMessage());
         }
+
         return null;
     }
-
 
     public double obtenerSaldoMonedaJugador(UUID uuid, String reinoEtiqueta) {
         String sql = "SELECT cantidad FROM monederos_jugador WHERE uuid = ? AND reino_etiqueta = ?";
@@ -1025,6 +1030,49 @@ public class GestorBaseDeDatos {
 
         return lista;
     }
+
+    public boolean aceptarContratoBancoReino(String banco, String reino) {
+        String sql = "UPDATE contratos_banco_reino SET estado = 'aceptado', fecha_inicio = CURRENT_TIMESTAMP WHERE banco_etiqueta = ? AND reino_etiqueta = ? AND estado = 'pendiente'";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, banco);
+            ps.setString(2, reino);
+            int filasActualizadas = ps.executeUpdate();
+            return filasActualizadas > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al aceptar contrato banco-reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean rechazarContratoBancoReino(String banco, String reino) {
+        String sql = "UPDATE contratos_banco_reino SET estado = 'rechazado' WHERE banco_etiqueta = ? AND reino_etiqueta = ? AND estado = 'pendiente'";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, banco);
+            ps.setString(2, reino);
+            int filasActualizadas = ps.executeUpdate();
+            return filasActualizadas > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al rechazar contrato banco-reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+//    public boolean eliminarContratoBancoReino(String banco, String reino) {
+//        String sql = "DELETE FROM contratos_banco_reino WHERE banco_etiqueta = ? AND reino_etiqueta = ?";
+//        try (Connection conn = HikariProvider.getConnection();
+//             PreparedStatement ps = conn.prepareStatement(sql)) {
+//            ps.setString(1, banco);
+//            ps.setString(2, reino);
+//            return ps.executeUpdate() > 0;
+//        } catch (SQLException e) {
+//            plugin.getLogger().severe("Error al eliminar contrato: " + e.getMessage());
+//            return false;
+//        }
+//    }
 
     public List<String> obtenerTodosLosReinos() {
         List<String> lista = new ArrayList<>();
@@ -1129,23 +1177,24 @@ public class GestorBaseDeDatos {
 
     public boolean crearReino(String etiqueta, String nombre, String moneda, UUID reyUUID) {
         String sqlReino = "INSERT INTO reinos (etiqueta, nombre, uuid_rey, moneda) VALUES (?, ?, ?, ?)";
-        String sqlMoneda = "INSERT INTO monedas_reino (reino_etiqueta) VALUES (?)";
+        String sqlMoneda = "INSERT INTO monedas_reino (reino_etiqueta, moneda) VALUES (?, ?)";
 
         try (
                 Connection conn = HikariProvider.getConnection();
                 PreparedStatement psReino = conn.prepareStatement(sqlReino);
                 PreparedStatement psMoneda = conn.prepareStatement(sqlMoneda)
         ) {
-            // Insertar reino
+            // Insertar en la tabla 'reinos'
             psReino.setString(1, etiqueta);
             psReino.setString(2, nombre);
             psReino.setString(3, reyUUID.toString());
             psReino.setString(4, moneda);
-            int rowsInserted = psReino.executeUpdate();
+            int filasInsertadas = psReino.executeUpdate();
 
-            // Insertar moneda del reino si se insertó correctamente el reino
-            if (rowsInserted > 0) {
-                psMoneda.setString(1, etiqueta);
+            // Insertar en la tabla 'monedas_reino'
+            if (filasInsertadas > 0) {
+                psMoneda.setString(1, etiqueta); // reino_etiqueta
+                psMoneda.setString(2, moneda);   // moneda
                 psMoneda.executeUpdate();
                 return true;
             }

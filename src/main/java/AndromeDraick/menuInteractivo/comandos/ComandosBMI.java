@@ -26,7 +26,8 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
             "crear", "pendientes", "aprobar", "rechazar",
             "listar", "unir", "salir", "saldo",
-            "depositar", "retirar", "banco", "ayuda"
+            "depositar", "retirar", "banco", "ayuda", "monedas", "historial",
+            "imprimir", "quemar", "convertir", "contrato", "intercambiar"
     );
 
     public ComandosBMI(MenuInteractivo plugin) {
@@ -137,25 +138,68 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         );
     }
 
-    private void cmdAprobarRechazar(Player p, String[] args, boolean aprobar) {
-        // /bmi aprobar|rechazar <Etiqueta>
-        if (args.length != 2) {
+    private void cmdAprobarRechazar(Player p, String[] args, boolean aprobarBanco) {
+        // Puede ser:
+        // /bmi aprobar|rechazar <etiquetaBanco>
+        // o
+        // /bmi aprobar|rechazar contrato <etiquetaBanco>
+        if (args.length < 2 || args.length > 3) {
             p.sendMessage(ChatColor.YELLOW +
-                    "Uso: /bmi " + (aprobar ? "aprobar" : "rechazar") + " <Etiqueta>");
+                    "Uso:\n" +
+                    "  /bmi " + (aprobarBanco ? "aprobar" : "rechazar") + " <etiquetaBanco>\n" +
+                    "  /bmi " + (aprobarBanco ? "aprobar"  : "rechazar") + " contrato <etiquetaBanco>");
             return;
         }
-        String etiqueta = args[1].toLowerCase();
-        boolean ok = aprobar
-                ? bancoManager.aprobarBanco(etiqueta)
-                : bancoManager.rechazarBanco(etiqueta);
-        if (ok) {
-            p.sendMessage(ChatColor.GREEN +
-                    "Banco " + etiqueta + (aprobar ? " aprobado." : " rechazado."));
+
+        boolean esContrato = args.length == 3 && args[1].equalsIgnoreCase("contrato");
+        String etiqueta = esContrato ? args[2].toLowerCase() : args[1].toLowerCase();
+
+        if (esContrato) {
+            // Validaciones
+            String reinoJugador = bancoManager.obtenerReinoJugador(p.getUniqueId());
+            if (reinoJugador == null) {
+                p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
+                return;
+            }
+            // Verifica que jugador es líder o propietario del reino
+            String rol = bancoManager.obtenerRolJugadorEnReino(p.getUniqueId());
+            if (!"rey".equalsIgnoreCase(rol) && !"lider".equalsIgnoreCase(rol)) {
+                p.sendMessage(ChatColor.RED + "Solo el rey o líder puede aceptar/rechazar contratos.");
+                return;
+            }
+
+            boolean ok;
+            if (aprobarBanco) {
+                ok = bancoManager.confirmarContrato(etiqueta, reinoJugador);
+            } else {
+                ok = bancoManager.rechazarContrato(etiqueta, reinoJugador);
+            }
+
+            if (ok) {
+                p.sendMessage(ChatColor.GREEN +
+                        "Contrato con banco '" + etiqueta + "' " +
+                        (aprobarBanco ? "aprobado." : "rechazado."));
+            } else {
+                p.sendMessage(ChatColor.RED +
+                        "No se pudo " + (aprobarBanco ? "aprobar " : "rechazar ") +
+                        "el contrato con '" + etiqueta + "'.");
+            }
+
         } else {
-            p.sendMessage(ChatColor.RED +
-                    "No se pudo " + (aprobar ? "aprobar " : "rechazar ") + etiqueta + ".");
+            // El funcionamiento normal para bancos
+            boolean ok = aprobarBanco
+                    ? bancoManager.aprobarBanco(etiqueta)
+                    : bancoManager.rechazarBanco(etiqueta);
+            if (ok) {
+                p.sendMessage(ChatColor.GREEN +
+                        "Banco " + etiqueta + (aprobarBanco ? " aprobado." : " rechazado."));
+            } else {
+                p.sendMessage(ChatColor.RED +
+                        "No se pudo " + (aprobarBanco ? "aprobar " : "rechazar ") + etiqueta + ".");
+            }
         }
     }
+
 
     private void cmdContrato(Player p, String[] args) {
         // /bmi contrato <reino> <tiempo> permite <acciones>

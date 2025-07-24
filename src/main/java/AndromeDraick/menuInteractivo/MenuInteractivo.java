@@ -6,6 +6,7 @@ import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.database.HikariProvider;
+import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.menu.*;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
 import net.luckperms.api.LuckPerms;
@@ -29,6 +30,8 @@ public final class MenuInteractivo extends JavaPlugin {
     private MenuReino menuReino;
     private MenuMiembrosReino menuMiembrosReino;
     private MenuMonedas menuMonedas;
+    private MenuCuentaBanco menuCuentaBanco;
+    private BancoManager bancoManager;
 
 
     @Override
@@ -93,6 +96,8 @@ public final class MenuInteractivo extends JavaPlugin {
         this.menuTrabajos  = new MenuTrabajos(this);
         this.menuReino     = new MenuReino(this);
         this.menuMonedas = new MenuMonedas(this);
+        this.menuCuentaBanco = new MenuCuentaBanco(this);
+        bancoManager = new BancoManager(baseDeDatos, economia);
 
         getLogger().info("  MenuInteractivo activado correctamente.");
 
@@ -163,6 +168,15 @@ public final class MenuInteractivo extends JavaPlugin {
     public MenuMiembrosReino getMenuMiembrosReino() {
         return menuMiembrosReino;
     }
+
+    public MenuCuentaBanco getMenuCuentaBanco() {
+        return menuCuentaBanco;
+    }
+
+    public BancoManager getBancoManager() {
+        return new BancoManager(baseDeDatos);
+    }
+
 
 
     public GestorBaseDeDatos getBaseDeDatos() {

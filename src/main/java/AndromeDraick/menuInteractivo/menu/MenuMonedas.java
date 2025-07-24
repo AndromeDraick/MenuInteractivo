@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.UUID;
 
 public class MenuMonedas implements Listener {
 
@@ -48,12 +49,16 @@ public class MenuMonedas implements Listener {
             if (enCirculacion < 1) enCirculacion = 1; // evitar división por 0 o negativos
 
             double valor = convertidas / enCirculacion;
-            double saldoJugador = bancoManager.obtenerSaldoMonedasJugador(jugador.getUniqueId().toString(), moneda.getEtiquetaReino());
+            UUID uuidJugador = jugador.getUniqueId();
+            String etiquetaReino = moneda.getEtiquetaReino();
+
+            plugin.getBancoManager().crearCuentaMonedaSiNoExiste(uuidJugador, etiquetaReino);
+            double saldoJugador = plugin.getBancoManager().obtenerSaldoCuenta(uuidJugador, etiquetaReino);
 
             meta.setDisplayName(ChatColor.GOLD + moneda.getNombreMoneda());
             meta.setLore(List.of(
                     ChatColor.GRAY + "Reino: " + ChatColor.YELLOW + moneda.getEtiquetaReino(),
-                    ChatColor.GRAY + "Valor: " + ChatColor.AQUA + formato.format(valor) + " $ por 1 moneda",
+                    ChatColor.GRAY + "Valor: " + ChatColor.AQUA + formato.format(valor) + " $ por 1 Reina",
                     ChatColor.GRAY + "Impresa: " + ChatColor.YELLOW + formato.format(impresas),
                     ChatColor.GRAY + "Quemada: " + ChatColor.RED + formato.format(quemadas),
                     ChatColor.GRAY + "Convertida: " + ChatColor.GREEN + formato.format(convertidas),

@@ -571,19 +571,30 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         if (args.length == 2) {
             String etiqueta = args[1].toLowerCase();
 
+            // Solo el propietario del banco puede usar este menú
+            if (!bancoManager.esPropietarioBanco(p.getUniqueId(), etiqueta)) {
+                p.sendMessage(ChatColor.RED + "Solo el propietario del banco puede acceder a este menú.");
+                return;
+            }
+
+            plugin.getMenuBancos().abrirIndividual(p, etiqueta);
+
+        } else if (args.length == 3 && args[1].equalsIgnoreCase("cuenta")) {
+            String etiqueta = args[2].toLowerCase();
+
             if (!bancoManager.esMiembroOBancoPropietario(p.getUniqueId(), etiqueta)) {
                 p.sendMessage(ChatColor.RED + "No eres miembro ni dueño de este banco.");
                 return;
             }
 
-            plugin.getMenuBancos().abrirIndividual(p, etiqueta);
-        } else if (args.length == 3 && args[1].equalsIgnoreCase("cuenta")) {
-            cmdSaldo(p, new String[]{ "saldo", args[2] });
+            plugin.getMenuCuentaBanco().abrirMenuCuenta(p, etiqueta);
+
         } else {
             p.sendMessage(ChatColor.YELLOW +
                     "Uso: /bmi banco <Etiqueta> | /bmi banco cuenta <Etiqueta>");
         }
     }
+
 
     private void mostrarAyuda(Player p) {
         p.sendMessage(ChatColor.GOLD + "— Comandos de Banco —");

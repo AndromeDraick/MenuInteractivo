@@ -118,6 +118,12 @@ public class GestorBaseDeDatos {
                     "cantidad REAL DEFAULT 0, " +
                     "PRIMARY KEY(uuid, reino_etiqueta)" +
                     ")");
+            // Tabla de cuentas individuales de jugadores por reino
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS cuentas_monedas (" +
+                    "uuid_jugador TEXT NOT NULL," +
+                    "etiqueta_reino TEXT NOT NULL," +
+                    "saldo REAL DEFAULT 0," +
+                    "PRIMARY KEY(uuid_jugador, etiqueta_reino)");
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
         }
@@ -1282,6 +1288,133 @@ public class GestorBaseDeDatos {
         }
         return "Sin trabajo";
     }
+
+    //-----------------------------------------------------------------------------------------------------------
+
+    //---------------------------------------------Cuenta personal de para bancos-----------------------------------
+
+
+    public void crearCuentaSiNoExiste(UUID jugador, String etiquetaReino) {
+        try (Connection conn = HikariProvider.getConnection()) {
+            String sql = "INSERT OR IGNORE INTO cuentas_monedas (uuid_jugador, etiqueta_reino, saldo) VALUES (?, ?, 0)";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, jugador.toString());
+                ps.setString(2, etiquetaReino);
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("[MI] Error al crear cuenta de moneda: " + e.getMessage());
+        }
+    }
+
+    public boolean modificarSaldoJugador(UUID jugador, String etiquetaReino, double cantidad) {
+        crearCuentaSiNoExiste(jugador, etiquetaReino);
+        try (Connection conn = HikariProvider.getConnection()) {
+            String sql = "UPDATE cuentas_monedas SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setDouble(1, cantidad);
+                ps.setString(2, jugador.toString());
+                ps.setString(3, etiquetaReino);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("[MI] Error al modificar saldo de jugador: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public double obtenerSaldoJugador(UUID jugador, String etiquetaReino) {
+        crearCuentaSiNoExiste(jugador, etiquetaReino);
+        try (Connection conn = HikariProvider.getConnection()) {
+            String sql = "SELECT saldo FROM cuentas_monedas WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, jugador.toString());
+                ps.setString(2, etiquetaReino);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    return rs.getDouble("saldo");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("[MI] Error al obtener saldo de jugador: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean transferirEntreJugadores(UUID emisor, UUID receptor, String etiquetaReino, double monto) {
+        if (monto <= 0) return false;
+
+        String selectSql = "SELECT saldo FROM cuentas_monedas WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+        String updateSql = "UPDATE cuentas_monedas SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+        String insertSql = "INSERT INTO cuentas_monedas (uuid_jugador, etiqueta_reino, saldo) VALUES (?, ?, ?)";
+
+        try (Connection conn = HikariProvider.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // 1. Obtener saldo del emisor
+            double saldoActual = 0;
+            try (PreparedStatement psSelect = conn.prepareStatement(selectSql)) {
+                psSelect.setString(1, emisor.toString());
+                psSelect.setString(2, etiquetaReino);
+                ResultSet rs = psSelect.executeQuery();
+                if (rs.next()) {
+                    saldoActual = rs.getDouble("saldo");
+                } else {
+                    // El emisor no tiene cuenta, no puede transferir
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            if (saldoActual < monto) {
+                conn.rollback();
+                return false; // saldo insuficiente
+            }
+
+            // 2. Restar al emisor
+            try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                psUpdate.setDouble(1, -monto);
+                psUpdate.setString(2, emisor.toString());
+                psUpdate.setString(3, etiquetaReino);
+                psUpdate.executeUpdate();
+            }
+
+            // 3. Sumar al receptor (crear cuenta si no existe)
+            boolean receptorExiste = false;
+            try (PreparedStatement psCheck = conn.prepareStatement(selectSql)) {
+                psCheck.setString(1, receptor.toString());
+                psCheck.setString(2, etiquetaReino);
+                ResultSet rs = psCheck.executeQuery();
+                if (rs.next()) {
+                    receptorExiste = true;
+                }
+            }
+
+            if (receptorExiste) {
+                try (PreparedStatement psAdd = conn.prepareStatement(updateSql)) {
+                    psAdd.setDouble(1, monto);
+                    psAdd.setString(2, receptor.toString());
+                    psAdd.setString(3, etiquetaReino);
+                    psAdd.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement psInsert = conn.prepareStatement(insertSql)) {
+                    psInsert.setString(1, receptor.toString());
+                    psInsert.setString(2, etiquetaReino);
+                    psInsert.setDouble(3, monto);
+                    psInsert.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("[MI] Error al transferir monedas entre jugadores: " + e.getMessage());
+            return false;
+        }
+    }
+
 
 
 }

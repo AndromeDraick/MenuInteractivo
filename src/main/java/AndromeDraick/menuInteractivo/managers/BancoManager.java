@@ -3,6 +3,9 @@ package AndromeDraick.menuInteractivo.managers;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 
 import java.sql.*;
 import java.util.*;
@@ -14,9 +17,11 @@ import java.util.stream.Collectors;
 public class BancoManager {
 
     private final GestorBaseDeDatos db;
+    private final Economy economia;
 
-    public BancoManager(GestorBaseDeDatos db) {
+    public BancoManager(GestorBaseDeDatos db, Economy economia) {
         this.db = db;
+        this.economia = economia;
     }
 
     public boolean crearContrato(String bancoEtiqueta, String reinoEtiqueta, Timestamp fechaInicio, Timestamp fechaFin, String permisos) {
@@ -191,6 +196,48 @@ public class BancoManager {
 
     public String obtenerRolJugadorEnReino(UUID uuid) {
         return db.obtenerRolJugadorEnReino(uuid);
+    }
+
+    /** Asegura que el jugador tenga cuenta de moneda, y si no la tiene, la crea. */
+    public void crearCuentaMonedaSiNoExiste(UUID jugador, String etiquetaReino) {
+        db.crearCuentaSiNoExiste(jugador, etiquetaReino);
+    }
+
+    /** Modifica el saldo de la cuenta del jugador (positivo o negativo). */
+    public void modificarSaldoCuenta(UUID jugador, String etiquetaReino, double cantidad) {
+        db.modificarSaldoJugador(jugador, etiquetaReino, cantidad);
+    }
+
+    /** Devuelve el saldo actual de la cuenta del jugador. */
+    public double obtenerSaldoCuenta(UUID jugador, String etiquetaReino) {
+        return db.obtenerSaldoJugador(jugador, etiquetaReino);
+    }
+
+    public boolean depositarAMiCuenta(UUID jugadorUUID, String etiquetaBanco, double cantidad) {
+        if (cantidad <= 0) return false;
+
+        String reino = obtenerReinoDeBanco(etiquetaBanco);
+        if (reino == null) return false;
+
+        String moneda = obtenerNombreMonedaDeReino(reino);
+        if (moneda == null) return false;
+
+        OfflinePlayer player = Bukkit.getOfflinePlayer(jugadorUUID);
+        if (!player.hasPlayedBefore()) return false;
+
+        if (economia.getBalance(player) < cantidad) return false;
+
+        // Retirar dinero al jugador
+        economia.withdrawPlayer(player, cantidad);
+
+        // Agregar a su cuenta bancaria interna
+        return db.modificarSaldoJugador(jugadorUUID, reino, cantidad);
+    }
+
+
+    public boolean transferirEntreJugadores(UUID emisor, UUID receptor, String etiquetaBanco, double monto) {
+        String reino = obtenerReinoDeBanco(etiquetaBanco);
+        return db.transferirEntreJugadores(emisor, receptor, reino, monto);
     }
 
 }

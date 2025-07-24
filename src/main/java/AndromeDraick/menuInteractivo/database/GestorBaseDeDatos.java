@@ -220,21 +220,6 @@ public class GestorBaseDeDatos {
         }
     }
 
-    public void registrarMovimientoMoneda(String bancoEtiqueta, String tipo, double cantidad, UUID uuidJugador) {
-        String sql = "INSERT INTO historial_monedas_banco " +
-                "(banco_etiqueta, tipo, cantidad, uuid_jugador) VALUES (?, ?, ?, ?)";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, bancoEtiqueta);
-            stmt.setString(2, tipo.toLowerCase());
-            stmt.setDouble(3, cantidad);
-            stmt.setString(4, uuidJugador.toString());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Error al registrar movimiento de moneda: " + e.getMessage());
-        }
-    }
-
     public boolean esMiembroDeBanco(UUID jugador, String bancoEtiqueta) {
         String sql = "SELECT 1 FROM jugadores_banco WHERE uuid = ? AND etiqueta_banco = ?";
         try (Connection conn = HikariProvider.getConnection();
@@ -836,20 +821,20 @@ public class GestorBaseDeDatos {
         return 0.0;
     }
 
-    public void registrarMovimiento(String nombreMoneda, String accion, String jugador, double cantidad, String fecha) {
-        String sql = "INSERT INTO movimientos_monedas (nombre_moneda, accion, jugador, cantidad, fecha) VALUES (?, ?, ?, ?, ?)";
+    public void registrarMovimiento(String bancoEtiqueta, String tipo, String uuidJugador, double cantidad) {
+        String sql = "INSERT INTO historial_monedas_banco (banco_etiqueta, tipo, cantidad, uuid_jugador) VALUES (?, ?, ?, ?)";
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, nombreMoneda);
-            ps.setString(2, accion);
-            ps.setString(3, jugador);
-            ps.setDouble(4, cantidad);
-            ps.setString(5, fecha);
+            ps.setString(1, bancoEtiqueta);
+            ps.setString(2, tipo); // "imprimir", "quemar", "convertir"
+            ps.setDouble(3, cantidad);
+            ps.setString(4, uuidJugador);
             ps.executeUpdate();
         } catch (SQLException e) {
             Bukkit.getLogger().warning("Error al registrar movimiento: " + e.getMessage());
         }
     }
+
 
 
     public MonedasReinoInfo obtenerMonedaPorNombre(String nombreMoneda) {

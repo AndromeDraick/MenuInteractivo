@@ -250,7 +250,6 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdImprimirMoneda(Player p, String[] args) {
-        // /bmi imprimir <moneda> <cantidad>
         if (args.length != 3) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /bmi imprimir <moneda> <cantidad>");
             return;
@@ -278,36 +277,19 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // Verificar si la moneda coincide con la moneda oficial del reino
         String monedaOficial = bancoManager.obtenerNombreMonedaDeReino(reinoDelBanco);
         if (!nombreMoneda.equalsIgnoreCase(monedaOficial)) {
             p.sendMessage(ChatColor.RED + "Solo puedes imprimir la moneda oficial del reino: " + monedaOficial);
             return;
         }
 
-        // Verificar contrato válido con permiso
         if (!bancoManager.tienePermisoContrato(banco, reinoDelBanco, "imprimir")) {
             p.sendMessage(ChatColor.RED + "No tienes permiso para imprimir moneda. Contrato no autorizado.");
             return;
         }
 
-        Bukkit.getLogger().info("[DEBUG] Banco: " + banco);
-        Bukkit.getLogger().info("[DEBUG] Reino del banco: " + reinoDelBanco);
-        Bukkit.getLogger().info("[DEBUG] Moneda oficial: " + monedaOficial);
-
-        // Realizar impresión
         if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)) {
-            MonedasReinoInfo moneda = bancoManager.obtenerInfoMonedaPorNombre(nombreMoneda);
-            if (moneda == null) {
-                p.sendMessage(ChatColor.RED + "No se encontró la moneda asociada al banco.");
-                return;
-            }
-
-            String nombreMoneda1 = moneda.getNombreMoneda();
-            String jugadorNombre = p.getName();
-            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-            bancoManager.registrarMovimiento(nombreMoneda1, "imprimir", jugadorNombre, cantidad, fecha);
+            bancoManager.registrarMovimiento(banco, "imprimir", p.getUniqueId().toString(), cantidad);
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");
@@ -315,7 +297,6 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdQuemarMoneda(Player p, String[] args) {
-        // /bmi quemar <moneda> <cantidad>
         if (args.length != 3) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /bmi quemar <moneda> <cantidad>");
             return;
@@ -355,16 +336,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
 
         if (bancoManager.incrementarCantidadQuemada(reinoDelBanco, cantidad)) {
-            String etiquetaReino = bancoManager.obtenerReinoDeBanco(banco);
-            String nombreMoneda1 = bancoManager.obtenerNombreMonedaDeReino(etiquetaReino);
-            String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            bancoManager.registrarMovimiento(
-                    nombreMoneda1,
-                    "quemar",
-                    p.getName(),
-                    cantidad,
-                    fecha
-            );
+            bancoManager.registrarMovimiento(banco, "quemar", p.getUniqueId().toString(), cantidad);
             p.sendMessage(ChatColor.YELLOW + "Se quemaron " + cantidad + " " + nombreMoneda + " del reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al quemar moneda. Revisa la consola.");
@@ -372,7 +344,6 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdConvertirMoneda(Player p, String[] args) {
-        // /bmi convertir <dineroServidor> a <moneda>
         if (args.length != 4 || !args[2].equalsIgnoreCase("a")) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /bmi convertir <dineroServidor> a <moneda>");
             return;
@@ -418,16 +389,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         if (bancoManager.incrementarDineroConvertido(reinoDelBanco, dineroServidor)) {
             economia.withdrawPlayer(p, dineroServidor);
-
-            // Registrar movimiento en historial
-            String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            bancoManager.registrarMovimiento(
-                    monedaOficial,
-                    "convertir",
-                    p.getName(),
-                    dineroServidor,
-                    fecha
-            );
+            bancoManager.registrarMovimiento(banco, "convertir", p.getUniqueId().toString(), dineroServidor);
             p.sendMessage(ChatColor.GREEN + "Convertiste $" + dineroServidor + " del servidor en valor para la moneda del reino " + reinoDelBanco);
         } else {
             p.sendMessage(ChatColor.RED + "Error al convertir dinero. Revisa la consola.");

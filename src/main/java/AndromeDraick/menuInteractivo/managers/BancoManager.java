@@ -74,8 +74,8 @@ public class BancoManager {
         return db.obtenerHistorialBanco(etiquetaBanco, limite);
     }
 
-    public void registrarMovimiento(String nombreMoneda, String accion, String jugador, double cantidad, String fecha) {
-        db.registrarMovimiento(nombreMoneda, accion, jugador, cantidad, fecha);
+    public void registrarMovimiento(String bancoEtiqueta, String tipo, String uuidJugador, double cantidad) {
+        db.registrarMovimiento(bancoEtiqueta, tipo, uuidJugador, cantidad);
     }
 
     public String obtenerReinoDeBanco(String etiquetaBanco) {

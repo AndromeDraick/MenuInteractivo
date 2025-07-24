@@ -43,8 +43,11 @@ public class MenuMonedas implements Listener {
             double impresas = moneda.getCantidadImpresa();
             double quemadas = moneda.getCantidadQuemada();
             double convertidas = moneda.getDineroConvertido();
-            double valor = (impresas - quemadas) > 0 ? convertidas / (impresas - quemadas) : 0;
 
+            double enCirculacion = impresas - quemadas;
+            if (enCirculacion < 1) enCirculacion = 1; // evitar división por 0 o negativos
+
+            double valor = convertidas / enCirculacion;
             double saldoJugador = bancoManager.obtenerSaldoMonedasJugador(jugador.getUniqueId().toString(), moneda.getEtiquetaReino());
 
             meta.setDisplayName(ChatColor.GOLD + moneda.getNombreMoneda());

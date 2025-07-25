@@ -2389,13 +2389,13 @@ items_custom:
     categoria: Food_&_Drinks
     trabajo: Granjero, Cazador
 
-  IRON_GOLEM_SPAWN_EGG:
-    material: Item_Mobs
-    bioma: sabana
-    rareza: legendario
-    dimension: overworld
-    categoria: Spawn_Eggs
-    trabajo: Cazador, Guardia
+#  IRON_GOLEM_SPAWN_EGG:
+#    material: Item_Mobs
+#    bioma: sabana
+#    rareza: legendario
+#    dimension: overworld
+#    categoria: Spawn_Eggs
+#    trabajo: Cazador, Guardia
 
   WARDEN_SPAWN_EGG:
     material: Item_Mobs
@@ -2405,13 +2405,13 @@ items_custom:
     categoria: Spawn_Eggs
     trabajo: Guardia, Cazador
 
-  CAMEL_SPAWN_EGG:
-    material: Item_Mobs
-    bioma: desierto
-    rareza: raro
-    dimension: overworld
-    categoria: Spawn_Eggs
-    trabajo: Granjero, Cazador
+#  CAMEL_SPAWN_EGG:
+#    material: Item_Mobs
+#    bioma: desierto
+#    rareza: raro
+#    dimension: overworld
+#    categoria: Spawn_Eggs
+#    trabajo: Granjero, Cazador
 #------------------------------------------------------
   STRIDER_SPAWN_EGG:
     material: Item_Mobs
@@ -2477,21 +2477,21 @@ items_custom:
     categoria: Spawn_Eggs
     trabajo: Guardia, Cazador
 
-  WITHER_SPAWN_EGG:
-    material: Item_Mobs
-    bioma: nether
-    rareza: legendario
-    dimension: nether
-    categoria: Spawn_Eggs
-    trabajo: Guardia, Alquimista
+#  WITHER_SPAWN_EGG:
+#    material: Item_Mobs
+#    bioma: nether
+#    rareza: legendario
+#    dimension: nether
+#    categoria: Spawn_Eggs
+#    trabajo: Guardia, Alquimista
 
-  SNIFFER_SPAWN_EGG:
-    material: Item_Mobs
-    bioma: jungla
-    rareza: raro
-    dimension: overworld
-    categoria: Spawn_Eggs
-    trabajo: Agricultor, Granjero
+#  SNIFFER_SPAWN_EGG:
+#    material: Item_Mobs
+#    bioma: jungla
+#    rareza: raro
+#    dimension: overworld
+#    categoria: Spawn_Eggs
+#    trabajo: Agricultor, Granjero
 
   FROG_SPAWN_EGG:
     material: Item_Mobs
@@ -2517,13 +2517,13 @@ items_custom:
     categoria: Spawn_Eggs
     trabajo: Guardia, Alquimista
 
-  WANDERING_TRADER_SPAWN_EGG:
-    material: Item_Mobs
-    bioma: sabana
-    rareza: raro
-    dimension: overworld
-    categoria: Spawn_Eggs
-    trabajo: Granjero, Agricultor
+#  WANDERING_TRADER_SPAWN_EGG:
+#    material: Item_Mobs
+#    bioma: sabana
+#    rareza: raro
+#    dimension: overworld
+#    categoria: Spawn_Eggs
+#    trabajo: Granjero, Agricultor
 
   TRADER_LLAMA_SPAWN_EGG:
     material: Item_Mobs

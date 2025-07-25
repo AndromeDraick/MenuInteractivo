@@ -77,8 +77,6 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    // === En ComandosReino.java ===
-
     private void cmdCrear(Player p, String[] args) {
         if (!p.hasPermission("menuinteractivo.reino.comandos.crear")) {
             p.sendMessage(ChatColor.RED + "No tienes permiso para crear reinos.");
@@ -110,11 +108,12 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return;
         }
 
-        moneda = moneda.replace("_", " ");
         if (!moneda.matches("^[A-Za-z_]{1,18}$")) {
             p.sendMessage(ChatColor.RED + "Moneda inválida. Máximo 18 letras o guiones bajos (usa _ como espacio).");
             return;
         }
+
+        moneda = moneda.replace("_", " ");
 
         if (manager.listarReinos().stream()
                 .anyMatch(r -> r.getEtiqueta().equalsIgnoreCase(etiqueta))) {
@@ -233,14 +232,12 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // Impedir que el Rey o la Reina salgan de su propio reino
-        String rol = manager.obtenerRolJugador(p.getUniqueId());  // devuelve "Rey", "Reina" o "miembro"
+        String rol = Optional.ofNullable(manager.obtenerRolJugador(p.getUniqueId())).orElse("");
         if (rol.equalsIgnoreCase("Rey") || rol.equalsIgnoreCase("Reina")) {
             p.sendMessage(ChatColor.RED + "Los " + rol.toLowerCase() + " no pueden abandonar su reino.");
             return;
         }
 
-        // El resto de miembros sí pueden salir
         if (manager.salirReino(p.getUniqueId())) {
             p.sendMessage(ChatColor.GREEN + "Has salido del reino '" + miReino + "'.");
         } else {
@@ -355,50 +352,47 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // Encabezado
         p.sendMessage(ChatColor.GREEN + "— Información de " + ChatColor.GOLD + r.getNombre() + ChatColor.GREEN + " —");
 
-        // Etiqueta (gris oscuro + negrita)
         p.sendMessage(ChatColor.GRAY + "Etiqueta: " +
                 ChatColor.DARK_GRAY + "" + ChatColor.BOLD + r.getEtiqueta());
 
-        // Creador: nombre de usuario y rol (Rey/Reina)
         OfflinePlayer creador = Bukkit.getOfflinePlayer(r.getReyUUID());
         String nombreCreador = creador.getName() != null ? creador.getName() : r.getReyUUID().toString();
-        String rolRey = manager.obtenerRolJugador(r.getReyUUID());
+        String rolRey = Optional.ofNullable(manager.obtenerRolJugador(r.getReyUUID())).orElse("Sin rol");
+
         p.sendMessage(ChatColor.GRAY + "Creador: " +
                 ChatColor.AQUA + nombreCreador +
                 ChatColor.GRAY + " (" + ChatColor.GOLD + rolRey + ChatColor.GRAY + ")");
 
-        // Descripción
         String desc = r.getDescripcion() == null || r.getDescripcion().isBlank()
                 ? "Sin descripción"
                 : r.getDescripcion();
         p.sendMessage(ChatColor.GRAY + "Descripción: " +
                 ChatColor.WHITE + desc);
 
-        // Moneda
         p.sendMessage(ChatColor.GRAY + "Moneda: " +
                 ChatColor.GREEN + r.getMoneda());
 
-        // Fecha de creación (asumiendo que es un LocalDateTime)
-        p.sendMessage(ChatColor.GRAY + "Fecha de creación: " +
-                ChatColor.YELLOW + r.getFechaCreacion()
-                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        if (r.getFechaCreacion() != null) {
+            p.sendMessage(ChatColor.GRAY + "Fecha de creación: " +
+                    ChatColor.YELLOW + r.getFechaCreacion()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        } else {
+            p.sendMessage(ChatColor.GRAY + "Fecha de creación: " +
+                    ChatColor.RED + "No disponible");
+        }
 
-        // Miembros
         List<UUID> miembros = manager.obtenerMiembros(etiqueta);
         p.sendMessage(ChatColor.GRAY + "Miembros: " +
                 ChatColor.YELLOW + miembros.size());
 
-        // Bancos
-        BancoManager bm = new BancoManager(plugin.getBaseDeDatos());
+        BancoManager bm = new BancoManager(plugin.getBaseDeDatos(), plugin.getEconomia());
         p.sendMessage(ChatColor.GRAY + "Bancos activos: " +
                 ChatColor.YELLOW + bm.obtenerBancosDeReino(etiqueta).size());
         p.sendMessage(ChatColor.GRAY + "Solicitudes pendientes: " +
                 ChatColor.YELLOW + bm.obtenerBancosPendientes(etiqueta).size());
     }
-
 
     private void cmdTransferir(Player p, String[] args) {
         if (!p.hasPermission("menuinteractivo.reino.comandos.transferir")) {
@@ -409,8 +403,10 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.YELLOW + "Uso: /rnmi transferir <etiqueta> <jugador>");
             return;
         }
+
         String etiqueta = args[1].toLowerCase();
         String targetName = args[2];
+
         Reino reino = manager.listarReinos().stream()
                 .filter(r -> r.getEtiqueta().equalsIgnoreCase(etiqueta))
                 .findFirst().orElse(null);
@@ -418,22 +414,33 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             p.sendMessage(ChatColor.RED + "Reino '" + etiqueta + "' no encontrado.");
             return;
         }
+
         if (!reino.getReyUUID().equals(p.getUniqueId())) {
             p.sendMessage(ChatColor.RED + "Solo el rey puede transferir el liderazgo.");
             return;
         }
+
         Player target = plugin.getServer().getPlayerExact(targetName);
-        if (target == null ||
-                !manager.obtenerReinoJugador(target.getUniqueId()).equalsIgnoreCase(etiqueta)) {
-            p.sendMessage(ChatColor.RED +
-                    "El jugador debe estar conectado y ser miembro de ese reino.");
+        if (target == null) {
+            p.sendMessage(ChatColor.RED + "El jugador debe estar conectado para transferir el reino.");
             return;
         }
+
+        String reinoTarget = manager.obtenerReinoJugador(target.getUniqueId());
+        if (reinoTarget == null || !reinoTarget.equalsIgnoreCase(etiqueta)) {
+            p.sendMessage(ChatColor.RED +
+                    "El jugador debe ser miembro del reino '" + etiqueta + "'.");
+            return;
+        }
+
         if (manager.transferirLiderazgo(etiqueta, target.getUniqueId())) {
+            String genero = plugin.getBaseDeDatos().getGenero(target.getUniqueId());
+            String nuevoRol = genero.equalsIgnoreCase("Femenino") ? "Reina" : "Rey";
+
             p.sendMessage(ChatColor.GREEN +
-                    "Has transferido el liderazgo de '" + etiqueta + "' a " + targetName +".");
+                    "Has transferido el liderazgo de '" + etiqueta + "' a " + targetName + ".");
             target.sendMessage(ChatColor.GREEN +
-                    "Ahora eres el rey del reino '" + etiqueta + "'.");
+                    "Ahora eres la/el " + nuevoRol + " del reino '" + etiqueta + "'.");
         } else {
             p.sendMessage(ChatColor.RED +
                     "Error al transferir liderazgo. Revisa la consola.");
@@ -460,65 +467,66 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
                     .filter(s -> {
                         if (s.equals("crear") && !p.hasPermission("menuinteractivo.reino.comandos.crear"))
                             return false;
+                        if (s.equals("eliminar") && !p.hasPermission("menuinteractivo.reino.comandos.eliminar"))
+                            return false;
+                        if (s.equals("info") && !p.hasPermission("menuinteractivo.reino.comandos.info"))
+                            return false;
+                        if (s.equals("unirse") && !p.hasPermission("menuinteractivo.reino.comandos.unirse"))
+                            return false;
+                        if (s.equals("salir") && !p.hasPermission("menuinteractivo.reino.comandos.salir"))
+                            return false;
+                        if (s.equals("exiliar") && !p.hasPermission("menuinteractivo.reino.comandos.exiliar"))
+                            return false;
+                        if (s.equals("transferir") && !p.hasPermission("menuinteractivo.reino.comandos.transferir"))
+                            return false;
                         return s.startsWith(args[0].toLowerCase());
                     })
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         String sub = args[0].toLowerCase();
 
         // —— Subcomando 'crear' —— //
         if (sub.equals("crear")) {
-            switch (args.length) {
-                case 2 -> {
-                    // Sugerencias para etiqueta
-                    return List.of("REI01", "[XYZ]", "ABCD").stream()
-                            .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                            .toList();
-                }
-                case 3 -> {
-                    // Sugerencias para nombre del reino
-                    return List.of("Mexico", "Azteca", "Condenados", "Strados").stream()
-                            .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
-                            .toList();
-                }
-                case 4 -> {
-                    // Sugerencias para nombre de moneda
-                    return List.of("Quetzales", "platas", "cobre_Aztecas", "gemas_Condenadas").stream()
-                            .filter(s -> s.toLowerCase().startsWith(args[3].toLowerCase()))
-                            .toList();
-                }
-                case 5 -> {
-                    // Sugerencias para descripción inicial
-                    return List.of("Un_reino_poderoso", "Cuna_de_héroes", "Dominio_de_la_magia").stream()
-                            .filter(s -> s.toLowerCase().startsWith(args[4].toLowerCase()))
-                            .toList();
-                }
-                default -> {
-                    return List.of(); // Nada para args[6+] (descripción libre)
-                }
-            }
+            return switch (args.length) {
+                case 2 -> List.of("REI01", "[XYZ]", "ABCD").stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                        .toList();
+                case 3 -> List.of("Mexico", "Azteca", "Condenados", "Strados").stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                        .toList();
+                case 4 -> List.of("Quetzales", "platas", "cobre_Aztecas", "gemas_Condenadas").stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[3].toLowerCase()))
+                        .toList();
+                case 5 -> List.of("Un_reino_poderoso", "Cuna_de_héroes", "Dominio_de_la_magia").stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[4].toLowerCase()))
+                        .toList();
+                default -> List.of();
+            };
         }
 
-        // —— Otros subcomandos —— //
         if (args.length == 2) {
             switch (sub) {
                 case "salir", "eliminar", "info", "lista", "unirse" -> {
                     return manager.listarReinos().stream()
                             .map(Reino::getEtiqueta)
-                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .filter(e -> e != null && e.toLowerCase().startsWith(args[1].toLowerCase()))
                             .toList();
                 }
                 case "transferir" -> {
                     return manager.listarReinos().stream()
+                            .filter(r -> r.getReyUUID().equals(p.getUniqueId())) // solo tus reinos
                             .map(Reino::getEtiqueta)
-                            .filter(e -> e.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .filter(e -> e != null && e.toLowerCase().startsWith(args[1].toLowerCase()))
                             .toList();
                 }
                 case "exiliar" -> {
-                    return manager.obtenerMiembros(manager.obtenerReinoJugador(p.getUniqueId())).stream()
+                    String reinoJugador = manager.obtenerReinoJugador(p.getUniqueId());
+                    if (reinoJugador == null) return List.of();
+                    return manager.obtenerMiembros(reinoJugador).stream()
                             .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
-                            .filter(name -> name != null && name.toLowerCase().startsWith(args[1].toLowerCase()))
+                            .filter(Objects::nonNull)
+                            .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                             .toList();
                 }
             }
@@ -529,10 +537,11 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
             return manager.obtenerMiembros(etiqueta).stream()
                     .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
                     .filter(Objects::nonNull)
-                    .filter(n -> n.toLowerCase().startsWith(args[2].toLowerCase()))
+                    .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
                     .toList();
         }
 
         return Collections.emptyList();
     }
+
 }

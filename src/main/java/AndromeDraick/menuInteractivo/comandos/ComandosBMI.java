@@ -32,7 +32,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
     public ComandosBMI(MenuInteractivo plugin) {
         this.plugin       = plugin;
-        this.bancoManager = new BancoManager(plugin.getBaseDeDatos());
+        this.bancoManager = new BancoManager(plugin.getBaseDeDatos(), plugin.getEconomia());
         this.economia     = plugin.getEconomia();
         PluginCommand cmd = plugin.getCommand("bmi");
         cmd.setExecutor(this);
@@ -250,20 +250,23 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdImprimirMoneda(Player p, String[] args) {
-        if (args.length != 3) {
-            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi imprimir <moneda> <cantidad>");
+        if (args.length < 3) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi imprimir \"<nombre de moneda>\" <cantidad>");
             return;
         }
 
-        String nombreMoneda = args[1];
+        String cantidadStr = args[args.length - 1];
         double cantidad;
         try {
-            cantidad = Double.parseDouble(args[2]);
+            cantidad = Double.parseDouble(cantidadStr);
             if (cantidad <= 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
             p.sendMessage(ChatColor.RED + "Cantidad inválida.");
             return;
         }
+
+        String nombreMoneda = String.join(" ", Arrays.copyOfRange(args, 1, args.length - 1))
+                .replace("\"", "").trim();
 
         String banco = bancoManager.obtenerBancoPropietario(p.getUniqueId());
         if (banco == null) {
@@ -297,20 +300,23 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdQuemarMoneda(Player p, String[] args) {
-        if (args.length != 3) {
-            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi quemar <moneda> <cantidad>");
+        if (args.length < 3) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi quemar \"<nombre de moneda>\" <cantidad>");
             return;
         }
 
-        String nombreMoneda = args[1];
+        String cantidadStr = args[args.length - 1];
         double cantidad;
         try {
-            cantidad = Double.parseDouble(args[2]);
+            cantidad = Double.parseDouble(cantidadStr);
             if (cantidad <= 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
             p.sendMessage(ChatColor.RED + "Cantidad inválida.");
             return;
         }
+
+        String nombreMoneda = String.join(" ", Arrays.copyOfRange(args, 1, args.length - 1))
+                .replace("\"", "").trim();
 
         String banco = bancoManager.obtenerBancoPropietario(p.getUniqueId());
         if (banco == null) {
@@ -344,8 +350,8 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdConvertirMoneda(Player p, String[] args) {
-        if (args.length != 4 || !args[2].equalsIgnoreCase("a")) {
-            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi convertir <dineroServidor> a <moneda>");
+        if (args.length < 4) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi convertir <dineroServidor> a \"<nombre de moneda>\"");
             return;
         }
 
@@ -358,7 +364,23 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String nombreMoneda = args[3];
+        // Buscar el índice de "a"
+        int indiceA = -1;
+        for (int i = 2; i < args.length; i++) {
+            if (args[i].equalsIgnoreCase("a")) {
+                indiceA = i;
+                break;
+            }
+        }
+
+        if (indiceA == -1 || indiceA == args.length - 1) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi convertir <dineroServidor> a \"<nombre de moneda>\"");
+            return;
+        }
+
+        String nombreMoneda = String.join(" ", Arrays.copyOfRange(args, indiceA + 1, args.length))
+                .replace("\"", "").trim();
+
         String banco = bancoManager.obtenerBancoPropietario(p.getUniqueId());
         if (banco == null) {
             p.sendMessage(ChatColor.RED + "No eres propietario de ningún banco aprobado.");
@@ -421,9 +443,9 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdIntercambiarMonedas(Player p, String[] args) {
-        // /bmi intercambiar <cantidad> <moneda_origen> a <moneda_destino>
-        if (args.length != 5 || !args[3].equalsIgnoreCase("a")) {
-            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi intercambiar <cantidad> <moneda_origen> a <moneda_destino>");
+        // /bmi intercambiar <cantidad> "<moneda_origen>" a "<moneda_destino>"
+        if (args.length < 5) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi intercambiar <cantidad> \"<moneda_origen>\" a \"<moneda_destino>\"");
             return;
         }
 
@@ -436,10 +458,28 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String monedaOrigen = args[2];
-        String monedaDestino = args[4];
+        // Buscar el índice de "a"
+        int indiceA = -1;
+        for (int i = 2; i < args.length; i++) {
+            if (args[i].equalsIgnoreCase("a")) {
+                indiceA = i;
+                break;
+            }
+        }
 
-        // Obtener info de ambas monedas
+        if (indiceA == -1 || indiceA == args.length - 1) {
+            p.sendMessage(ChatColor.RED + "Faltan monedas origen o destino.");
+            return;
+        }
+
+        String monedaOrigen = String.join(" ", Arrays.copyOfRange(args, 2, indiceA)).replace("\"", "").trim();
+        String monedaDestino = String.join(" ", Arrays.copyOfRange(args, indiceA + 1, args.length)).replace("\"", "").trim();
+
+        if (monedaOrigen.isEmpty() || monedaDestino.isEmpty()) {
+            p.sendMessage(ChatColor.RED + "Faltan nombres válidos para las monedas.");
+            return;
+        }
+
         MonedasReinoInfo origen = bancoManager.obtenerInfoMonedaPorNombre(monedaOrigen);
         MonedasReinoInfo destino = bancoManager.obtenerInfoMonedaPorNombre(monedaDestino);
 
@@ -461,26 +501,24 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // Calcular valor intermedio en dinero del servidor y convertirlo
         double enDineroServidor = cantidad * valorOrigen;
         double cantidadDestino = enDineroServidor / valorDestino;
 
         UUID uuid = p.getUniqueId();
 
-        // Verificar saldo
         double saldoOrigen = bancoManager.getSaldoMonedaJugador(uuid, origen.getEtiquetaReino());
         if (saldoOrigen < cantidad) {
             p.sendMessage(ChatColor.RED + "No tienes suficiente saldo de " + monedaOrigen + " (" + saldoOrigen + ")");
             return;
         }
 
-        // Realizar intercambio
         bancoManager.restarMonedaJugador(uuid, origen.getEtiquetaReino(), cantidad);
         bancoManager.sumarMonedaJugador(uuid, destino.getEtiquetaReino(), cantidadDestino);
 
         p.sendMessage(ChatColor.GREEN + "Intercambiaste " + cantidad + " " + monedaOrigen +
                 " por " + String.format("%.2f", cantidadDestino) + " " + monedaDestino);
     }
+
 
     private void cmdUnirSalir(Player p, String[] args, boolean unir) {
         // /bmi unir|salir <Etiqueta>
@@ -690,7 +728,8 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             case "imprimir", "quemar" -> {
                 if (args.length == 2) {
                     return bancoManager.obtenerMonedasJugables().stream()
-                            .filter(m -> m.startsWith(args[1].toLowerCase()))
+                            .map(m -> "\"" + m + "\"")
+                            .filter(m -> m.toLowerCase().startsWith(args[1].toLowerCase()))
                             .collect(Collectors.toList());
                 }
                 if (args.length == 3) {
@@ -702,19 +741,23 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             case "convertir" -> {
                 if (args.length == 2) return List.of("100", "500", "1000");
                 if (args.length == 3) return List.of("a");
-                if (args.length == 4) {
+                if (args.length >= 4) {
                     return bancoManager.obtenerMonedasJugables().stream()
-                            .filter(m -> m.startsWith(args[3].toLowerCase()))
+                            .map(m -> "\"" + m + "\"")
+                            .filter(m -> m.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                             .collect(Collectors.toList());
                 }
             }
             case "intercambiar" -> {
                 if (args.length == 2) return List.of("100", "500", "1000");
+
                 if (args.length == 3 || args.length == 5) {
                     return bancoManager.obtenerMonedasJugables().stream()
-                            .filter(m -> m.startsWith(args[args.length - 1].toLowerCase()))
+                            .map(m -> "\"" + m + "\"")
+                            .filter(m -> m.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                             .collect(Collectors.toList());
                 }
+
                 if (args.length == 4) return List.of("a");
             }
         }

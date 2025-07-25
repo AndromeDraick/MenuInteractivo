@@ -55,7 +55,8 @@ public class GestorBaseDeDatos {
                     "estado TEXT DEFAULT 'pendiente', " +
                     "fondos REAL DEFAULT 0, " +
                     "tasa_interes REAL DEFAULT 0.01, " +
-                    "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                    "fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                    "monedas_disponibles REAL DEFAULT 0 " +
                     ")");
 
             // Jugadores de banco
@@ -123,7 +124,18 @@ public class GestorBaseDeDatos {
                     "uuid_jugador TEXT NOT NULL," +
                     "etiqueta_reino TEXT NOT NULL," +
                     "saldo REAL DEFAULT 0," +
-                    "PRIMARY KEY(uuid_jugador, etiqueta_reino)");
+                    "PRIMARY KEY(uuid_jugador, etiqueta_reino)" +
+                    ")");
+            // Solicitudes de adquisición de moneda
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS solicitudes_monedas (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "uuid_jugador TEXT NOT NULL," +
+                    "etiqueta_banco TEXT NOT NULL," +
+                    "cantidad REAL NOT NULL," +
+                    "estado TEXT DEFAULT 'pendiente'," +
+                    "fecha DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
         }
@@ -1414,7 +1426,5 @@ public class GestorBaseDeDatos {
             return false;
         }
     }
-
-
 
 }

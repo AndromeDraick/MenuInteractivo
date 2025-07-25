@@ -25,9 +25,7 @@ public class MenuMonedas implements Listener {
 
     public MenuMonedas(MenuInteractivo plugin) {
         this.plugin = plugin;
-        this.bancoManager = new BancoManager(plugin.getBaseDeDatos());
-
-        // Registrar este listener directamente
+        this.bancoManager = new BancoManager(plugin.getBaseDeDatos(), plugin.getEconomia());
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -46,25 +44,34 @@ public class MenuMonedas implements Listener {
             double convertidas = moneda.getDineroConvertido();
 
             double enCirculacion = impresas - quemadas;
-            if (enCirculacion < 1) enCirculacion = 1; // evitar división por 0 o negativos
+            if (enCirculacion < 1) enCirculacion = 1;
 
             double valor = convertidas / enCirculacion;
+            double inverso = valor > 0 ? (1.0 / valor) : 0;
+
+            ChatColor colorValor;
+            if (valor >= 1) colorValor = ChatColor.GREEN;
+            else if (valor <= 0.3) colorValor = ChatColor.RED;
+            else colorValor = ChatColor.YELLOW;
+
             UUID uuidJugador = jugador.getUniqueId();
             String etiquetaReino = moneda.getEtiquetaReino();
-
             plugin.getBancoManager().crearCuentaMonedaSiNoExiste(uuidJugador, etiquetaReino);
             double saldoJugador = plugin.getBancoManager().obtenerSaldoCuenta(uuidJugador, etiquetaReino);
 
             meta.setDisplayName(ChatColor.GOLD + moneda.getNombreMoneda());
             meta.setLore(List.of(
                     ChatColor.GRAY + "Reino: " + ChatColor.YELLOW + moneda.getEtiquetaReino(),
-                    ChatColor.GRAY + "Valor: " + ChatColor.AQUA + formato.format(valor) + " $ por 1 Reina",
+                    ChatColor.GRAY + "Valor:" + colorValor + "  $1 " + " = $" + formato.format(valor) + " Reinas",
+                    ChatColor.GRAY + "Valor:" +colorValor + "  $1 Reina ≈ $" + formato.format(inverso) ,
+                    ChatColor.GRAY + "En circulación: " + ChatColor.GOLD + formato.format(enCirculacion),
                     ChatColor.GRAY + "Impresa: " + ChatColor.YELLOW + formato.format(impresas),
                     ChatColor.GRAY + "Quemada: " + ChatColor.RED + formato.format(quemadas),
                     ChatColor.GRAY + "Convertida: " + ChatColor.GREEN + formato.format(convertidas),
                     ChatColor.GRAY + "Fecha: " + ChatColor.WHITE + moneda.getFechaCreacion(),
-                    ChatColor.GRAY + "Tu saldo: " + ChatColor.LIGHT_PURPLE + formato.format(saldoJugador)
+                    ChatColor.GRAY + "Tu saldo: " + ChatColor.LIGHT_PURPLE + "$" + formato.format(saldoJugador)
             ));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
             menu.addItem(item);
         }

@@ -32,6 +32,7 @@ public final class MenuInteractivo extends JavaPlugin {
     private MenuMonedas menuMonedas;
     private MenuCuentaBanco menuCuentaBanco;
     private BancoManager bancoManager;
+    private MenuCirculacionMonetaria menuCirculacionMonetaria;
 
 
     @Override
@@ -98,6 +99,7 @@ public final class MenuInteractivo extends JavaPlugin {
         this.menuMonedas = new MenuMonedas(this);
         this.menuCuentaBanco = new MenuCuentaBanco(this);
         bancoManager = new BancoManager(baseDeDatos, economia);
+        this.menuCirculacionMonetaria = new MenuCirculacionMonetaria(this);
 
         getLogger().info("  MenuInteractivo activado correctamente.");
 
@@ -174,10 +176,12 @@ public final class MenuInteractivo extends JavaPlugin {
     }
 
     public BancoManager getBancoManager() {
-        return new BancoManager(baseDeDatos);
+        return new BancoManager(baseDeDatos, economia);
     }
 
-
+    public MenuCirculacionMonetaria getMenuCirculacionMonetaria() {
+        return menuCirculacionMonetaria;
+    }
 
     public GestorBaseDeDatos getBaseDeDatos() {
         return baseDeDatos;

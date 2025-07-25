@@ -92,7 +92,7 @@ public class MenuCuentaBanco implements Listener {
             case 15 -> {
                 jugador.closeInventory();
                 jugador.sendMessage(ChatColor.YELLOW + "Escribe la cantidad y el jugador al que deseas transferir. Ejemplo:");
-                jugador.sendMessage(ChatColor.GRAY + "   100 GalletaOscura");
+                jugador.sendMessage(ChatColor.GRAY + "   100 Pablo");
                 esperandoTransferencia.put(jugador.getUniqueId(), etiqueta);
             }
             case 26 -> jugador.closeInventory();
@@ -114,11 +114,12 @@ public class MenuCuentaBanco implements Listener {
                     jugador.sendMessage(ChatColor.RED + "El monto debe ser mayor a 0.");
                     return;
                 }
-                boolean exito = bancoManager.depositarAMiCuenta(uuid, etiqueta, monto);
-                if (exito) {
-                    jugador.sendMessage(ChatColor.GREEN + "Has depositado " + formato.format(monto) + " monedas en tu cuenta.");
+
+                boolean registrada = bancoManager.registrarSolicitudMoneda(uuid, etiqueta, monto);
+                if (registrada) {
+                    jugador.sendMessage(ChatColor.GREEN + "Tu solicitud para adquirir " + formato.format(monto) + " monedas ha sido enviada al banco.");
                 } else {
-                    jugador.sendMessage(ChatColor.RED + "No tienes suficientes monedas para depositar.");
+                    jugador.sendMessage(ChatColor.RED + "No se pudo registrar la solicitud. Intenta más tarde.");
                 }
             } catch (NumberFormatException e) {
                 jugador.sendMessage(ChatColor.RED + "Número inválido.");

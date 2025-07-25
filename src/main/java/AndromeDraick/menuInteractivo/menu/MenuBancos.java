@@ -35,7 +35,7 @@ public class MenuBancos implements Listener {
 
     public MenuBancos(MenuInteractivo plugin) {
         this.plugin       = plugin;
-        this.bancoManager = new BancoManager(plugin.getBaseDeDatos());
+        this.bancoManager = new BancoManager(plugin.getBaseDeDatos(),plugin.getEconomia());
         this.economia     = plugin.getEconomia();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -122,27 +122,28 @@ public class MenuBancos implements Listener {
 
         Inventory inv = Bukkit.createInventory(null, 27, TITULO_INDIVIDUAL + etiqueta);
 
-        // Saldo
-        ItemStack saldo = new ItemStack(Material.SUNFLOWER);
-        ItemMeta ms = saldo.getItemMeta();
-        ms.setDisplayName(ChatColor.YELLOW + "Saldo");
-        ms.setLore(List.of(ChatColor.GREEN + "$" + b.getFondos()));
-        saldo.setItemMeta(ms);
-        inv.setItem(11, saldo);
+        // Saldo de monedas impresas disponibles
+        ItemStack saldoMonedas = new ItemStack(Material.EMERALD_BLOCK);
+        ItemMeta meta = saldoMonedas.getItemMeta();
+        meta.setDisplayName(ChatColor.GREEN + "Monedas impresas disponibles");
+        meta.setLore(List.of(ChatColor.GOLD + String.valueOf(bancoManager.obtenerCantidadImpresaDisponible(etiqueta))));
+        saldoMonedas.setItemMeta(meta);
+        inv.setItem(13, saldoMonedas);
 
-        // Retirar $100
-        ItemStack ret = new ItemStack(Material.REDSTONE);
-        ItemMeta mr = ret.getItemMeta();
-        mr.setDisplayName(ChatColor.RED + "Retirar $100");
-        ret.setItemMeta(mr);
-        inv.setItem(13, ret);
+        // Obtener número de solicitudes pendientes
+        int solicitudes = bancoManager.obtenerSolicitudesPendientes(etiqueta).size();
 
-        // Ingresar $100
-        ItemStack ing = new ItemStack(Material.EMERALD);
-        ItemMeta mi = ing.getItemMeta();
-        mi.setDisplayName(ChatColor.GREEN + "Ingresar $100");
-        ing.setItemMeta(mi);
-        inv.setItem(15, ing);
+        // Botón para abrir MenuCirculacionMonetaria
+        ItemStack verSolicitudes = new ItemStack(Material.YELLOW_BUNDLE);
+        verSolicitudes.setAmount(Math.min(64, Math.max(1, solicitudes))); // prevenir 0 o más de 64
+        ItemMeta m = verSolicitudes.getItemMeta();
+        m.setDisplayName(ChatColor.YELLOW + "Ver solicitudes de moneda");
+        m.setLore(List.of(
+                ChatColor.GRAY + "Pendientes: " + solicitudes,
+                ChatColor.GRAY + "Haz clic para revisar y aceptar"
+        ));
+        verSolicitudes.setItemMeta(m);
+        inv.setItem(15, verSolicitudes);
 
         p.openInventory(inv);
     }
@@ -186,28 +187,13 @@ public class MenuBancos implements Listener {
         }
 
         // 3.3) Vista individual
-        if (title.startsWith(PLAIN_INDIVIDUAL)) {
-            String tag    = title.substring(PLAIN_INDIVIDUAL.length());
-            double fondos = bancoManager.getSaldoBanco(tag);
 
-            if (it.getType() == Material.REDSTONE) {
-                // retirar
-                if (fondos >= 100 && bancoManager.retirarBanco(tag, 100)) {
-                    economia.depositPlayer(p, 100);
-                    p.sendMessage(ChatColor.GREEN + "Retiraste $100 de " + tag);
-                } else {
-                    p.sendMessage(ChatColor.RED + "No hay fondos suficientes en el banco.");
-                }
-            } else if (it.getType() == Material.EMERALD) {
-                // ingresar
-                if (economia.getBalance(p) >= 100 && bancoManager.depositarBanco(tag, 100)) {
-                    economia.withdrawPlayer(p, 100);
-                    p.sendMessage(ChatColor.GREEN + "Ingresaste $100 al banco " + tag);
-                } else {
-                    p.sendMessage(ChatColor.RED + "No tienes $100 para ingresar.");
-                }
+        if (title.startsWith(PLAIN_INDIVIDUAL)) {
+            String tag = title.substring(PLAIN_INDIVIDUAL.length());
+            ItemMeta meta = it.getItemMeta();
+            if (it.getType() == Material.YELLOW_BUNDLE && meta.getDisplayName().contains("Ver solicitudes")) {
+                plugin.getMenuCirculacionMonetaria().abrirMenu(p, tag);
             }
-            p.closeInventory();
         }
     }
 

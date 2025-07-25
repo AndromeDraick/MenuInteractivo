@@ -1,8 +1,10 @@
 package AndromeDraick.menuInteractivo.managers;
 
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
+import AndromeDraick.menuInteractivo.database.HikariProvider;
 import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
+import AndromeDraick.menuInteractivo.model.SolicitudMoneda;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -234,10 +236,120 @@ public class BancoManager {
         return db.modificarSaldoJugador(jugadorUUID, reino, cantidad);
     }
 
+    public boolean esPropietarioBanco(UUID jugadorUUID, String etiquetaBanco) {
+        return db.esPropietarioBanco(jugadorUUID, etiquetaBanco);
+    }
+
 
     public boolean transferirEntreJugadores(UUID emisor, UUID receptor, String etiquetaBanco, double monto) {
         String reino = obtenerReinoDeBanco(etiquetaBanco);
         return db.transferirEntreJugadores(emisor, receptor, reino, monto);
+    }
+
+    public boolean registrarSolicitudMoneda(UUID jugador, String bancoEtiqueta, double cantidad) {
+        String sql = "INSERT INTO solicitudes_monedas (uuid_jugador, etiqueta_banco, cantidad) VALUES (?, ?, ?)";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, jugador.toString());
+            stmt.setString(2, bancoEtiqueta);
+            stmt.setDouble(3, cantidad);
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("[MI] Error al registrar solicitud de moneda: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<SolicitudMoneda> obtenerSolicitudesPendientes(String bancoEtiqueta) {
+        List<SolicitudMoneda> lista = new ArrayList<>();
+        String sql = "SELECT id, uuid_jugador, cantidad, fecha FROM solicitudes_monedas WHERE etiqueta_banco = ? AND estado = 'pendiente'";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, bancoEtiqueta);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                UUID uuid = UUID.fromString(rs.getString("uuid_jugador"));
+                double cantidad = rs.getDouble("cantidad");
+                String fecha = rs.getString("fecha");
+                lista.add(new SolicitudMoneda(id, uuid, bancoEtiqueta, cantidad, "pendiente", fecha));
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MI] Error al obtener solicitudes pendientes: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public boolean procesarSolicitud(int idSolicitud, boolean aceptar) {
+        String select = "SELECT uuid_jugador, etiqueta_banco, cantidad FROM solicitudes_monedas WHERE id = ?";
+        String update = "UPDATE solicitudes_monedas SET estado = ? WHERE id = ?";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmtSelect = conn.prepareStatement(select);
+             PreparedStatement stmtUpdate = conn.prepareStatement(update)) {
+
+            stmtSelect.setInt(1, idSolicitud);
+            ResultSet rs = stmtSelect.executeQuery();
+            if (!rs.next()) return false;
+
+            UUID jugador = UUID.fromString(rs.getString("uuid_jugador"));
+            String banco = rs.getString("etiqueta_banco");
+            double cantidad = rs.getDouble("cantidad");
+
+            String nuevoEstado = aceptar ? "aceptada" : "rechazada";
+
+            stmtUpdate.setString(1, nuevoEstado);
+            stmtUpdate.setInt(2, idSolicitud);
+            stmtUpdate.executeUpdate();
+
+            if (aceptar) {
+                // Verificar si el banco tiene saldo impreso disponible
+                double disponible = obtenerCantidadImpresaDisponible(banco);
+                if (disponible < cantidad) return false;
+
+                descontarCantidadImpresaDisponible(banco, cantidad);
+                depositarAMiCuenta(jugador, banco, cantidad);
+            }
+
+            return true;
+
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("[MI] Error al procesar solicitud de moneda: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public double obtenerCantidadImpresaDisponible(String etiquetaBanco) {
+        String sql = "SELECT monedas_disponibles FROM bancos WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaBanco);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("monedas_disponibles");
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("[MI] Error al obtener monedas disponibles del banco: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean descontarCantidadImpresaDisponible(String etiquetaBanco, double cantidad) {
+        double disponible = obtenerCantidadImpresaDisponible(etiquetaBanco);
+        if (disponible < cantidad) return false;
+
+        String sql = "UPDATE bancos SET monedas_disponibles = monedas_disponibles - ? WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, cantidad);
+            stmt.setString(2, etiquetaBanco);
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("[MI] Error al descontar monedas del banco: " + e.getMessage());
+            return false;
+        }
     }
 
 }

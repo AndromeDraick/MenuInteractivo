@@ -89,9 +89,14 @@ public class BancoManager {
         return db.obtenerReinoDeBanco(etiquetaBanco);
     }
 
+    public String obtenerReinoDeBanco(String etiquetaBanco, Connection conn) throws SQLException {
+        return db.obtenerReinoDeBanco(etiquetaBanco, conn);
+    }
+
     public String obtenerNombreMonedaDeReino(String etiquetaReino) {
         return db.obtenerMonedaDeReino(etiquetaReino);
     }
+
 
     public boolean tienePermisoContrato(String banco, String reino, String permiso) {
         return db.tienePermisoContrato(banco, reino, permiso);
@@ -215,25 +220,18 @@ public class BancoManager {
         return db.obtenerSaldoJugador(jugador, etiquetaReino);
     }
 
-    public boolean depositarAMiCuenta(UUID jugadorUUID, String etiquetaBanco, double cantidad) {
-        if (cantidad <= 0) return false;
+    public void depositarAMiCuenta(UUID uuidJugador, String reino, double cantidad, Connection conn) throws SQLException {
+        String sql = "INSERT INTO cuentas_monedas (uuid_jugador, etiqueta_reino, cantidad) " +
+                "VALUES (?, ?, ?) " +
+                "ON CONFLICT(uuid_jugador, etiqueta_reino) DO UPDATE SET cantidad = cantidad + ?";
 
-        String reino = obtenerReinoDeBanco(etiquetaBanco);
-        if (reino == null) return false;
-
-        String moneda = obtenerNombreMonedaDeReino(reino);
-        if (moneda == null) return false;
-
-        OfflinePlayer player = Bukkit.getOfflinePlayer(jugadorUUID);
-        if (!player.hasPlayedBefore()) return false;
-
-        if (economia.getBalance(player) < cantidad) return false;
-
-        // Retirar dinero al jugador
-        economia.withdrawPlayer(player, cantidad);
-
-        // Agregar a su cuenta bancaria interna
-        return db.modificarSaldoJugador(jugadorUUID, reino, cantidad);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, uuidJugador.toString());
+            stmt.setString(2, reino);
+            stmt.setDouble(3, cantidad);
+            stmt.setDouble(4, cantidad);
+            stmt.executeUpdate();
+        }
     }
 
     public boolean esPropietarioBanco(UUID jugadorUUID, String etiquetaBanco) {
@@ -282,36 +280,43 @@ public class BancoManager {
     }
 
     public boolean procesarSolicitud(int idSolicitud, boolean aceptar) {
-        String select = "SELECT uuid_jugador, etiqueta_banco, cantidad FROM solicitudes_monedas WHERE id = ?";
+        String select = "SELECT uuid_jugador, etiqueta_banco, cantidad, estado FROM solicitudes_monedas WHERE id = ?";
         String update = "UPDATE solicitudes_monedas SET estado = ? WHERE id = ?";
 
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmtSelect = conn.prepareStatement(select);
              PreparedStatement stmtUpdate = conn.prepareStatement(update)) {
 
+            conn.setAutoCommit(false); // 🟡 Iniciar transacción
+
             stmtSelect.setInt(1, idSolicitud);
             ResultSet rs = stmtSelect.executeQuery();
             if (!rs.next()) return false;
 
+            String estadoActual = rs.getString("estado");
+            if (!estadoActual.equalsIgnoreCase("pendiente")) return false;
+
             UUID jugador = UUID.fromString(rs.getString("uuid_jugador"));
-            String banco = rs.getString("etiqueta_banco");
+            String etiquetaBanco = rs.getString("etiqueta_banco");
             double cantidad = rs.getDouble("cantidad");
 
-            String nuevoEstado = aceptar ? "aceptada" : "rechazada";
-
-            stmtUpdate.setString(1, nuevoEstado);
+            stmtUpdate.setString(1, aceptar ? "aceptada" : "rechazada");
             stmtUpdate.setInt(2, idSolicitud);
             stmtUpdate.executeUpdate();
 
             if (aceptar) {
-                // Verificar si el banco tiene saldo impreso disponible
-                double disponible = obtenerCantidadImpresaDisponible(banco);
-                if (disponible < cantidad) return false;
+                double disponible = obtenerCantidadImpresaDisponible(etiquetaBanco, conn);
+                if (disponible < cantidad) {
+                    conn.rollback();
+                    return false;
+                }
 
-                descontarCantidadImpresaDisponible(banco, cantidad);
-                depositarAMiCuenta(jugador, banco, cantidad);
+                descontarCantidadImpresaDisponible(etiquetaBanco, cantidad, conn);
+                String reino = obtenerReinoDeBanco(etiquetaBanco, conn);
+                depositarAMiCuenta(jugador, reino, cantidad, conn);
             }
 
+            conn.commit(); // ✅ Confirmar cambios
             return true;
 
         } catch (SQLException e) {
@@ -320,36 +325,51 @@ public class BancoManager {
         }
     }
 
-    public double obtenerCantidadImpresaDisponible(String etiquetaBanco) {
+    public double obtenerCantidadImpresaDisponible(String etiquetaBanco, Connection conn) throws SQLException {
         String sql = "SELECT monedas_disponibles FROM bancos WHERE etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, etiquetaBanco);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("monedas_disponibles");
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("monedas_disponibles");
+                }
             }
-        } catch (SQLException e) {
-            Bukkit.getLogger().severe("[MI] Error al obtener monedas disponibles del banco: " + e.getMessage());
         }
         return 0;
     }
 
-    public boolean descontarCantidadImpresaDisponible(String etiquetaBanco, double cantidad) {
-        double disponible = obtenerCantidadImpresaDisponible(etiquetaBanco);
-        if (disponible < cantidad) return false;
-
+    public void descontarCantidadImpresaDisponible(String etiquetaBanco, double cantidad, Connection conn) throws SQLException {
         String sql = "UPDATE bancos SET monedas_disponibles = monedas_disponibles - ? WHERE etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDouble(1, cantidad);
             stmt.setString(2, etiquetaBanco);
             stmt.executeUpdate();
+        }
+    }
+
+    public boolean aumentarMonedasDisponiblesBanco(String etiquetaBanco, double cantidad) {
+        return db.aumentarMonedasDisponiblesBanco(etiquetaBanco, cantidad);
+    }
+
+    public double obtenerCantidadImpresaDisponible(String etiquetaBanco) {
+        try (Connection conn = HikariProvider.getConnection()) {
+            return obtenerCantidadImpresaDisponible(etiquetaBanco, conn);
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("[MI] Error al obtener cantidad impresa disponible: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public boolean descontarCantidadImpresaDisponible(String etiquetaBanco, double cantidad) {
+        try (Connection conn = HikariProvider.getConnection()) {
+            descontarCantidadImpresaDisponible(etiquetaBanco, cantidad, conn);
             return true;
         } catch (SQLException e) {
-            Bukkit.getLogger().severe("[MI] Error al descontar monedas del banco: " + e.getMessage());
+            Bukkit.getLogger().severe("[MI] Error al descontar cantidad disponible: " + e.getMessage());
             return false;
         }
     }
+
+
 
 }

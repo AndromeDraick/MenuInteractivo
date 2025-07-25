@@ -681,6 +681,18 @@ public class GestorBaseDeDatos {
         return null;
     }
 
+    public String obtenerReinoDeBanco(String etiquetaBanco, Connection conn) throws SQLException {
+        String sql = "SELECT reino_etiqueta FROM bancos WHERE etiqueta = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaBanco);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("reino_etiqueta");
+                }
+            }
+        }
+        return null;
+    }
 
     public boolean tienePermisoContrato(String banco, String reino, String permisoBuscado) {
         String sql = "SELECT permisos, fecha_fin FROM contratos_banco_reino " +
@@ -1423,6 +1435,19 @@ public class GestorBaseDeDatos {
 
         } catch (SQLException e) {
             plugin.getLogger().severe("[MI] Error al transferir monedas entre jugadores: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean aumentarMonedasDisponiblesBanco(String etiquetaBanco, double cantidad) {
+        String sql = "UPDATE bancos SET monedas_disponibles = monedas_disponibles + ? WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, cantidad);
+            stmt.setString(2, etiquetaBanco);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("[MI] Error al aumentar monedas disponibles del banco: " + e.getMessage());
             return false;
         }
     }

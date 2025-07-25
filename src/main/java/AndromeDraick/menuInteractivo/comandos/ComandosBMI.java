@@ -291,9 +291,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)) {
+        if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)
+                && bancoManager.aumentarMonedasDisponiblesBanco(banco, cantidad)) {
+
             bancoManager.registrarMovimiento(banco, "imprimir", p.getUniqueId().toString(), cantidad);
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
+
         } else {
             p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");
         }
@@ -341,9 +344,18 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (bancoManager.incrementarCantidadQuemada(reinoDelBanco, cantidad)) {
+        double disponibles = bancoManager.obtenerCantidadImpresaDisponible(banco);
+        if (disponibles < cantidad) {
+            p.sendMessage(ChatColor.RED + "No tienes suficientes monedas impresas disponibles para quemar.");
+            return;
+        }
+
+        if (bancoManager.incrementarCantidadQuemada(reinoDelBanco, cantidad)
+                && bancoManager.descontarCantidadImpresaDisponible(banco, cantidad)) {
+
             bancoManager.registrarMovimiento(banco, "quemar", p.getUniqueId().toString(), cantidad);
             p.sendMessage(ChatColor.YELLOW + "Se quemaron " + cantidad + " " + nombreMoneda + " del reino " + reinoDelBanco);
+
         } else {
             p.sendMessage(ChatColor.RED + "Error al quemar moneda. Revisa la consola.");
         }

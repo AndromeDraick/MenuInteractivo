@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.event.inventory.InventoryDragEvent;
+
 public class MenuCirculacionMonetaria implements Listener {
 
     private final MenuInteractivo plugin;
@@ -72,6 +74,7 @@ public class MenuCirculacionMonetaria implements Listener {
         event.setCancelled(true);
         Player jugador = (Player) event.getWhoClicked();
         List<SolicitudMoneda> solicitudes = solicitudesPorJugador.get(jugador.getUniqueId());
+        if (event.getClickedInventory() == null || !event.getClickedInventory().equals(event.getView().getTopInventory())) return;
         int slot = event.getSlot();
         if (slot < 0 || slot >= solicitudes.size()) return;
 
@@ -88,4 +91,13 @@ public class MenuCirculacionMonetaria implements Listener {
         // Refrescar menú
         abrirMenu(jugador, solicitud.getEtiquetaBanco());
     }
+
+    @EventHandler
+    public void alArrastrarSolicitud(InventoryDragEvent event) {
+        String titulo = event.getView().getTitle();
+        if (titulo.equals(ChatColor.YELLOW + "Solicitudes de Moneda")) {
+            event.setCancelled(true);
+        }
+    }
+
 }

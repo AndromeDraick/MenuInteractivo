@@ -11,11 +11,8 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class ComandosBMI implements CommandExecutor, TabCompleter {
 
@@ -48,11 +45,35 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         Player p = (Player) sender;
 
         if (args.length == 0 || args[0].equalsIgnoreCase("ayuda")) {
+            if (!p.hasPermission("menuinteractivo.banco.ayuda")) {
+                p.sendMessage(ChatColor.RED + "No tienes permiso para ver la ayuda.");
+                return true;
+            }
             mostrarAyuda(p);
             return true;
         }
 
         String sub = args[0].toLowerCase();
+        String permisoBase = "menuinteractivo.banco.";
+        Map<String, String> permisosPorSub = new HashMap<>();
+        permisosPorSub.put("crear", "crear");
+        permisosPorSub.put("pendientes", "pendientes");
+        permisosPorSub.put("aprobar", "aprobar");
+        permisosPorSub.put("rechazar", "rechazar");
+        permisosPorSub.put("listar", "lista");
+        permisosPorSub.put("unir", "unirse");
+        permisosPorSub.put("salir", "salir");
+        permisosPorSub.put("saldo", "saldo");
+        permisosPorSub.put("depositar", "depositar");
+        permisosPorSub.put("retirar", "retirar");
+        permisosPorSub.put("banco", "banco");
+        permisosPorSub.put("historial", "historial");
+
+        if (permisosPorSub.containsKey(sub) && !p.hasPermission(permisoBase + permisosPorSub.get(sub))) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para usar este comando.");
+            return true;
+        }
+
         try {
             switch (sub) {
                 case "crear"      -> cmdCrearBanco(p, args);
@@ -65,12 +86,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 case "saldo"      -> cmdSaldo(p, args);
                 case "depositar", "retirar" -> cmdMoverFondos(p, args, sub.equals("depositar"));
                 case "banco"      -> cmdBanco(p, args);
-                case "contrato" -> cmdContrato(p, args);
-                case "imprimir" -> cmdImprimirMoneda(p, args);
-                case "quemar" -> cmdQuemarMoneda(p, args);
-                case "convertir" -> cmdConvertirMoneda(p, args);
-                case "monedas" -> plugin.getMenuMonedas().abrirMenu(p);
-                case "historial" -> cmdHistorialBanco(p, args);
+                case "contrato"   -> cmdContrato(p, args);
+                case "imprimir"   -> cmdImprimirMoneda(p, args);
+                case "quemar"     -> cmdQuemarMoneda(p, args);
+                case "convertir"  -> cmdConvertirMoneda(p, args);
+                case "monedas"    -> plugin.getMenuMonedas().abrirMenu(p);
+                case "historial"  -> cmdHistorialBanco(p, args);
                 case "intercambiar" -> cmdIntercambiarMonedas(p, args);
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
@@ -86,6 +107,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdCrearBanco(Player p, String[] args) {
+
+        if (!p.hasPermission("menuinteractivo.banco.crear")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para crear bancos.");
+            return;
+        }
+
         // /bmi crear banco <Nombre> <Etiqueta>
         if (args.length < 4 || !args[1].equalsIgnoreCase("banco")) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /bmi crear banco <Nombre> <Etiqueta>");
@@ -114,14 +141,34 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         // Crear banco y agregar al jugador como miembro
         boolean creado = bancoManager.crearBanco(etiqueta, nombre, reino, p.getUniqueId());
         if (creado) {
-            bancoManager.agregarJugadorABanco(p.getUniqueId(), etiqueta); // nuevo paso para registrar al dueño como miembro
+            bancoManager.agregarJugadorABanco(p.getUniqueId(), etiqueta);
             p.sendMessage(ChatColor.GREEN + "Solicitud de banco '" + nombre + "' enviada.");
+
+            // Notificar a jugadores con rol 'rey' o 'lider' del mismo reino
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                String reinoJugador = bancoManager.obtenerReinoJugador(online.getUniqueId());
+                if (reino.equalsIgnoreCase(reinoJugador)) {
+                    String rol = bancoManager.obtenerRolJugadorEnReino(online.getUniqueId());
+                    if (rol != null && (rol.equalsIgnoreCase("rey") || rol.equalsIgnoreCase("lider"))) {
+                        online.sendMessage(ChatColor.LIGHT_PURPLE + "⚠️ " + ChatColor.YELLOW + "Hay una nueva solicitud de banco en tu reino.");
+                        online.sendMessage(ChatColor.GRAY + "Usa " + ChatColor.GREEN + "/bmi aprobar " + etiqueta + ChatColor.GRAY + " para aprobarla.");
+                        online.playSound(online.getLocation(), org.bukkit.Sound.UI_BUTTON_CLICK, 1.0f, 1.2f); // volumen y pitch
+                    }
+                }
+            }
+
         } else {
             p.sendMessage(ChatColor.RED + "Error al solicitar banco. Revisa la consola.");
         }
     }
 
     private void cmdListarPendientes(Player p) {
+
+        if (!p.hasPermission("menuinteractivo.banco.pendientes")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para ver solicitudes pendientes.");
+            return;
+        }
+
         String reino = bancoManager.obtenerReinoJugador(p.getUniqueId());
         if (reino == null) {
             p.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
@@ -139,6 +186,13 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdAprobarRechazar(Player p, String[] args, boolean aprobarBanco) {
+
+        String permiso = aprobarBanco ? "menuinteractivo.banco.aprobar" : "menuinteractivo.banco.rechazar";
+        if (!p.hasPermission(permiso)) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para " + (aprobarBanco ? "aprobar" : "rechazar") + " bancos.");
+            return;
+        }
+
         // Puede ser:
         // /bmi aprobar|rechazar <etiquetaBanco>
         // o
@@ -193,10 +247,25 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             if (ok) {
                 p.sendMessage(ChatColor.GREEN +
                         "Banco " + etiqueta + (aprobarBanco ? " aprobado." : " rechazado."));
+
+                if (aprobarBanco) {
+                    // Notificar al propietario si está conectado
+                    UUID propietario = bancoManager.obtenerUUIDPropietarioBanco(etiqueta);
+                    if (propietario != null) {
+                        Player propietarioOnline = Bukkit.getPlayer(propietario);
+                        if (propietarioOnline != null && propietarioOnline.isOnline()) {
+                            propietarioOnline.sendMessage(ChatColor.GOLD + "✅ Tu banco '" + etiqueta + "' ha sido aprobado.");
+                            propietarioOnline.playSound(propietarioOnline.getLocation(),
+                                    org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+                        }
+                    }
+                }
+
             } else {
                 p.sendMessage(ChatColor.RED +
                         "No se pudo " + (aprobarBanco ? "aprobar " : "rechazar ") + etiqueta + ".");
             }
+
         }
     }
 
@@ -232,6 +301,13 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
+        if (!bancoManager.bancoEstaAprobado(banco)) {
+            p.sendMessage(ChatColor.YELLOW + "⏳ Tu banco aún está pendiente de aprobación.");
+            p.sendMessage(ChatColor.GRAY + "Debes esperar a que un rey o líder apruebe tu banco antes de enviar contratos.");
+            p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f);
+            return;
+        }
+
         if (!bancoManager.reinoExiste(reino)) {
             p.sendMessage(ChatColor.RED + "El reino '" + reino + "' no existe.");
             return;
@@ -244,6 +320,21 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         if (ok) {
             p.sendMessage(ChatColor.GREEN + "Contrato enviado al reino " + reino +
                     " por " + tiempo + " con permisos: " + permisos);
+
+            // Notificar a jugadores del reino con rol de rey o líder
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                String reinoJugador = bancoManager.obtenerReinoJugador(online.getUniqueId());
+                if (reino.equalsIgnoreCase(reinoJugador)) {
+                    String rol = bancoManager.obtenerRolJugadorEnReino(online.getUniqueId());
+                    if (rol != null && (rol.equalsIgnoreCase("rey") || rol.equalsIgnoreCase("lider"))) {
+                        online.sendMessage(ChatColor.LIGHT_PURPLE + "📜 " + ChatColor.YELLOW + "Un banco te ha enviado un contrato.");
+                        online.sendMessage(ChatColor.GRAY + "Usa " + ChatColor.GREEN + "/bmi aprobar contrato " + banco + ChatColor.GRAY + " para aprobarlo.");
+                        online.playSound(online.getLocation(), org.bukkit.Sound.UI_BUTTON_CLICK, 1.0f, 1.2f); // volumen y pitch
+
+                    }
+                }
+            }
+
         } else {
             p.sendMessage(ChatColor.RED + "Error al crear contrato. ¿Ya existe uno activo?");
         }
@@ -431,6 +522,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdHistorialBanco(Player p, String[] args) {
+
+        if (!p.hasPermission("menuinteractivo.banco.historial")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para ver el historial de bancos.");
+            return;
+        }
+
         if (args.length != 2) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /bmi historial <etiqueta_banco>");
             return;
@@ -533,6 +630,13 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
 
     private void cmdUnirSalir(Player p, String[] args, boolean unir) {
+
+        String permiso = unir ? "menuinteractivo.banco.unirse" : "menuinteractivo.banco.salir";
+        if (!p.hasPermission(permiso)) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para " + (unir ? "unirte a" : "salir de") + " bancos.");
+            return;
+        }
+
         // /bmi unir|salir <Etiqueta>
         if (args.length != 2) {
             p.sendMessage(ChatColor.YELLOW +
@@ -565,6 +669,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdSaldo(Player p, String[] args) {
+
+        if (!p.hasPermission("menuinteractivo.banco.saldo")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para consultar saldos.");
+            return;
+        }
+
         // /bmi saldo <Etiqueta>
         if (args.length != 2) {
             p.sendMessage(ChatColor.YELLOW + "Uso: /bmi saldo <Etiqueta>");
@@ -578,6 +688,13 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdMoverFondos(Player p, String[] args, boolean depositar) {
+
+        String permiso = depositar ? "menuinteractivo.banco.depositar" : "menuinteractivo.banco.retirar";
+        if (!p.hasPermission(permiso)) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para " + (depositar ? "depositar" : "retirar") + " fondos.");
+            return;
+        }
+
         // /bmi depositar|retirar <Etiqueta> <Monto>
         if (args.length != 3) {
             p.sendMessage(ChatColor.YELLOW +
@@ -617,6 +734,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
     }
 
     private void cmdBanco(Player p, String[] args) {
+
+        if (!p.hasPermission("menuinteractivo.banco.banco")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para acceder a la interfaz del banco.");
+            return;
+        }
+
         // /bmi banco <Etiqueta> | /bmi banco cuenta <Etiqueta>
         if (args.length == 2) {
             String etiqueta = args[1].toLowerCase();
@@ -679,9 +802,14 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         switch (sub) {
             case "crear" -> {
+                if (!p.hasPermission("menuinteractivo.banco.crear")) return Collections.emptyList();
                 if (args.length == 2) return List.of("banco");
             }
+            case "pendientes" -> {
+                if (!p.hasPermission("menuinteractivo.banco.pendientes")) return Collections.emptyList();
+            }
             case "aprobar", "rechazar" -> {
+                if (!p.hasPermission("menuinteractivo.banco." + sub)) return Collections.emptyList();
                 if (args.length == 2 && reino != null) {
                     return bancoManager.obtenerBancosPendientes(reino).stream()
                             .map(Banco::getEtiqueta)
@@ -689,7 +817,16 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                             .collect(Collectors.toList());
                 }
             }
+            case "listar" -> {
+                if (!p.hasPermission("menuinteractivo.banco.lista")) return Collections.emptyList();
+            }
             case "unir", "salir", "saldo", "historial" -> {
+                String perm = switch (sub) {
+                    case "unir" -> "menuinteractivo.banco.unirse";
+                    case "salir" -> "menuinteractivo.banco.salir";
+                    default -> "menuinteractivo.banco." + sub;
+                };
+                if (!p.hasPermission(perm)) return Collections.emptyList();
                 if (args.length == 2 && reino != null) {
                     return bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
@@ -698,6 +835,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
             }
             case "depositar", "retirar" -> {
+                if (!p.hasPermission("menuinteractivo.banco." + sub)) return Collections.emptyList();
                 if (args.length == 2 && reino != null) {
                     return bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
@@ -711,6 +849,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
             }
             case "banco" -> {
+                if (!p.hasPermission("menuinteractivo.banco.banco")) return Collections.emptyList();
                 if (args.length == 2 && reino != null) {
                     List<String> etiquetas = bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
@@ -728,6 +867,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
             }
             case "contrato" -> {
+                if (!p.hasPermission("menuinteractivo.banco")) return Collections.emptyList();
                 if (args.length == 2) {
                     return bancoManager.obtenerReinosDisponibles().stream()
                             .filter(r -> r.startsWith(args[1].toLowerCase()))
@@ -738,6 +878,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 if (args.length == 5) return List.of("\"imprimir, quemar\"", "\"imprimir, convertir\"", "\"imprimir, quemar, convertir\"");
             }
             case "imprimir", "quemar" -> {
+                if (!p.hasPermission("menuinteractivo.banco")) return Collections.emptyList();
                 if (args.length == 2) {
                     return bancoManager.obtenerMonedasJugables().stream()
                             .map(m -> "\"" + m + "\"")
@@ -751,6 +892,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
             }
             case "convertir" -> {
+                if (!p.hasPermission("menuinteractivo.banco")) return Collections.emptyList();
                 if (args.length == 2) return List.of("100", "500", "1000");
                 if (args.length == 3) return List.of("a");
                 if (args.length >= 4) {
@@ -761,15 +903,14 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
             }
             case "intercambiar" -> {
+                if (!p.hasPermission("menuinteractivo.banco")) return Collections.emptyList();
                 if (args.length == 2) return List.of("100", "500", "1000");
-
                 if (args.length == 3 || args.length == 5) {
                     return bancoManager.obtenerMonedasJugables().stream()
                             .map(m -> "\"" + m + "\"")
                             .filter(m -> m.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                             .collect(Collectors.toList());
                 }
-
                 if (args.length == 4) return List.of("a");
             }
         }

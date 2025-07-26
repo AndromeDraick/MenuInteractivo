@@ -133,7 +133,16 @@ public class GestorBaseDeDatos {
                     "etiqueta_banco TEXT NOT NULL," +
                     "cantidad REAL NOT NULL," +
                     "estado TEXT DEFAULT 'pendiente'," +
-                    "fecha DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                    "fecha DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "reino_jugador TEXT DEFAULT ''" +
+                    ")");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS monedas_banco (" +
+                    "etiqueta_banco TEXT NOT NULL, " +
+                    "reino_etiqueta TEXT NOT NULL, " +
+                    "cantidad_impresa REAL DEFAULT 0, " +
+                    "cantidad_quemada REAL DEFAULT 0, " +
+                    "cantidad_convertida REAL DEFAULT 0, " +
+                    "PRIMARY KEY(etiqueta_banco, reino_etiqueta)" +
                     ")");
 
         } catch (SQLException e) {
@@ -1451,5 +1460,158 @@ public class GestorBaseDeDatos {
             return false;
         }
     }
+
+    public Map<String, Double> obtenerTodosLosSaldosDeJugador(UUID uuid) {
+        Map<String, Double> saldos = new HashMap<>();
+        String sql = "SELECT reino_etiqueta, saldo FROM cuentas_moneda WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, uuid.toString());
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String reino = rs.getString("reino_etiqueta");
+                double saldo = rs.getDouble("saldo");
+                saldos.put(reino, saldo);
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener saldos: " + e.getMessage());
+        }
+        return saldos;
+    }
+
+    public Map<String, Double> obtenerMonedasImpresasPorBanco(String etiquetaBanco) {
+        Map<String, Double> mapa = new HashMap<>();
+        String sql = "SELECT reino_etiqueta, SUM(cantidad_impresa - cantidad_quemada - cantidad_convertida) AS disponible " +
+                "FROM monedas_banco WHERE etiqueta_banco = ? GROUP BY reino_etiqueta";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaBanco);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                mapa.put(rs.getString("reino_etiqueta"), rs.getDouble("disponible"));
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener monedas impresas por banco: " + e.getMessage());
+        }
+        return mapa;
+    }
+
+    public double obtenerCantidadImpresaDisponible(String etiquetaBanco, String reinoEtiqueta) {
+        String sql = "SELECT (cantidad_impresa - cantidad_quemada - cantidad_convertida) AS disponible " +
+                "FROM monedas_banco WHERE etiqueta_banco = ? AND reino_etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaBanco);
+            stmt.setString(2, reinoEtiqueta);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getDouble("disponible");
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener cantidad disponible: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    public boolean registrarSolicitudMoneda(UUID jugadorUUID, String etiquetaBanco, double cantidad, String reinoJugador) {
+        String sql = "INSERT INTO solicitudes_monedas (uuid_jugador, etiqueta_banco, cantidad, fecha, estado, reino_jugador) VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'pendiente', ?)";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, jugadorUUID.toString());
+            stmt.setString(2, etiquetaBanco);
+            stmt.setDouble(3, cantidad);
+            stmt.setString(4, reinoJugador);
+
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al registrar solicitud de moneda: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean aumentarMonedaImpresaBanco(String etiquetaBanco, String etiquetaReino, double cantidad) {
+        String sqlUpdate = "UPDATE monedas_banco SET cantidad_impresa = cantidad_impresa + ? " +
+                "WHERE etiqueta_banco = ? AND reino_etiqueta = ?";
+        String sqlInsert = "INSERT INTO monedas_banco (etiqueta_banco, reino_etiqueta, cantidad_impresa) " +
+                "VALUES (?, ?, ?)";
+
+        try (Connection conn = HikariProvider.getConnection()) {
+            // Primero intentamos actualizar
+            try (PreparedStatement update = conn.prepareStatement(sqlUpdate)) {
+                update.setDouble(1, cantidad);
+                update.setString(2, etiquetaBanco);
+                update.setString(3, etiquetaReino);
+                int filas = update.executeUpdate();
+                if (filas > 0) return true;
+            }
+
+            // Si no existe la fila, insertamos nueva
+            try (PreparedStatement insert = conn.prepareStatement(sqlInsert)) {
+                insert.setString(1, etiquetaBanco);
+                insert.setString(2, etiquetaReino);
+                insert.setDouble(3, cantidad);
+                return insert.executeUpdate() > 0;
+            }
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al aumentar moneda impresa por banco: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean aumentarMonedaQuemadaBanco(String etiquetaBanco, String etiquetaReino, double cantidad) {
+        String sqlUpdate = "UPDATE monedas_banco SET cantidad_quemada = cantidad_quemada + ? " +
+                "WHERE etiqueta_banco = ? AND reino_etiqueta = ?";
+        String sqlInsert = "INSERT INTO monedas_banco (etiqueta_banco, reino_etiqueta, cantidad_quemada) " +
+                "VALUES (?, ?, ?)";
+
+        try (Connection conn = HikariProvider.getConnection()) {
+            try (PreparedStatement update = conn.prepareStatement(sqlUpdate)) {
+                update.setDouble(1, cantidad);
+                update.setString(2, etiquetaBanco);
+                update.setString(3, etiquetaReino);
+                if (update.executeUpdate() > 0) return true;
+            }
+
+            try (PreparedStatement insert = conn.prepareStatement(sqlInsert)) {
+                insert.setString(1, etiquetaBanco);
+                insert.setString(2, etiquetaReino);
+                insert.setDouble(3, cantidad);
+                return insert.executeUpdate() > 0;
+            }
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al aumentar moneda quemada por banco: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean aumentarMonedaConvertidaBanco(String etiquetaBanco, String etiquetaReino, double cantidad) {
+        String sqlUpdate = "UPDATE monedas_banco SET cantidad_convertida = cantidad_convertida + ? " +
+                "WHERE etiqueta_banco = ? AND reino_etiqueta = ?";
+        String sqlInsert = "INSERT INTO monedas_banco (etiqueta_banco, reino_etiqueta, cantidad_convertida) " +
+                "VALUES (?, ?, ?)";
+
+        try (Connection conn = HikariProvider.getConnection()) {
+            try (PreparedStatement update = conn.prepareStatement(sqlUpdate)) {
+                update.setDouble(1, cantidad);
+                update.setString(2, etiquetaBanco);
+                update.setString(3, etiquetaReino);
+                if (update.executeUpdate() > 0) return true;
+            }
+
+            try (PreparedStatement insert = conn.prepareStatement(sqlInsert)) {
+                insert.setString(1, etiquetaBanco);
+                insert.setString(2, etiquetaReino);
+                insert.setDouble(3, cantidad);
+                return insert.executeUpdate() > 0;
+            }
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al aumentar moneda convertida por banco: " + e.getMessage());
+            return false;
+        }
+    }
+
 
 }

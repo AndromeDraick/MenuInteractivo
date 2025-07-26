@@ -38,6 +38,39 @@ public class BancoManager {
         return db.obtenerBancoDeJugador(jugadorUUID);
     }
 
+    public boolean bancoEstaAprobado(String etiquetaBanco) {
+        String sql = "SELECT aprobado FROM bancos WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, etiquetaBanco);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("aprobado");
+                }
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("Error al verificar si el banco está aprobado: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public UUID obtenerUUIDPropietarioBanco(String etiquetaBanco) {
+        String sql = "SELECT uuid_propietario FROM bancos WHERE etiqueta = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, etiquetaBanco);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return UUID.fromString(rs.getString("uuid_propietario"));
+                }
+            }
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("Error al obtener UUID del propietario del banco '" + etiquetaBanco + "': " + e.getMessage());
+        }
+        return null;
+    }
+
+
     public boolean reinoExiste(String etiquetaReino) {
         return db.obtenerReino(etiquetaReino) != null;  // o contar filas con SELECT COUNT
     }
@@ -221,9 +254,9 @@ public class BancoManager {
     }
 
     public void depositarAMiCuenta(UUID uuidJugador, String reino, double cantidad, Connection conn) throws SQLException {
-        String sql = "INSERT INTO cuentas_monedas (uuid_jugador, etiqueta_reino, cantidad) " +
+        String sql = "INSERT INTO cuentas_monedas (uuid_jugador, etiqueta_reino, saldo) " +
                 "VALUES (?, ?, ?) " +
-                "ON CONFLICT(uuid_jugador, etiqueta_reino) DO UPDATE SET cantidad = cantidad + ?";
+                "ON CONFLICT(uuid_jugador, etiqueta_reino) DO UPDATE SET saldo = saldo + ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, uuidJugador.toString());
@@ -244,19 +277,8 @@ public class BancoManager {
         return db.transferirEntreJugadores(emisor, receptor, reino, monto);
     }
 
-    public boolean registrarSolicitudMoneda(UUID jugador, String bancoEtiqueta, double cantidad) {
-        String sql = "INSERT INTO solicitudes_monedas (uuid_jugador, etiqueta_banco, cantidad) VALUES (?, ?, ?)";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, jugador.toString());
-            stmt.setString(2, bancoEtiqueta);
-            stmt.setDouble(3, cantidad);
-            stmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            Bukkit.getLogger().severe("[MI] Error al registrar solicitud de moneda: " + e.getMessage());
-            return false;
-        }
+    public boolean registrarSolicitudMoneda(UUID jugadorUUID, String etiquetaBanco, double cantidad, String reinoJugador) {
+        return db.registrarSolicitudMoneda(jugadorUUID, etiquetaBanco, cantidad, reinoJugador);
     }
 
     public List<SolicitudMoneda> obtenerSolicitudesPendientes(String bancoEtiqueta) {
@@ -370,6 +392,30 @@ public class BancoManager {
         }
     }
 
+    public Map<String, Double> obtenerSaldosDeJugador(UUID uuid) {
+        return db.obtenerTodosLosSaldosDeJugador(uuid);
+    }
+
+    public Map<String, Double> obtenerMonedasImpresasPorBanco(String etiquetaBanco) {
+        return db.obtenerMonedasImpresasPorBanco(etiquetaBanco);
+    }
+
+    public boolean bancoTieneMoneda(String etiquetaBanco, String reino) {
+        double disponible = db.obtenerCantidadImpresaDisponible(etiquetaBanco, reino);
+        return disponible > 0;
+    }
+
+    public boolean aumentarMonedaImpresaBanco(String banco, String reino, double cantidad) {
+        return db.aumentarMonedaImpresaBanco(banco, reino, cantidad);
+    }
+
+    public boolean aumentarMonedaQuemadaBanco(String banco, String reino, double cantidad) {
+        return db.aumentarMonedaQuemadaBanco(banco, reino, cantidad);
+    }
+
+    public boolean aumentarMonedaConvertidaBanco(String banco, String reino, double cantidad) {
+        return db.aumentarMonedaConvertidaBanco(banco, reino, cantidad);
+    }
 
 
 }

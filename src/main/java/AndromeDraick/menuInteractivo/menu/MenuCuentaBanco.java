@@ -40,11 +40,30 @@ public class MenuCuentaBanco implements Listener {
 
         Inventory menu = Bukkit.createInventory(null, 27, ChatColor.DARK_PURPLE + "Cuenta: " + etiquetaBanco);
 
-        // Centro: Saldo actual
+        // Saldo principal y otras monedas
         ItemStack saldoItem = new ItemStack(Material.EMERALD);
         ItemMeta saldoMeta = saldoItem.getItemMeta();
         saldoMeta.setDisplayName(ChatColor.GOLD + "Saldo actual");
-        saldoMeta.setLore(List.of(ChatColor.LIGHT_PURPLE + formato.format(saldo) + " " + moneda));
+
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.LIGHT_PURPLE + formato.format(saldo) + " " + moneda);
+
+        Map<String, Double> otrosSaldos = bancoManager.obtenerSaldosDeJugador(uuid);
+        if (otrosSaldos.size() > 1) {
+            lore.add(ChatColor.GRAY + "Otras monedas:");
+            for (Map.Entry<String, Double> entrada : otrosSaldos.entrySet()) {
+                String otroReino = entrada.getKey();
+                if (!otroReino.equals(reino)) {
+                    double cantidad = entrada.getValue();
+                    if (cantidad > 0) {
+                        String nombreMoneda = bancoManager.obtenerNombreMonedaDeReino(otroReino);
+                        lore.add(ChatColor.GRAY + "- " + formato.format(cantidad) + " " + nombreMoneda);
+                    }
+                }
+            }
+        }
+
+        saldoMeta.setLore(lore);
         saldoItem.setItemMeta(saldoMeta);
         menu.setItem(13, saldoItem);
 
@@ -86,7 +105,7 @@ public class MenuCuentaBanco implements Listener {
         switch (event.getSlot()) {
             case 11 -> {
                 jugador.closeInventory();
-                jugador.sendMessage(ChatColor.YELLOW + "Escribe la cantidad de monedas que deseas depositar:");
+                jugador.sendMessage(ChatColor.YELLOW + "Escribe la cantidad de monedas que deseas depositar, no necesitas usar '/':");
                 esperandoDeposito.put(jugador.getUniqueId(), etiqueta);
             }
             case 15 -> {
@@ -104,7 +123,6 @@ public class MenuCuentaBanco implements Listener {
         Player jugador = event.getPlayer();
         UUID uuid = jugador.getUniqueId();
 
-        // Depositar
         if (esperandoDeposito.containsKey(uuid)) {
             event.setCancelled(true);
             String etiqueta = esperandoDeposito.remove(uuid);
@@ -115,19 +133,32 @@ public class MenuCuentaBanco implements Listener {
                     return;
                 }
 
-                boolean registrada = bancoManager.registrarSolicitudMoneda(uuid, etiqueta, monto);
+                if (plugin.getEconomia().getBalance(jugador) < monto) {
+                    jugador.sendMessage(ChatColor.RED + "No tienes suficientes Reinas para solicitar esa cantidad.");
+                    return;
+                }
+
+                String reinoJugador = bancoManager.obtenerReinoJugador(uuid);
+
+                if (plugin.getEconomia().getBalance(jugador) < monto) {
+                    jugador.sendMessage(ChatColor.RED + "No tienes suficientes Reinas para solicitar esa cantidad.");
+                    return;
+                }
+
+                boolean registrada = bancoManager.registrarSolicitudMoneda(uuid, etiqueta, monto, reinoJugador);
                 if (registrada) {
-                    jugador.sendMessage(ChatColor.GREEN + "Tu solicitud para adquirir " + formato.format(monto) + " monedas ha sido enviada al banco.");
+                    plugin.getEconomia().withdrawPlayer(jugador, monto);
+                    jugador.sendMessage(ChatColor.GREEN + "Tu solicitud fue enviada y se te descontaron " + formato.format(monto) + " Reinas.");
                 } else {
                     jugador.sendMessage(ChatColor.RED + "No se pudo registrar la solicitud. Intenta más tarde.");
                 }
+
             } catch (NumberFormatException e) {
                 jugador.sendMessage(ChatColor.RED + "Número inválido.");
             }
             return;
         }
 
-        // Transferir
         if (esperandoTransferencia.containsKey(uuid)) {
             event.setCancelled(true);
             String etiqueta = esperandoTransferencia.remove(uuid);

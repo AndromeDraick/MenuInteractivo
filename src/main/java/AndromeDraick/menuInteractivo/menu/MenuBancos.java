@@ -17,7 +17,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MenuBancos implements Listener {
 
@@ -122,11 +124,29 @@ public class MenuBancos implements Listener {
 
         Inventory inv = Bukkit.createInventory(null, 27, TITULO_INDIVIDUAL + etiqueta);
 
-        // Saldo de monedas impresas disponibles
+        // Mostrar monedas impresas por este banco, incluyendo otras monedas en otros reinos
         ItemStack saldoMonedas = new ItemStack(Material.EMERALD_BLOCK);
         ItemMeta meta = saldoMonedas.getItemMeta();
         meta.setDisplayName(ChatColor.GREEN + "Monedas impresas disponibles");
-        meta.setLore(List.of(ChatColor.GOLD + String.valueOf(bancoManager.obtenerCantidadImpresaDisponible(etiqueta))));
+
+        // Map<ReinoEtiqueta, Double> con todas las monedas activas de este banco
+        Map<String, Double> impresas = bancoManager.obtenerMonedasImpresasPorBanco(etiqueta);
+
+        List<String> lore = new ArrayList<>();
+        for (Map.Entry<String, Double> entry : impresas.entrySet()) {
+            String reinoEtiqueta = entry.getKey();
+            double cantidad = entry.getValue();
+            if (cantidad > 0) {
+                String nombreMoneda = bancoManager.obtenerNombreMonedaDeReino(reinoEtiqueta);
+                lore.add(ChatColor.GOLD + "- " + cantidad + " " + nombreMoneda);
+            }
+        }
+
+        if (lore.isEmpty()) {
+            lore.add(ChatColor.GRAY + "Este banco no ha impreso monedas aún.");
+        }
+
+        meta.setLore(lore);
         saldoMonedas.setItemMeta(meta);
         inv.setItem(13, saldoMonedas);
 

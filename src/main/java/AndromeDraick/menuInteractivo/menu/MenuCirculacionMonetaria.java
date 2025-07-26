@@ -46,13 +46,20 @@ public class MenuCirculacionMonetaria implements Listener {
 
         for (int i = 0; i < solicitudes.size(); i++) {
             SolicitudMoneda solicitud = solicitudes.get(i);
+            UUID jugadorUUID = solicitud.getUuidJugador();
+
+            String reinoJugador = bancoManager.obtenerReinoJugador(jugadorUUID);
+            String nombreMoneda = bancoManager.obtenerNombreMonedaDeReino(reinoJugador);
+            boolean bancoTieneMoneda = bancoManager.bancoTieneMoneda(etiquetaBanco, reinoJugador);
+
             ItemStack item = new ItemStack(Material.YELLOW_BUNDLE);
             ItemMeta meta = item.getItemMeta();
 
             meta.setDisplayName(ChatColor.GOLD + "Solicitud #" + solicitud.getId());
             meta.setLore(List.of(
-                    ChatColor.GRAY + "Jugador: " + Bukkit.getOfflinePlayer(solicitud.getUuidJugador()).getName(),
-                    ChatColor.GRAY + "Cantidad: " + ChatColor.GREEN + formato.format(solicitud.getCantidad()),
+                    ChatColor.GRAY + "Jugador: " + Bukkit.getOfflinePlayer(jugadorUUID).getName(),
+                    ChatColor.GRAY + "Cantidad: " + ChatColor.GREEN + formato.format(solicitud.getCantidad()) + " " + nombreMoneda,
+                    ChatColor.GRAY + "Moneda del reino: " + (bancoTieneMoneda ? ChatColor.AQUA + nombreMoneda : ChatColor.RED + "NO DISPONIBLE"),
                     ChatColor.GRAY + "Banco: " + ChatColor.AQUA + solicitud.getEtiquetaBanco(),
                     ChatColor.GRAY + "Fecha: " + solicitud.getFecha(),
                     ChatColor.YELLOW + "Click izquierdo: Aceptar",

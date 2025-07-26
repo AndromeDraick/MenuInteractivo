@@ -78,15 +78,15 @@ public class MenuEconomia implements Listener {
         int slot = event.getRawSlot();
         switch (slot) {
             case 11:
-                jugador.performCommand("bmi mibanco imprimir 100");
+                jugador.performCommand("bmi imprimir 100 a");
                 jugador.closeInventory();
                 break;
             case 13:
-                jugador.performCommand("bmi mibanco vender 100");
+                jugador.performCommand("bmi convertir 100 a");
                 jugador.closeInventory();
                 break;
             case 15:
-                jugador.performCommand("bmi mibanco quemar 100");
+                jugador.performCommand("bmi quemar 100 a");
                 jugador.closeInventory();
                 break;
         }

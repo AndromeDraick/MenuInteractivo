@@ -417,5 +417,17 @@ public class BancoManager {
         return db.aumentarMonedaConvertidaBanco(banco, reino, cantidad);
     }
 
+    public double getSaldoCuentaJugador(UUID jugador, String etiquetaBanco) {
+        return db.obtenerSaldoCuentaBanco(jugador, etiquetaBanco);
+    }
+
+    public void setSaldoCuentaJugador(UUID jugador, String etiquetaBanco, double saldo) {
+        db.establecerSaldoCuentaBanco(jugador, etiquetaBanco, saldo);
+    }
+
+    public void modificarSaldoCuentaJugador(UUID jugador, String etiquetaBanco, double delta) {
+        db.modificarSaldoCuentaBanco(jugador, etiquetaBanco, delta);
+    }
+
 
 }

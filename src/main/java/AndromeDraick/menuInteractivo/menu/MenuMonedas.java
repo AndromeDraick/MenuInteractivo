@@ -52,6 +52,7 @@ public class MenuMonedas implements Listener {
             ChatColor colorValor;
             if (valor >= 1) colorValor = ChatColor.GREEN;
             else if (valor <= 0.3) colorValor = ChatColor.RED;
+            else if (valor >= 10.5) colorValor = ChatColor.AQUA;
             else colorValor = ChatColor.YELLOW;
 
             UUID uuidJugador = jugador.getUniqueId();
@@ -62,8 +63,8 @@ public class MenuMonedas implements Listener {
             meta.setDisplayName(ChatColor.GOLD + moneda.getNombreMoneda());
             meta.setLore(List.of(
                     ChatColor.GRAY + "Reino: " + ChatColor.YELLOW + moneda.getEtiquetaReino(),
-                    ChatColor.GRAY + "Valor:" + colorValor + "  $1 " + " = $" + formato.format(valor) + " Reinas",
-                    ChatColor.GRAY + "Valor:" +colorValor + "  $1 Reina ≈ $" + formato.format(inverso) ,
+                    ChatColor.GRAY + "" + colorValor + "  $1 "+ moneda.getNombreMoneda() + " = $" + formato.format(valor) + ChatColor.RED +" Reinas",
+                    ChatColor.GRAY + "" + colorValor + "  $1 " + ChatColor.RED + "Reina = $" + formato.format(inverso) + moneda.getNombreMoneda(),
                     ChatColor.GRAY + "En circulación: " + ChatColor.GOLD + formato.format(enCirculacion),
                     ChatColor.GRAY + "Impresa: " + ChatColor.YELLOW + formato.format(impresas),
                     ChatColor.GRAY + "Quemada: " + ChatColor.RED + formato.format(quemadas),

@@ -401,6 +401,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 && bancoManager.aumentarMonedaImpresaBanco(banco, reinoDelBanco, cantidad)) {
 
             bancoManager.registrarMovimiento(banco, "imprimir", p.getUniqueId().toString(), cantidad);
+            bancoManager.modificarSaldoCuentaJugador(p.getUniqueId(), banco, cantidad);
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
 
         } else {
@@ -462,6 +463,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 && bancoManager.aumentarMonedaQuemadaBanco(banco, reinoDelBanco, cantidad)) {
 
             bancoManager.registrarMovimiento(banco, "quemar", p.getUniqueId().toString(), cantidad);
+            bancoManager.modificarSaldoCuentaJugador(p.getUniqueId(), banco, -cantidad);
             p.sendMessage(ChatColor.YELLOW + "Se quemaron " + cantidad + " " + nombreMoneda + " del reino " + reinoDelBanco);
 
         } else {
@@ -534,6 +536,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
             economia.withdrawPlayer(p, dineroServidor);
             bancoManager.registrarMovimiento(banco, "convertir", p.getUniqueId().toString(), dineroServidor);
+            bancoManager.modificarSaldoCuentaJugador(p.getUniqueId(), banco, dineroServidor);
             p.sendMessage(ChatColor.GREEN + "Convertiste $" + dineroServidor + " del servidor en valor para la moneda del reino " + reinoDelBanco);
 
         } else {

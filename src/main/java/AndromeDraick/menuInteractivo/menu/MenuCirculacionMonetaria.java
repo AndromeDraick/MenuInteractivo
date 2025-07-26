@@ -58,7 +58,7 @@ public class MenuCirculacionMonetaria implements Listener {
             meta.setDisplayName(ChatColor.GOLD + "Solicitud #" + solicitud.getId());
             meta.setLore(List.of(
                     ChatColor.GRAY + "Jugador: " + Bukkit.getOfflinePlayer(jugadorUUID).getName(),
-                    ChatColor.GRAY + "Cantidad: " + ChatColor.GREEN + formato.format(solicitud.getCantidad()) + " " + nombreMoneda,
+                    ChatColor.GRAY + "Cantidad: $" + ChatColor.GREEN + formato.format(solicitud.getCantidad()) + " " + nombreMoneda,
                     ChatColor.GRAY + "Moneda del reino: " + (bancoTieneMoneda ? ChatColor.AQUA + nombreMoneda : ChatColor.RED + "NO DISPONIBLE"),
                     ChatColor.GRAY + "Banco: " + ChatColor.AQUA + solicitud.getEtiquetaBanco(),
                     ChatColor.GRAY + "Fecha: " + solicitud.getFecha(),
@@ -79,8 +79,8 @@ public class MenuCirculacionMonetaria implements Listener {
         if (!titulo.equals(ChatColor.YELLOW + "Solicitudes de Moneda")) return;
 
         event.setCancelled(true);
-        Player jugador = (Player) event.getWhoClicked();
-        List<SolicitudMoneda> solicitudes = solicitudesPorJugador.get(jugador.getUniqueId());
+        Player jugadorAceptador = (Player) event.getWhoClicked(); // quien hace clic
+        List<SolicitudMoneda> solicitudes = solicitudesPorJugador.get(jugadorAceptador.getUniqueId());
         if (event.getClickedInventory() == null || !event.getClickedInventory().equals(event.getView().getTopInventory())) return;
         int slot = event.getSlot();
         if (slot < 0 || slot >= solicitudes.size()) return;
@@ -89,14 +89,20 @@ public class MenuCirculacionMonetaria implements Listener {
         boolean clickIzquierdo = event.isLeftClick();
 
         boolean exito = bancoManager.procesarSolicitud(solicitud.getId(), clickIzquierdo);
-        if (exito) {
-            jugador.sendMessage(ChatColor.GREEN + "Solicitud " + (clickIzquierdo ? "aceptada" : "rechazada") + " correctamente.");
-        } else {
-            jugador.sendMessage(ChatColor.RED + "No se pudo procesar la solicitud (¿fondos insuficientes?).");
+
+        if (exito && clickIzquierdo) {
+            // Darle las monedas al jugador que aceptó la solicitud
+            String bancoEtiqueta = solicitud.getEtiquetaBanco();
+            String reino = bancoManager.obtenerReinoDeBanco(bancoEtiqueta);
+            double cantidad = solicitud.getCantidad();
+
+            bancoManager.modificarSaldoCuentaJugador(jugadorAceptador.getUniqueId(), bancoEtiqueta, cantidad);
+
+            jugadorAceptador.sendMessage(ChatColor.GREEN + "Has recibido " + cantidad + " reinas,  por la solicitud aceptada, favor de entregarlas al respectivo lider banquero");
         }
 
-        // Refrescar menú
-        abrirMenu(jugador, solicitud.getEtiquetaBanco());
+        jugadorAceptador.sendMessage(ChatColor.GREEN + "Solicitud " + (clickIzquierdo ? "aceptada" : "rechazada") + " correctamente.");
+        abrirMenu(jugadorAceptador, solicitud.getEtiquetaBanco());
     }
 
     @EventHandler

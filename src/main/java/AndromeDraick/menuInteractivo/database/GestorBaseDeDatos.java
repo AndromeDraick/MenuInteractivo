@@ -144,6 +144,13 @@ public class GestorBaseDeDatos {
                     "cantidad_convertida REAL DEFAULT 0, " +
                     "PRIMARY KEY(etiqueta_banco, reino_etiqueta)" +
                     ")");
+            // Cuentas individuales de jugadores por banco
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS cuentas_moneda (" +
+                    "uuid_jugador TEXT NOT NULL, " +
+                    "etiqueta_banco TEXT NOT NULL, " +
+                    "saldo REAL DEFAULT 0, " +
+                    "PRIMARY KEY(uuid_jugador, etiqueta_banco)" +
+                    ")");
 
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
@@ -508,24 +515,7 @@ public class GestorBaseDeDatos {
         }
     }
 
-    // MÉTODOS DE GESTIÓN DE BANCOS:
-
-    /**
-     * Deposita monto en un banco.
-     */
-    public boolean depositarEnBanco(String etiquetaBanco, double monto) {
-        String sql = "UPDATE bancos SET fondos = fondos + ? WHERE etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDouble(1, monto);
-            ps.setString(2, etiquetaBanco);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
+    // MÉTODOS DE GESTIÓN DE BANCO
     public boolean insertarBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario) {
         String sql = """
             INSERT INTO bancos
@@ -560,40 +550,6 @@ public class GestorBaseDeDatos {
             e.printStackTrace();
             return false;
         }
-    }
-
-    /**
-     * Retira monto de un banco, comprobando saldo suficiente.
-     */
-    public boolean retirarDeBanco(String etiquetaBanco, double monto) {
-        String sql = "UPDATE bancos SET fondos = fondos - ? WHERE etiqueta = ? AND fondos >= ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDouble(1, monto);
-            ps.setString(2, etiquetaBanco);
-            ps.setDouble(3, monto);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Obtiene el saldo actual de un banco.
-     */
-    public double obtenerSaldoBanco(String etiquetaBanco) {
-        String sql = "SELECT fondos FROM bancos WHERE etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, etiquetaBanco);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getDouble("fondos");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
     }
 
     /**
@@ -1018,19 +974,6 @@ public class GestorBaseDeDatos {
             return false;
         }
     }
-
-//    public boolean eliminarContratoBancoReino(String banco, String reino) {
-//        String sql = "DELETE FROM contratos_banco_reino WHERE banco_etiqueta = ? AND reino_etiqueta = ?";
-//        try (Connection conn = HikariProvider.getConnection();
-//             PreparedStatement ps = conn.prepareStatement(sql)) {
-//            ps.setString(1, banco);
-//            ps.setString(2, reino);
-//            return ps.executeUpdate() > 0;
-//        } catch (SQLException e) {
-//            plugin.getLogger().severe("Error al eliminar contrato: " + e.getMessage());
-//            return false;
-//        }
-//    }
 
 //-------------------------------------------------------------------------------------------------------------------------------
 
@@ -1612,6 +1555,43 @@ public class GestorBaseDeDatos {
             return false;
         }
     }
+    // Obtener saldo de cuenta de banco por jugador
+    public double obtenerSaldoCuentaBanco(UUID jugador, String etiquetaBanco) {
+        String sql = "SELECT saldo FROM cuentas_moneda WHERE uuid_jugador = ? AND etiqueta_banco = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, jugador.toString());
+            ps.setString(2, etiquetaBanco);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getDouble("saldo");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[BD] Error al obtener saldo cuenta: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    // Establecer o actualizar saldo de cuenta
+    public void establecerSaldoCuentaBanco(UUID jugador, String etiquetaBanco, double saldo) {
+        String sql = "INSERT INTO cuentas_moneda (uuid_jugador, etiqueta_banco, saldo) VALUES (?, ?, ?) " +
+                "ON CONFLICT(uuid_jugador, etiqueta_banco) DO UPDATE SET saldo = excluded.saldo";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, jugador.toString());
+            ps.setString(2, etiquetaBanco);
+            ps.setDouble(3, saldo);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[BD] Error al guardar saldo cuenta: " + e.getMessage());
+        }
+    }
+
+    // Añadir saldo (positivo o negativo)
+    public void modificarSaldoCuentaBanco(UUID jugador, String etiquetaBanco, double delta) {
+        double actual = obtenerSaldoCuentaBanco(jugador, etiquetaBanco);
+        establecerSaldoCuentaBanco(jugador, etiquetaBanco, actual + delta);
+    }
+
 
 
 }

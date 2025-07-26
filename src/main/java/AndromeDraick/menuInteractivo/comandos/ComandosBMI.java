@@ -233,11 +233,25 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 p.sendMessage(ChatColor.GREEN +
                         "Contrato con banco '" + etiqueta + "' " +
                         (aprobarBanco ? "aprobado." : "rechazado."));
+
+                if (aprobarBanco) {
+                    UUID propietario = bancoManager.obtenerUUIDPropietarioBanco(etiqueta);
+                    if (propietario != null) {
+                        Player propietarioOnline = Bukkit.getPlayer(propietario);
+                        if (propietarioOnline != null && propietarioOnline.isOnline()) {
+                            propietarioOnline.sendMessage(ChatColor.AQUA + "📜 Tu contrato con el reino '" + reinoJugador + "' ha sido aprobado.");
+                            propietarioOnline.playSound(propietarioOnline.getLocation(),
+                                    org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.1f);
+                        }
+                    }
+                }
+
             } else {
                 p.sendMessage(ChatColor.RED +
                         "No se pudo " + (aprobarBanco ? "aprobar " : "rechazar ") +
                         "el contrato con '" + etiqueta + "'.");
             }
+
 
         } else {
             // El funcionamiento normal para bancos
@@ -383,7 +397,8 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
 
         if (bancoManager.incrementarCantidadImpresa(reinoDelBanco, cantidad)
-                && bancoManager.aumentarMonedasDisponiblesBanco(banco, cantidad)) {
+                && bancoManager.aumentarMonedasDisponiblesBanco(banco, cantidad)
+                && bancoManager.aumentarMonedaImpresaBanco(banco, reinoDelBanco, cantidad)) {
 
             bancoManager.registrarMovimiento(banco, "imprimir", p.getUniqueId().toString(), cantidad);
             p.sendMessage(ChatColor.GREEN + "Se imprimieron " + cantidad + " " + nombreMoneda + " para el reino " + reinoDelBanco);
@@ -391,6 +406,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         } else {
             p.sendMessage(ChatColor.RED + "Error al imprimir moneda. Revisa la consola.");
         }
+
     }
 
     private void cmdQuemarMoneda(Player p, String[] args) {
@@ -442,7 +458,8 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
 
         if (bancoManager.incrementarCantidadQuemada(reinoDelBanco, cantidad)
-                && bancoManager.descontarCantidadImpresaDisponible(banco, cantidad)) {
+                && bancoManager.descontarCantidadImpresaDisponible(banco, cantidad)
+                && bancoManager.aumentarMonedaQuemadaBanco(banco, reinoDelBanco, cantidad)) {
 
             bancoManager.registrarMovimiento(banco, "quemar", p.getUniqueId().toString(), cantidad);
             p.sendMessage(ChatColor.YELLOW + "Se quemaron " + cantidad + " " + nombreMoneda + " del reino " + reinoDelBanco);
@@ -512,10 +529,13 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (bancoManager.incrementarDineroConvertido(reinoDelBanco, dineroServidor)) {
+        if (bancoManager.incrementarDineroConvertido(reinoDelBanco, dineroServidor)
+                && bancoManager.aumentarMonedaConvertidaBanco(banco, reinoDelBanco, dineroServidor)) {
+
             economia.withdrawPlayer(p, dineroServidor);
             bancoManager.registrarMovimiento(banco, "convertir", p.getUniqueId().toString(), dineroServidor);
             p.sendMessage(ChatColor.GREEN + "Convertiste $" + dineroServidor + " del servidor en valor para la moneda del reino " + reinoDelBanco);
+
         } else {
             p.sendMessage(ChatColor.RED + "Error al convertir dinero. Revisa la consola.");
         }
@@ -627,7 +647,6 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         p.sendMessage(ChatColor.GREEN + "Intercambiaste " + cantidad + " " + monedaOrigen +
                 " por " + String.format("%.2f", cantidadDestino) + " " + monedaDestino);
     }
-
 
     private void cmdUnirSalir(Player p, String[] args, boolean unir) {
 
@@ -793,7 +812,20 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         if (args.length == 1) {
             return SUBS.stream()
-                    .filter(s -> s.startsWith(args[0].toLowerCase()))
+                    .filter(s -> p.hasPermission("menuinteractivo.banco." + switch (s) {
+                        case "crear" -> "crear";
+                        case "pendientes" -> "pendientes";
+                        case "aprobar" -> "aprobar";
+                        case "rechazar" -> "rechazar";
+                        case "listar" -> "lista";
+                        case "unir" -> "unirse";
+                        case "salir" -> "salir";
+                        case "saldo" -> "saldo";
+                        case "depositar", "retirar" -> s;
+                        case "banco" -> "banco";
+                        case "historial" -> "historial";
+                        default -> "";
+                    }) && s.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
 
@@ -803,17 +835,46 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         switch (sub) {
             case "crear" -> {
                 if (!p.hasPermission("menuinteractivo.banco.crear")) return Collections.emptyList();
-                if (args.length == 2) return List.of("banco");
+
+                if (args.length == 2) {
+                    return List.of("banco").stream()
+                            .filter(s -> s.startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+
+                if (args.length == 3) {
+                    // Sugerencias de nombres comunes de bancos (puedes personalizar esta lista)
+                    return List.of("BancoCentral", "BancoReal", "Fondo", "CajaAhorro").stream()
+                            .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+
+                if (args.length == 4) {
+                    // Sugerencias de etiquetas válidas
+                    return List.of("central", "real", "fondo", "ahorro", "economia", "tesoro").stream()
+                            .filter(s -> s.startsWith(args[3].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
             }
+
             case "pendientes" -> {
                 if (!p.hasPermission("menuinteractivo.banco.pendientes")) return Collections.emptyList();
             }
             case "aprobar", "rechazar" -> {
                 if (!p.hasPermission("menuinteractivo.banco." + sub)) return Collections.emptyList();
                 if (args.length == 2 && reino != null) {
+                    List<String> opciones = bancoManager.obtenerBancosPendientes(reino).stream()
+                            .map(Banco::getEtiqueta)
+                            .collect(Collectors.toList());
+                    if (sub.equals("aprobar")) opciones.add("contrato");
+                    return opciones.stream()
+                            .filter(e -> e.startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 3 && args[1].equalsIgnoreCase("contrato") && reino != null) {
                     return bancoManager.obtenerBancosPendientes(reino).stream()
                             .map(Banco::getEtiqueta)
-                            .filter(e -> e.startsWith(args[1].toLowerCase()))
+                            .filter(e -> e.startsWith(args[2].toLowerCase()))
                             .collect(Collectors.toList());
                 }
             }
@@ -831,20 +892,6 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                     return bancoManager.obtenerBancosDeReino(reino).stream()
                             .map(Banco::getEtiqueta)
                             .filter(e -> e.startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
-                }
-            }
-            case "depositar", "retirar" -> {
-                if (!p.hasPermission("menuinteractivo.banco." + sub)) return Collections.emptyList();
-                if (args.length == 2 && reino != null) {
-                    return bancoManager.obtenerBancosDeReino(reino).stream()
-                            .map(Banco::getEtiqueta)
-                            .filter(e -> e.startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
-                }
-                if (args.length == 3) {
-                    return List.of("100", "500", "1000").stream()
-                            .filter(m -> m.startsWith(args[2]))
                             .collect(Collectors.toList());
                 }
             }

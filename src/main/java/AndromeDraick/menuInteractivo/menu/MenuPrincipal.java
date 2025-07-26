@@ -43,7 +43,7 @@ public class MenuPrincipal implements Listener {
         int[] slotsBorde = {
                 0, 1, 7, 8,
                 9, 17,
-                44,
+                36,44,
                 45 ,46, 52, 53
         };
         for (int slot : slotsBorde) {
@@ -134,14 +134,16 @@ public class MenuPrincipal implements Listener {
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.GRAY + "Jugador: " + ChatColor.YELLOW + jugador.getName());
         lore.add(ChatColor.GRAY + "Dinero: " + ChatColor.GREEN + "$" + FormateadorNumeros.formatear(dinero));
-        lore.add(ChatColor.GRAY + "Grupo: " + ChatColor.LIGHT_PURPLE + grupo);
+//        lore.add(ChatColor.GRAY + "Grupo: " + ChatColor.LIGHT_PURPLE + grupo);
         lore.add(ChatColor.GRAY + "Trabajo: " + ChatColor.BLUE + trabajo);
-        lore.add(ChatColor.GRAY + "Rarezas desbloqueadas: " + ChatColor.GOLD + rarezasTexto);
-        lore.add(ChatColor.GRAY + "Ítems de trabajo: " + ChatColor.AQUA +
-                (itemsPermitidos.isEmpty() ? "Ninguno" : String.join(", ", itemsPermitidos)));
-        lore.add(ChatColor.DARK_GRAY + "UUID: " + jugador.getUniqueId().toString().substring(0, 8));
+//        lore.add(ChatColor.GRAY + "Rarezas desbloqueadas: " + ChatColor.GOLD + rarezasTexto);
+//        lore.add(ChatColor.GRAY + "Ítems de trabajo: " + ChatColor.AQUA +
+//                (itemsPermitidos.isEmpty() ? "Ninguno" : String.join(", ", itemsPermitidos)));
+//        lore.add(ChatColor.DARK_GRAY + "UUID: " + jugador.getUniqueId().toString().substring(0, 8));
         lore.add("");
-        lore.add(ChatColor.GOLD + "¡Gracias por jugar!");
+        lore.add(ChatColor.GOLD + "¡PARTE 1 DE 6: PROXIMA PARTE TRAE");
+        lore.add(ChatColor.GOLD + "'TIENDA DE LOS JUGADORES CON MONEDAS");
+        lore.add(ChatColor.GOLD + " DE LOS REINOS'!");
 
         skullMeta.setLore(lore);
         cabeza.setItemMeta(skullMeta);

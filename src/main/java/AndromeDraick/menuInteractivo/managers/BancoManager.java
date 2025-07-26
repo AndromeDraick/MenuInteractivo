@@ -39,13 +39,13 @@ public class BancoManager {
     }
 
     public boolean bancoEstaAprobado(String etiquetaBanco) {
-        String sql = "SELECT aprobado FROM bancos WHERE etiqueta = ?";
+        String sql = "SELECT estado FROM bancos WHERE etiqueta = ?";
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, etiquetaBanco);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getBoolean("aprobado");
+                    return rs.getString("estado").equalsIgnoreCase("aprobado");
                 }
             }
         } catch (SQLException e) {

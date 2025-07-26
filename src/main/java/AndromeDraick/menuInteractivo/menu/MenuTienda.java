@@ -5,6 +5,7 @@ import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.utilidades.CalculadoraPrecios;
 import AndromeDraick.menuInteractivo.utilidades.FormateadorNumeros;
 import org.bukkit.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.*;
@@ -62,21 +63,43 @@ public class MenuTienda {
         int slotCat = 0;
         for (String clave : nombresCategoriaES.keySet()) {
             if (slotCat >= 9) break;
-            ItemStack papel = new ItemStack(Material.PAPER);
-            ItemMeta m = papel.getItemMeta();
-            m.setDisplayName(ChatColor.AQUA + nombresCategoriaES.get(clave));
-            m.setLore(List.of(ChatColor.GRAY + "Haz clic para filtrar categoría"));
-            papel.setItemMeta(m);
-            tienda.setItem(slotCat++, papel);
+
+            Material matCategoria = switch (clave) {
+                case "Building_Blocks"   -> Material.BRICKS;
+                case "Colored_Blocks"    -> Material.LIME_CONCRETE;
+                case "Natural_Blocks"    -> Material.OAK_LOG;
+                case "Functional_Blocks" -> Material.FURNACE;
+                case "Redstone_Blocks"   -> Material.REDSTONE;
+                case "Tools_&_Utilities" -> Material.IRON_PICKAXE;
+                case "Combat"            -> Material.IRON_SWORD;
+                case "Food_&_Drinks"     -> Material.COOKED_BEEF;
+                case "Ingredients"       -> Material.BLAZE_POWDER;
+                case "Spawn_Eggs"        -> Material.ZOMBIE_SPAWN_EGG;
+                default                  -> Material.BOOK;
+            };
+
+            ItemStack itemCat = new ItemStack(matCategoria);
+            ItemMeta meta = itemCat.getItemMeta();
+            meta.setDisplayName(ChatColor.AQUA + nombresCategoriaES.get(clave));
+            meta.setLore(List.of(ChatColor.GRAY + "Haz clic para filtrar categoría"));
+            meta.addEnchant(Enchantment.POWER, 1, false);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            itemCat.setItemMeta(meta);
+
+            tienda.setItem(slotCat++, itemCat);
         }
 
+
         // — Mostrar todo —
-        ItemStack mapa = new ItemStack(Material.MAP);
-        ItemMeta mm = mapa.getItemMeta();
+        ItemStack botonMostrarTodo = new ItemStack(Material.COMPASS);
+        ItemMeta mm = botonMostrarTodo.getItemMeta();
         mm.setDisplayName(ChatColor.YELLOW + "Mostrar todo");
-        mm.setLore(List.of(ChatColor.GRAY + "Ver todos los ítems"));
-        mapa.setItemMeta(mm);
-        tienda.setItem(50, mapa);
+        mm.setLore(List.of(ChatColor.GRAY + "Haz clic para quitar el filtro"));
+        mm.addEnchant(Enchantment.POWER, 1, false);
+        mm.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        botonMostrarTodo.setItemMeta(mm);
+        tienda.setItem(50, botonMostrarTodo);
+
 
         // — Filtro por categoría seleccionada —
         Set<String> claves = new HashSet<>(cfg.getItemsEnVenta());
@@ -192,32 +215,38 @@ public class MenuTienda {
             String nombreOriginal = obtenerNombreOriginalDesdeTraducido(nombreTraducido);
             categoriaPorJugador.put(uuid, nombreOriginal);
             abrir(jugador, 0);
+            jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.2f);
             return;
         }
 
-        if (slot == 8) {
+        if (slot == 50) {
             categoriaPorJugador.remove(uuid);
             abrir(jugador, 0);
+            jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.2f);
             return;
         }
 
         if (slot == 45) {
             abrir(jugador, Math.max(0, pagina - 1));
+            jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.2f);
             return;
         }
 
         if (slot == 46) {
             plugin.getMenuPrincipal().abrir(jugador);
+            jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.2f);
             return;
         }
 
         if (slot == 53) {
             abrir(jugador, pagina + 1);
+            jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.2f);
             return;
         }
 
         if (slot == 49) {
             MenuVentaVisual.abrir(jugador);
+            jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.2f);
             return;
         }
 

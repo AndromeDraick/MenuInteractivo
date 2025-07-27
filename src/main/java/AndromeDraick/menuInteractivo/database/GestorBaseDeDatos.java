@@ -1424,7 +1424,7 @@ public class GestorBaseDeDatos {
 
     public Map<String, Double> obtenerMonedasImpresasPorBanco(String etiquetaBanco) {
         Map<String, Double> mapa = new HashMap<>();
-        String sql = "SELECT reino_etiqueta, SUM(cantidad_impresa - cantidad_quemada - cantidad_convertida) AS disponible " +
+        String sql = "SELECT reino_etiqueta, SUM(cantidad_impresa - cantidad_quemada) AS disponible " +
                 "FROM monedas_banco WHERE etiqueta_banco = ? GROUP BY reino_etiqueta";
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -1438,6 +1438,18 @@ public class GestorBaseDeDatos {
         }
         return mapa;
     }
+
+    public void descontarCantidadImpresaMoneda(String etiquetaBanco, String reinoEtiqueta, double cantidad, Connection conn) throws SQLException {
+        String sql = "UPDATE monedas_banco SET cantidad_impresa = cantidad_impresa - ? " +
+                "WHERE etiqueta_banco = ? AND reino_etiqueta = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, cantidad);
+            stmt.setString(2, etiquetaBanco);
+            stmt.setString(3, reinoEtiqueta);
+            stmt.executeUpdate();
+        }
+    }
+
 
     public double obtenerCantidadImpresaDisponible(String etiquetaBanco, String reinoEtiqueta) {
         String sql = "SELECT (cantidad_impresa - cantidad_quemada - cantidad_convertida) AS disponible " +

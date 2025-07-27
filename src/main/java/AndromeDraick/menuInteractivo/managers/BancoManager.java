@@ -335,6 +335,7 @@ public class BancoManager {
 
                 descontarCantidadImpresaDisponible(etiquetaBanco, cantidad, conn);
                 String reino = obtenerReinoDeBanco(etiquetaBanco, conn);
+                db.descontarCantidadImpresaMoneda(etiquetaBanco, reino, cantidad, conn); // 🟢 nuevo: también actualiza monedas_banco
                 depositarAMiCuenta(jugador, reino, cantidad, conn);
             }
 

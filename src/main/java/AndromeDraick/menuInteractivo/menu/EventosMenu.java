@@ -1,10 +1,12 @@
 package AndromeDraick.menuInteractivo.menu;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
+import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.utilidades.CalculadoraPrecios;
 import AndromeDraick.menuInteractivo.utilidades.FormateadorNumeros;
 import AndromeDraick.menuInteractivo.utilidades.HistorialComprasManager;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -13,7 +15,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID;
 
 public class EventosMenu implements Listener {
 
@@ -66,4 +71,22 @@ public class EventosMenu implements Listener {
             }
         }
     }
+//    @EventHandler
+//    public void alEntrarJugador(PlayerJoinEvent event) {
+//        Player jugador = event.getPlayer();
+//        UUID uuid = jugador.getUniqueId();
+//
+//        Bukkit.getScheduler().runTaskAsynchronously(MenuInteractivo.getInstancia(), () -> {
+//            GestorBaseDeDatos db = MenuInteractivo.getInstancia().getBaseDeDatos();
+//            boolean tieneRol = db.getNombreCompletoRol(uuid) != null;
+//
+//            if (!tieneRol) {
+//                Bukkit.getScheduler().runTask(MenuInteractivo.getInstancia(), () -> {
+//                    jugador.sendMessage(ChatColor.AQUA + "¡Bienvenido! Necesitas configurar tu rol en el servidor.");
+//                    MenuRegistroRol.abrir(jugador);
+//                });
+//            }
+//        });
+//    }
+
 }

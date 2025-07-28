@@ -217,8 +217,9 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             }
             // Verifica que jugador es líder o propietario del reino
             String rol = bancoManager.obtenerRolJugadorEnReino(p.getUniqueId());
-            if (!"rey".equalsIgnoreCase(rol) && !"lider".equalsIgnoreCase(rol)) {
-                p.sendMessage(ChatColor.RED + "Solo el rey o líder puede aceptar/rechazar contratos.");
+            Set<String> rolesValidos = Set.of("rey", "reina", "lider");
+            if (!rolesValidos.contains(rol.toLowerCase())) {
+                p.sendMessage(ChatColor.RED + "Solo el rey, reina o líder puede aceptar/rechazar contratos.");
                 return;
             }
 

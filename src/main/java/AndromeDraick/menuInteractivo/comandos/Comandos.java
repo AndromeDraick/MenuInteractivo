@@ -27,6 +27,13 @@ public class Comandos implements CommandExecutor, TabCompleter {
         }
 
         if (etiqueta.equalsIgnoreCase("menu")) {
+            String genero = MenuInteractivo.getInstancia().getBaseDeDatos().getGenero(jugador.getUniqueId());
+            if (genero == null) {
+                jugador.sendMessage(ChatColor.RED + "Antes de usar el menú, debes registrar tu ficha de rol.");
+                jugador.sendMessage(ChatColor.YELLOW + "Usa: /rmi registro rol <genero> <nombre> <apellidoP> <apellidoM> <descendencia> <raza>");
+                return true;
+            }
+
             MenuInteractivo.getInstancia().getMenuPrincipal().abrir(jugador);
             return true;
         }

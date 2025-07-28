@@ -1,5 +1,5 @@
 name: MI
-version: '1.0.0.57-PREV-3.2'
+version: '1.0.2'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
 api-version: '1.21.1'
 softdepend: [Vault]
@@ -19,6 +19,13 @@ commands:
     permission: menuinteractivo.usar
     permission-message: No tienes permiso para usar la tienda.
     tab-completer: AndromeDraick.menuInteractivo.comandos.Comandos
+
+  rmi:
+    description: Registro de personaje y relaciones familiares
+    usage: /rmi <registro|hijo|hija|hermano|hermana|esposo|esposa|aprobar|rechazar> [...]
+    permission: menuinteractivo.registro
+    permission-message: No tienes permiso para registrar personajes.
+    tab-completer: AndromeDraick.menuInteractivo.comandos.ComandoRMI
 
   rnmi:
     description: Comandos de Reinos
@@ -122,3 +129,9 @@ permissions:
   menuinteractivo.banco.unirse:
     description: Permite unirse como socio a un banco.
     default: true
+  menuinteractivo.rmi:
+    description: Permite usar el comando /rmi
+    default: true
+  menuinteractivo.comando.registro.admin:
+    description: Permite a administradores editar la ficha de rol de otros jugadores.
+    default: op

@@ -2,14 +2,17 @@ package AndromeDraick.menuInteractivo.database;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.model.Banco;
+import AndromeDraick.menuInteractivo.model.ItemEnVenta;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 import AndromeDraick.menuInteractivo.model.Reino;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GestorBaseDeDatos {
     private final MenuInteractivo plugin;
@@ -80,7 +83,13 @@ public class GestorBaseDeDatos {
             // Género de jugador
             st.executeUpdate("CREATE TABLE IF NOT EXISTS genero_jugador (" +
                     "uuid TEXT PRIMARY KEY, " +
-                    "genero TEXT NOT NULL" +
+                    "genero TEXT NOT NULL, " +
+                    "nombre_rol TEXT NOT NULL, " +
+                    "apellido_paterno_rol TEXT NOT NULL, " +
+                    "apellido_materno_rol TEXT NOT NULL, " +
+                    "descendiente_de TEXT NOT NULL, " +
+                    "raza_rol TEXT NOT NULL, " +
+                    "historia_familiar TEXT DEFAULT ''" +
                     ")");
 
             // Contratos entre bancos y reinos
@@ -150,6 +159,16 @@ public class GestorBaseDeDatos {
                     "etiqueta_banco TEXT NOT NULL, " +
                     "saldo REAL DEFAULT 0, " +
                     "PRIMARY KEY(uuid_jugador, etiqueta_banco)" +
+                    ")");
+            // Ítems puestos a la venta por jugadores del reino
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS mercado_reino (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "uuid_vendedor TEXT NOT NULL, " +
+                    "etiqueta_reino TEXT NOT NULL, " +
+                    "item_serializado TEXT NOT NULL, " +
+                    "cantidad INTEGER NOT NULL, " +
+                    "precio REAL NOT NULL, " +
+                    "fecha_publicacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
 
         } catch (SQLException e) {
@@ -432,9 +451,131 @@ public class GestorBaseDeDatos {
         } catch (SQLException e) {
             plugin.getLogger().warning("Error obteniendo género: " + e.getMessage());
         }
-        return "Masculino";
+        return null;
+    }
+    public boolean guardarDatosRol(UUID uuid, String genero, String nombre, String apellidoP, String apellidoM, String descendencia, String raza) {
+        String sql = "REPLACE INTO genero_jugador (uuid, genero, nombre_rol, apellido_paterno_rol, apellido_materno_rol, descendiente_de, raza_rol) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            ps.setString(2, genero);
+            ps.setString(3, nombre);
+            ps.setString(4, apellidoP);
+            ps.setString(5, apellidoM);
+            ps.setString(6, descendencia);
+            ps.setString(7, raza);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al guardar datos de rol: " + e.getMessage());
+            return false;
+        }
     }
 
+    public boolean agregarRelacionFamiliar(UUID uuid, String nuevaRelacion) {
+        String select = "SELECT historia_familiar FROM genero_jugador WHERE uuid = ?";
+        String update = "UPDATE genero_jugador SET historia_familiar = ? WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection()) {
+            String historiaExistente = "";
+            try (PreparedStatement ps = conn.prepareStatement(select)) {
+                ps.setString(1, uuid.toString());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        historiaExistente = rs.getString("historia_familiar");
+                    }
+                }
+            }
+
+            String nuevaHistoria = historiaExistente == null || historiaExistente.isEmpty()
+                    ? nuevaRelacion
+                    : historiaExistente + ", " + nuevaRelacion;
+
+            try (PreparedStatement ps = conn.prepareStatement(update)) {
+                ps.setString(1, nuevaHistoria);
+                ps.setString(2, uuid.toString());
+                return ps.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error actualizando historia familiar: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean registrarRolCompleto(UUID uuid, String genero, String nombre, String apellidoP, String apellidoM, String descendencia, String raza) {
+        String sql = "REPLACE INTO genero_jugador (uuid, genero, nombre_rol, apellido_paterno_rol, apellido_materno_rol, descendiente_de, raza_rol) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, uuid.toString());
+            ps.setString(2, capitalizarPalabras(genero));
+            ps.setString(3, capitalizarPalabras(nombre));
+            ps.setString(4, capitalizarPalabras(apellidoP));
+            ps.setString(5, capitalizarPalabras(apellidoM));
+            ps.setString(6, capitalizarPalabras(descendencia));
+            ps.setString(7, capitalizarPalabras(raza));
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error registrando ficha de rol: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private String capitalizarPalabras(String input) {
+        if (input == null || input.isBlank()) return "";
+        return Arrays.stream(input.split(" "))
+                .map(p -> p.isEmpty() ? "" : Character.toUpperCase(p.charAt(0)) + p.substring(1).toLowerCase())
+                .collect(Collectors.joining(" "));
+    }
+
+    public List<String> getHistoriaFamiliar(UUID uuid) {
+        List<String> historia = new ArrayList<>();
+        String sql = "SELECT tipo, uuid_relacion FROM relaciones_familiares WHERE uuid = ?";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String tipo = rs.getString("tipo");
+                    String uuidRelacion = rs.getString("uuid_relacion");
+
+                    try {
+                        UUID uuidRel = UUID.fromString(uuidRelacion);
+                        OfflinePlayer relacionado = Bukkit.getOfflinePlayer(uuidRel);
+                        String nombre = relacionado.getName() != null ? relacionado.getName() : "Desconocido";
+                        historia.add(tipo + " de " + nombre);
+                    } catch (IllegalArgumentException e) {
+                        historia.add(tipo + " de UUID inválido");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error obteniendo historia familiar: " + e.getMessage());
+        }
+
+        return historia;
+    }
+
+
+    public String getNombreCompletoRol(UUID uuid) {
+        String sql = "SELECT nombre_rol, apellido_paterno_rol, apellido_materno_rol FROM genero_jugador WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String nombre = rs.getString("nombre_rol");
+                    String apellidoPaterno = rs.getString("apellido_paterno_rol");
+                    String apellidoMaterno = rs.getString("apellido_materno_rol");
+                    return nombre + " " + apellidoPaterno + " " + apellidoMaterno;
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error obteniendo nombre completo del rol: " + e.getMessage());
+        }
+        return null;
+    }
 
     public String getTituloJugador(UUID jugadorUUID) {
         String sql = "SELECT titulo FROM jugadores_reino WHERE uuid = ?";
@@ -1406,13 +1547,13 @@ public class GestorBaseDeDatos {
 
     public Map<String, Double> obtenerTodosLosSaldosDeJugador(UUID uuid) {
         Map<String, Double> saldos = new HashMap<>();
-        String sql = "SELECT reino_etiqueta, saldo FROM cuentas_moneda WHERE uuid = ?";
+        String sql = "SELECT etiqueta_banco, saldo FROM cuentas_moneda WHERE uuid_jugador = ?";
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, uuid.toString());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                String reino = rs.getString("reino_etiqueta");
+                String reino = rs.getString("etiqueta_banco");
                 double saldo = rs.getDouble("saldo");
                 saldos.put(reino, saldo);
             }
@@ -1452,7 +1593,7 @@ public class GestorBaseDeDatos {
 
 
     public double obtenerCantidadImpresaDisponible(String etiquetaBanco, String reinoEtiqueta) {
-        String sql = "SELECT (cantidad_impresa - cantidad_quemada - cantidad_convertida) AS disponible " +
+        String sql = "SELECT (cantidad_impresa - cantidad_quemada) AS disponible " +
                 "FROM monedas_banco WHERE etiqueta_banco = ? AND reino_etiqueta = ?";
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -1604,6 +1745,203 @@ public class GestorBaseDeDatos {
         establecerSaldoCuentaBanco(jugador, etiquetaBanco, actual + delta);
     }
 
+//-------------------------------Mercado de Reino--------------------------------------------
+
+    //-------------------------------------------------------------------------------------
+
+    public boolean insertarItemEnMercado(UUID uuid, String reino, String itemSerializado, int cantidad, double precio) {
+        String sql = "INSERT INTO mercado_reino (uuid_vendedor, etiqueta_reino, item_serializado, cantidad, precio) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, uuid.toString());
+            stmt.setString(2, reino);
+            stmt.setString(3, itemSerializado);
+            stmt.setInt(4, cantidad);
+            stmt.setDouble(5, precio);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error insertando item en mercado: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<ItemEnVenta> getItemsMercadoDelReino(String reino) {
+        List<ItemEnVenta> items = new ArrayList<>();
+        String sql = "SELECT * FROM mercado_reino WHERE etiqueta_reino = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, reino);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    items.add(new ItemEnVenta(
+                            rs.getInt("id"),
+                            UUID.fromString(rs.getString("uuid_vendedor")),
+                            rs.getString("etiqueta_reino"),
+                            rs.getString("item_serializado"),
+                            rs.getInt("cantidad"),
+                            rs.getDouble("precio")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error al obtener mercado: " + e.getMessage());
+        }
+        return items;
+    }
+
+    public boolean procesarCompraEnMercado(int id, UUID comprador, double precio) {
+        String sqlEliminar = "DELETE FROM mercado_reino WHERE id = ?";
+        String sqlGetItem = "SELECT uuid_vendedor, etiqueta_reino FROM mercado_reino WHERE id = ?";
+        String sqlSumarSaldo = "UPDATE cuentas_monedas SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+        String sqlRestarSaldo = "UPDATE cuentas_monedas SET saldo = saldo - ? WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+        String sqlBuscarBanco = "SELECT etiqueta FROM bancos WHERE reino_etiqueta = ? AND estado = 'aprobado'";
+        String sqlTieneCuentaBanco = "SELECT saldo FROM cuentas_moneda WHERE uuid_jugador = ? AND etiqueta_banco = ?";
+        String sqlRestarBanco = "UPDATE cuentas_moneda SET saldo = saldo - ? WHERE uuid_jugador = ? AND etiqueta_banco = ?";
+
+        try (Connection conn = HikariProvider.getConnection()) {
+            conn.setAutoCommit(false);
+
+            String vendedor;
+            String reino;
+
+            // 1. Obtener datos del ítem en venta
+            try (PreparedStatement stmt = conn.prepareStatement(sqlGetItem)) {
+                stmt.setInt(1, id);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (!rs.next()) return false;
+                    vendedor = rs.getString("uuid_vendedor");
+                    reino = rs.getString("etiqueta_reino");
+                }
+            }
+
+            // 2. Descontar saldo del comprador (cuentas_monedas)
+            try (PreparedStatement restar = conn.prepareStatement(sqlRestarSaldo)) {
+                restar.setDouble(1, precio);
+                restar.setString(2, comprador.toString());
+                restar.setString(3, reino);
+                restar.executeUpdate();
+            }
+
+            // 3. Buscar si el jugador tiene cuenta en algún banco de ese reino y restar
+            try (PreparedStatement buscarBanco = conn.prepareStatement(sqlBuscarBanco)) {
+                buscarBanco.setString(1, reino);
+                ResultSet rsBanco = buscarBanco.executeQuery();
+
+                while (rsBanco.next()) {
+                    String etiquetaBanco = rsBanco.getString("etiqueta");
+
+                    try (PreparedStatement tieneCuenta = conn.prepareStatement(sqlTieneCuentaBanco)) {
+                        tieneCuenta.setString(1, comprador.toString());
+                        tieneCuenta.setString(2, etiquetaBanco);
+                        ResultSet rsCuenta = tieneCuenta.executeQuery();
+
+                        if (rsCuenta.next()) {
+                            // Sí tiene cuenta → descontar del banco
+                            try (PreparedStatement restarBanco = conn.prepareStatement(sqlRestarBanco)) {
+                                restarBanco.setDouble(1, precio);
+                                restarBanco.setString(2, comprador.toString());
+                                restarBanco.setString(3, etiquetaBanco);
+                                restarBanco.executeUpdate();
+                            }
+                            break; // solo descontar de un banco
+                        }
+                    }
+                }
+            }
+
+            // 4. Sumar saldo al vendedor (cuentas_monedas)
+            try (PreparedStatement sumar = conn.prepareStatement(sqlSumarSaldo)) {
+                sumar.setDouble(1, precio);
+                sumar.setString(2, vendedor);
+                sumar.setString(3, reino);
+                sumar.executeUpdate();
+            }
+
+            // 5. Eliminar ítem del mercado
+            try (PreparedStatement eliminar = conn.prepareStatement(sqlEliminar)) {
+                eliminar.setInt(1, id);
+                eliminar.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error al procesar compra en mercado: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public double obtenerSaldoCuentaPersonal(UUID jugador, String reino) {
+        String sql = "SELECT saldo FROM cuentas_monedas WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, jugador.toString());
+            stmt.setString(2, reino);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getDouble("saldo");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error al consultar saldo personal: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    public Map<String, Double> obtenerTodosLosSaldosJugador(UUID jugador) {
+        Map<String, Double> saldos = new HashMap<>();
+        String sql = "SELECT etiqueta_reino, saldo FROM cuentas_monedas WHERE uuid_jugador = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, jugador.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    saldos.put(rs.getString("etiqueta_reino"), rs.getDouble("saldo"));
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error al obtener saldos jugador: " + e.getMessage());
+        }
+        return saldos;
+    }
+
+    public ItemEnVenta buscarItemEnMercadoPorID(int id) {
+        String sql = "SELECT * FROM mercado_reino WHERE id = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new ItemEnVenta(
+                            rs.getInt("id"),
+                            UUID.fromString(rs.getString("uuid_vendedor")),
+                            rs.getString("etiqueta_reino"),
+                            rs.getString("item_serializado"),
+                            rs.getInt("cantidad"),
+                            rs.getDouble("precio")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error al buscar ítem por ID: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public String getReinoJugador(UUID uuid) {
+        String sql = "SELECT etiqueta_reino FROM jugadores_reino WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, uuid.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("etiqueta_reino");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error al obtener el reino del jugador: " + e.getMessage());
+        }
+        return null;
+    }
 
 
 }

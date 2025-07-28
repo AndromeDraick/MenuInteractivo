@@ -1,5 +1,6 @@
 package AndromeDraick.menuInteractivo;
 
+import AndromeDraick.menuInteractivo.comandos.ComandoRMI;
 import AndromeDraick.menuInteractivo.comandos.Comandos;
 import AndromeDraick.menuInteractivo.comandos.ComandosBMI;
 import AndromeDraick.menuInteractivo.comandos.ComandosReino;
@@ -33,6 +34,7 @@ public final class MenuInteractivo extends JavaPlugin {
     private MenuCuentaBanco menuCuentaBanco;
     private BancoManager bancoManager;
     private MenuCirculacionMonetaria menuCirculacionMonetaria;
+    private MenuMercadoReino menuMercadoReino;
 
 
     @Override
@@ -83,6 +85,10 @@ public final class MenuInteractivo extends JavaPlugin {
         // 7) Comando de reinos (/rnmi)
         getCommand("rnmi").setExecutor(new ComandosReino(this));
 
+        ComandoRMI comandoRMI = new ComandoRMI(this);
+        getCommand("rmi").setExecutor(comandoRMI);
+        getCommand("rmi").setTabCompleter(comandoRMI);
+
         // 8) Comando de bancos (/bmi)
         getCommand("bmi").setExecutor(new ComandosBMI(this));
 
@@ -100,6 +106,8 @@ public final class MenuInteractivo extends JavaPlugin {
         this.menuCuentaBanco = new MenuCuentaBanco(this);
         bancoManager = new BancoManager(baseDeDatos, economia);
         this.menuCirculacionMonetaria = new MenuCirculacionMonetaria(this);
+        this.menuMercadoReino = new MenuMercadoReino();
+        getServer().getPluginManager().registerEvents(menuMercadoReino, this);
 
         getLogger().info("  MenuInteractivo activado correctamente.");
 

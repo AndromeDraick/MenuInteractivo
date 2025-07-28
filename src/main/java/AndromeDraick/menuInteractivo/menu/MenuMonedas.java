@@ -21,7 +21,7 @@ public class MenuMonedas implements Listener {
 
     private final MenuInteractivo plugin;
     private final BancoManager bancoManager;
-    private final DecimalFormat formato = new DecimalFormat("#.##");
+    private final DecimalFormat formato = new DecimalFormat("#,##0.00");
 
     public MenuMonedas(MenuInteractivo plugin) {
         this.plugin = plugin;
@@ -36,7 +36,7 @@ public class MenuMonedas implements Listener {
         Inventory menu = Bukkit.createInventory(null, size, ChatColor.DARK_GREEN + "Monedas de los Reinos");
 
         for (MonedasReinoInfo moneda : monedas) {
-            ItemStack item = new ItemStack(Material.YELLOW_BUNDLE);
+            ItemStack item = new ItemStack(Material.RESIN_BRICK); // o PAPER si tu modelo usa otro
             ItemMeta meta = item.getItemMeta();
 
             double impresas = moneda.getCantidadImpresa();
@@ -50,9 +50,9 @@ public class MenuMonedas implements Listener {
             double inverso = valor > 0 ? (1.0 / valor) : 0;
 
             ChatColor colorValor;
-            if (valor >= 1) colorValor = ChatColor.GREEN;
+            if (valor >= 10.5) colorValor = ChatColor.AQUA;
+            else if (valor >= 1) colorValor = ChatColor.GREEN;
             else if (valor <= 0.3) colorValor = ChatColor.RED;
-            else if (valor >= 10.5) colorValor = ChatColor.AQUA;
             else colorValor = ChatColor.YELLOW;
 
             UUID uuidJugador = jugador.getUniqueId();
@@ -62,13 +62,13 @@ public class MenuMonedas implements Listener {
 
             meta.setDisplayName(ChatColor.GOLD + moneda.getNombreMoneda());
             meta.setLore(List.of(
-                    ChatColor.GRAY + "Reino: " + ChatColor.YELLOW + moneda.getEtiquetaReino(),
-                    ChatColor.GRAY + "" + colorValor + "  $1 "+ moneda.getNombreMoneda() + " = $" + formato.format(valor) + ChatColor.RED +" Reinas",
-                    ChatColor.GRAY + "" + colorValor + "  $1 " + ChatColor.RED + "Reina = $" + formato.format(inverso) + moneda.getNombreMoneda(),
-                    ChatColor.GRAY + "En circulación: " + ChatColor.GOLD + formato.format(enCirculacion),
-                    ChatColor.GRAY + "Impresa: " + ChatColor.YELLOW + formato.format(impresas),
-                    ChatColor.GRAY + "Quemada: " + ChatColor.RED + formato.format(quemadas),
-                    ChatColor.GRAY + "Convertida: " + ChatColor.GREEN + formato.format(convertidas),
+                    ChatColor.GRAY + "Reino: " + ChatColor.YELLOW + "[" + moneda.getEtiquetaReino().toUpperCase() + "]",
+                    ChatColor.GRAY + "" + colorValor + "  $1 " + ChatColor.GRAY + moneda.getNombreMoneda() + " = $" + colorValor + formato.format(valor) + ChatColor.DARK_RED + " Reinas",
+                    ChatColor.GRAY + "" + colorValor + "  $1 " + ChatColor.DARK_RED + "Reina = $" + colorValor + formato.format(inverso) + " " + ChatColor.GRAY + moneda.getNombreMoneda(),
+                    ChatColor.GRAY + "En circulación: " + ChatColor.GOLD + " $" + formato.format(enCirculacion),
+                    ChatColor.GRAY + "Impresa: " + ChatColor.YELLOW + " $" + formato.format(impresas),
+                    ChatColor.GRAY + "Quemada: " + ChatColor.RED + " $" + formato.format(quemadas),
+                    ChatColor.GRAY + "Convertida: " + ChatColor.GREEN + "$ " + formato.format(convertidas),
                     ChatColor.GRAY + "Fecha: " + ChatColor.WHITE + moneda.getFechaCreacion(),
                     ChatColor.GRAY + "Tu saldo: " + ChatColor.LIGHT_PURPLE + "$" + formato.format(saldoJugador)
             ));

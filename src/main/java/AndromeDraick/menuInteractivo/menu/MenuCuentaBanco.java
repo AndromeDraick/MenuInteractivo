@@ -21,7 +21,7 @@ public class MenuCuentaBanco implements Listener {
 
     private final MenuInteractivo plugin;
     private final BancoManager bancoManager;
-    private final DecimalFormat formato = new DecimalFormat("#.##");
+    private final DecimalFormat formato = new DecimalFormat("#,##0.00");
     private final Map<UUID, String> esperandoDeposito = new HashMap<>();
     private final Map<UUID, String> esperandoTransferencia = new HashMap<>();
 
@@ -70,8 +70,8 @@ public class MenuCuentaBanco implements Listener {
         // Izquierda: Depositar
         ItemStack depositar = new ItemStack(Material.GOLD_INGOT);
         ItemMeta depositarMeta = depositar.getItemMeta();
-        depositarMeta.setDisplayName(ChatColor.GREEN + "Depositar monedas");
-        depositarMeta.setLore(List.of(ChatColor.GRAY + "Haz clic para escribir la cantidad a depositar."));
+        depositarMeta.setDisplayName(ChatColor.GREEN + "Solicitar monedas");
+        depositarMeta.setLore(List.of(ChatColor.GRAY + "Haz clic para escribir la cantidad a solicitar."));
         depositar.setItemMeta(depositarMeta);
         menu.setItem(11, depositar);
 
@@ -82,6 +82,14 @@ public class MenuCuentaBanco implements Listener {
         transferirMeta.setLore(List.of(ChatColor.GRAY + "Haz clic para escribir el monto y jugador."));
         transferir.setItemMeta(transferirMeta);
         menu.setItem(15, transferir);
+
+        // Botón para volver al menú principal
+        ItemStack volver = new ItemStack(Material.BELL);
+        ItemMeta volverMeta = volver.getItemMeta();
+        volverMeta.setDisplayName(ChatColor.YELLOW + "Volver al menú principal");
+        volverMeta.setLore(List.of(ChatColor.GRAY + "Haz clic para abrir el menú principal."));
+        volver.setItemMeta(volverMeta);
+        menu.setItem(25, volver);
 
         // Atrás o salir
         ItemStack salir = new ItemStack(Material.BARRIER);
@@ -105,7 +113,7 @@ public class MenuCuentaBanco implements Listener {
         switch (event.getSlot()) {
             case 11 -> {
                 jugador.closeInventory();
-                jugador.sendMessage(ChatColor.YELLOW + "Escribe la cantidad de monedas que deseas depositar, no necesitas usar '/':");
+                jugador.sendMessage(ChatColor.YELLOW + "Escribe la cantidad de monedas que deseas solicitar, no necesitas usar '/':");
                 esperandoDeposito.put(jugador.getUniqueId(), etiqueta);
             }
             case 15 -> {
@@ -113,6 +121,10 @@ public class MenuCuentaBanco implements Listener {
                 jugador.sendMessage(ChatColor.YELLOW + "Escribe la cantidad y el jugador al que deseas transferir. Ejemplo:");
                 jugador.sendMessage(ChatColor.GRAY + "   100 Pablo");
                 esperandoTransferencia.put(jugador.getUniqueId(), etiqueta);
+            }
+            case 25 -> {
+                jugador.closeInventory();
+                Bukkit.dispatchCommand(jugador, "menu");
             }
             case 26 -> jugador.closeInventory();
         }

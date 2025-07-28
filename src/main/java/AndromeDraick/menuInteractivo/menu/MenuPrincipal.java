@@ -93,6 +93,30 @@ public class MenuPrincipal implements Listener {
         reino.setItemMeta(metaReino);
         menu.setItem(31, reino);
 
+        // Vender ítems al mercado
+        ItemStack vender = new ItemStack(Material.CHEST);
+        ItemMeta metaVender = vender.getItemMeta();
+        metaVender.setDisplayName(ChatColor.GREEN + "Vender al Mercado del Reino");
+        metaVender.setLore(List.of(ChatColor.GRAY + "Haz clic para poner tus ítems en venta", ChatColor.GRAY + "por monedas del reino."));
+        vender.setItemMeta(metaVender);
+        menu.setItem(39, vender);
+
+// Ver el mercado del reino
+        ItemStack mercado = new ItemStack(Material.BUNDLE);
+        ItemMeta metaMercado = mercado.getItemMeta();
+        metaMercado.setDisplayName(ChatColor.AQUA + "Mercado del Reino");
+        metaMercado.setLore(List.of(ChatColor.GRAY + "Haz clic para ver lo que venden", ChatColor.GRAY + "otros miembros del reino."));
+        mercado.setItemMeta(metaMercado);
+        menu.setItem(40, mercado);
+
+// Ver tu cuenta personal del reino
+        ItemStack cuenta = new ItemStack(Material.GOLD_NUGGET);
+        ItemMeta metaCuenta = cuenta.getItemMeta();
+        metaCuenta.setDisplayName(ChatColor.GOLD + "Tu Monedero Real");
+        metaCuenta.setLore(List.of(ChatColor.GRAY + "Haz clic para ver tu saldo", ChatColor.GRAY + "en cada reino donde participas."));
+        cuenta.setItemMeta(metaCuenta);
+        menu.setItem(41, cuenta);
+
         // Grupo del jugador con LuckPerms
         String grupo = "Desconocido";
         LuckPerms lp = plugin.getPermisos();
@@ -182,6 +206,16 @@ public class MenuPrincipal implements Listener {
             case 31:
                 plugin.getMenuReino().abrir(jugador);
                 break;
+            case 39:
+                MenuMercadoReino.abrirMenuVenta(jugador);
+                break;
+            case 40:
+                MenuMercadoReino.abrirMercadoDelReino(jugador);
+                break;
+            case 41:
+                MenuMercadoReino.abrirCuentaPersonal(jugador);
+                break;
+
         }
     }
 }

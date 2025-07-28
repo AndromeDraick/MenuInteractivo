@@ -162,7 +162,7 @@ public class MenuTienda {
             im.setLore(List.of(
                     ChatColor.GRAY + "Precio: " + ChatColor.GREEN + "$" +
                             FormateadorNumeros.formatear(precio),
-                    ChatColor.YELLOW + "Clic para comprar 1"
+                    ChatColor.YELLOW + "Clic para comprar"
             ));
             item.setItemMeta(im);
 
@@ -245,7 +245,7 @@ public class MenuTienda {
         }
 
         if (slot == 49) {
-            MenuVentaVisual.abrir(jugador);
+            MenuMercadoReino.abrirMenuVenta(jugador);
             jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1.2f);
             return;
         }
@@ -260,7 +260,7 @@ public class MenuTienda {
             return;
         }
 
-        MenuConfirmacion.abrir(jugador, mat);
+        MenuConfirmacion.abrirSelectorCantidad(jugador, mat);
     }
 
     private static ItemStack crearBoton(Material material, String nombre) {

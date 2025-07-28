@@ -132,6 +132,12 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         }
 
         String genero = plugin.getBaseDeDatos().getGenero(p.getUniqueId());
+        if (genero == null) {
+            p.sendMessage(ChatColor.RED + "Antes de crear un reino, debes registrar tu ficha de rol.");
+            p.sendMessage(ChatColor.YELLOW + "Usa: /rmi registro rol <genero> <nombre> <apellidoP> <apellidoM> <descendencia> <raza>");
+            return;
+        }
+
         String rolJugador = genero.equalsIgnoreCase("Femenino") ? "Reina" : "Rey";
         String tituloSocial = "realeza";
 
@@ -203,7 +209,13 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         }
 
         // Determinar rol según género (por defecto Campesino)
-        String genero    = plugin.getBaseDeDatos().getGenero(p.getUniqueId());
+        String genero = plugin.getBaseDeDatos().getGenero(p.getUniqueId());
+        if (genero == null) {
+            p.sendMessage(ChatColor.RED + "Antes de unirte a un reino, debes registrar tu ficha de rol.");
+            p.sendMessage(ChatColor.YELLOW + "Usa: /rmi registro rol <genero> <nombre> <apellidoP> <apellidoM> <descendencia> <raza>");
+            return;
+        }
+
         String rolJugador = genero.equalsIgnoreCase("Femenino")
                 ? "Campesina"
                 : "Campesino";
@@ -377,7 +389,7 @@ public class ComandosReino implements CommandExecutor, TabCompleter {
         if (r.getFechaCreacion() != null) {
             p.sendMessage(ChatColor.GRAY + "Fecha de creación: " +
                     ChatColor.YELLOW + r.getFechaCreacion()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-d d HH:mm")));
         } else {
             p.sendMessage(ChatColor.GRAY + "Fecha de creación: " +
                     ChatColor.RED + "No disponible");

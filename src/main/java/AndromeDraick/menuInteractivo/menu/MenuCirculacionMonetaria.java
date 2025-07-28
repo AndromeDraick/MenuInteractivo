@@ -96,13 +96,19 @@ public class MenuCirculacionMonetaria implements Listener {
             String reino = bancoManager.obtenerReinoDeBanco(bancoEtiqueta);
             double cantidad = solicitud.getCantidad();
 
-            bancoManager.modificarSaldoCuentaJugador(jugadorAceptador.getUniqueId(), bancoEtiqueta, cantidad);
+            plugin.getEconomia().depositPlayer(jugadorAceptador, cantidad);
 
-            jugadorAceptador.sendMessage(ChatColor.GREEN + "Has recibido " + cantidad + " reinas,  por la solicitud aceptada, favor de entregarlas al respectivo lider banquero");
+            jugadorAceptador.sendMessage(ChatColor.GREEN + "Has recibido " + cantidad + " reinas por la solicitud aceptada. Favor de entregarlas al respectivo líder banquero.");
+            jugadorAceptador.sendMessage(ChatColor.GREEN + "Solicitud aceptada correctamente.");
+            abrirMenu(jugadorAceptador, bancoEtiqueta);
+
+        } else if (exito && !clickIzquierdo) {
+            jugadorAceptador.sendMessage(ChatColor.YELLOW + "Solicitud rechazada correctamente.");
+            abrirMenu(jugadorAceptador, solicitud.getEtiquetaBanco());
+
+        } else {
+            jugadorAceptador.sendMessage(ChatColor.RED + "No se pudo procesar la solicitud. Verifica si el banco tiene suficientes monedas o si ya fue procesada.");
         }
-
-        jugadorAceptador.sendMessage(ChatColor.GREEN + "Solicitud " + (clickIzquierdo ? "aceptada" : "rechazada") + " correctamente.");
-        abrirMenu(jugadorAceptador, solicitud.getEtiquetaBanco());
     }
 
     @EventHandler

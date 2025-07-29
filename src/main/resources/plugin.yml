@@ -1,5 +1,5 @@
 name: MI
-version: '1.0.2'
+version: '1.0.6.1-SNAPSHOT'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
 api-version: '1.21.1'
 softdepend: [Vault]

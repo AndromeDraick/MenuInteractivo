@@ -20,17 +20,32 @@ import java.util.*;
 
 public class MenuMercadoReino implements Listener {
 
-    private static final String TITULO_VENTA     = ChatColor.GOLD + "Poner a la venta";
-    private static final String TITULO_MERCADO   = ChatColor.AQUA + "Mercado del Reino";
-    private static final String TITULO_CUENTA    = ChatColor.GREEN + "Cuenta Personal";
+    private static final String TITULO_VENTA   = ChatColor.GOLD + "Poner a la venta";
+    private static final String TITULO_MERCADO = ChatColor.AQUA + "Mercado del Reino";
+    private static final String TITULO_CUENTA  = ChatColor.GREEN + "Cuenta Personal";
 
-    private static final int PRECIO_PORCENTAJE = 40;
-
-    // Menú para seleccionar ítems del inventario personal y ponerlos en venta
+    // -------------------------------
+    // Abrir menú de venta
+    // -------------------------------
     public static void abrirMenuVenta(Player jugador) {
         Inventory menu = Bukkit.createInventory(null, 54, TITULO_VENTA);
         FileConfiguration config = MenuInteractivo.getInstancia().getConfigTienda().getConfig();
 
+        // Obtener el reino del jugador
+        String etiquetaReino = MenuInteractivo.getInstancia().getBaseDeDatos().getReinoJugador(jugador.getUniqueId());
+        BancoManager bancoManager = MenuInteractivo.getInstancia().getBancoManager();
+
+        // Si no tiene reino, no puede vender
+        if (etiquetaReino == null) {
+            jugador.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
+            return;
+        }
+
+        // Calcular valor dinámico de la moneda del reino
+        double valorMoneda = bancoManager.calcularValorMonedaReino(etiquetaReino);
+        if (valorMoneda <= 0) valorMoneda = 0.01; // Evitar precios 0
+
+        // Rellenar menú con el inventario del jugador
         ItemStack[] inventario = jugador.getInventory().getContents();
         for (int i = 0; i < Math.min(inventario.length, 54); i++) {
             ItemStack item = inventario[i];
@@ -38,7 +53,7 @@ public class MenuMercadoReino implements Listener {
 
             Material material = item.getType();
             double precioBase = CalculadoraPrecios.calcularPrecioVenta(material, jugador);
-            double precioMercado = precioBase * PRECIO_PORCENTAJE / 100.0;
+            double precioMercado = precioBase * valorMoneda;
 
             String nombreTraducido = material.name().toLowerCase().replace("_", " ");
             if (config.contains("items_custom." + material.name() + ".material")) {
@@ -52,8 +67,8 @@ public class MenuMercadoReino implements Listener {
             if (precioMercado > 0) {
                 meta.setDisplayName(ChatColor.GOLD + nombreTraducido);
                 lore.add(ChatColor.GRAY + "Cantidad: " + item.getAmount());
-                lore.add(ChatColor.BLUE + "Precio por unidad (" + PRECIO_PORCENTAJE + "%): " + FormateadorNumeros.formatear(precioMercado));
-                lore.add(ChatColor.YELLOW + "Haz Click para poner en venta desde tu inventario.");
+                lore.add(ChatColor.BLUE + "Precio/unidad: " + FormateadorNumeros.formatear(precioMercado));
+                lore.add(ChatColor.YELLOW + "Click para poner en venta.");
             } else {
                 meta.setDisplayName(ChatColor.RED + "No vendible");
                 lore.add(ChatColor.GRAY + "Este ítem no se puede vender");
@@ -68,6 +83,9 @@ public class MenuMercadoReino implements Listener {
         jugador.playSound(jugador.getLocation(), Sound.BLOCK_CHEST_OPEN, 1f, 1.1f);
     }
 
+    // -------------------------------
+    // Manejar click en menú de venta
+    // -------------------------------
     public static void manejarClickVenta(InventoryClickEvent event) {
         if (!event.getView().getTitle().equals(TITULO_VENTA)) return;
         event.setCancelled(true);
@@ -76,36 +94,38 @@ public class MenuMercadoReino implements Listener {
         ItemStack item = event.getCurrentItem();
         if (item == null || item.getType() == Material.AIR) return;
 
-        Material material = item.getType();
-        double precioBase = CalculadoraPrecios.calcularPrecioVenta(material, jugador);
-        double precioMercado = precioBase * PRECIO_PORCENTAJE / 100.0;
-
-        if (precioMercado <= 0) {
-            jugador.sendMessage(ChatColor.RED + "Este ítem no se puede poner a la venta.");
-            return;
-        }
-
-        // Clonar y preparar el item a guardar
-        ItemStack original = item.clone();
-        int cantidad = original.getAmount();
-        double precioTotal = precioMercado * cantidad;
-
-        if (!jugador.getInventory().containsAtLeast(original, cantidad)) {
-            jugador.sendMessage(ChatColor.RED + "Da clik en el ítem en tu inventario.");
-            return;
-        }
-
-        // Obtener reino del jugador
+        // Obtener reino y valor de moneda
         String etiquetaReino = MenuInteractivo.getInstancia().getBaseDeDatos().getReinoJugador(jugador.getUniqueId());
         if (etiquetaReino == null) {
             jugador.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
             return;
         }
 
-        // Serializar el ítem para guardarlo
-        String itemSerializado = SerializadorItemStack.serializar(original);
+        BancoManager bancoManager = MenuInteractivo.getInstancia().getBancoManager();
+        double valorMoneda = bancoManager.calcularValorMonedaReino(etiquetaReino);
+        if (valorMoneda <= 0) valorMoneda = 0.01;
 
-        // Insertar en base de datos
+        Material material = item.getType();
+        double precioBase = CalculadoraPrecios.calcularPrecioVenta(material, jugador);
+        double precioMercado = precioBase * valorMoneda;
+
+        if (precioMercado <= 0) {
+            jugador.sendMessage(ChatColor.RED + "Este ítem no se puede poner a la venta.");
+            return;
+        }
+
+        // Clonar y preparar el ítem a guardar
+        ItemStack original = item.clone();
+        int cantidad = original.getAmount();
+        double precioTotal = precioMercado * cantidad;
+
+        if (!jugador.getInventory().containsAtLeast(original, cantidad)) {
+            jugador.sendMessage(ChatColor.RED + "Da click en el ítem en tu inventario.");
+            return;
+        }
+
+        // Serializar e insertar en la base de datos
+        String itemSerializado = SerializadorItemStack.serializar(original);
         boolean exito = MenuInteractivo.getInstancia().getBaseDeDatos().insertarItemEnMercado(
                 jugador.getUniqueId(), etiquetaReino, itemSerializado, cantidad, precioTotal
         );
@@ -122,19 +142,23 @@ public class MenuMercadoReino implements Listener {
         }
     }
 
+    // -------------------------------
+    // Abrir mercado del reino
+    // -------------------------------
     public static void abrirMercadoDelReino(Player jugador) {
-        Inventory menu = Bukkit.createInventory(null, 54, TITULO_MERCADO);
-
         String reino = MenuInteractivo.getInstancia().getBaseDeDatos().getReinoJugador(jugador.getUniqueId());
         if (reino == null) {
             jugador.sendMessage(ChatColor.RED + "No perteneces a ningún reino.");
             return;
         }
 
-        List<ItemEnVenta> items = MenuInteractivo.getInstancia().getBaseDeDatos().getItemsMercadoDelReino(reino);
         BancoManager bancoManager = MenuInteractivo.getInstancia().getBancoManager();
-        String nombreMoneda = bancoManager.obtenerNombreMonedaDeReino(reino);
-        if (nombreMoneda == null || nombreMoneda.isEmpty()) nombreMoneda = "monedas";
+        double valorMoneda = bancoManager.calcularValorMonedaReino(reino);
+        if (valorMoneda <= 0) valorMoneda = 0.01;
+
+        List<ItemEnVenta> items = MenuInteractivo.getInstancia().getBaseDeDatos().getItemsMercadoDelReino(reino);
+
+        Inventory menu = Bukkit.createInventory(null, 54, TITULO_MERCADO);
 
         for (int i = 0; i < Math.min(items.size(), 54); i++) {
             ItemEnVenta venta = items.get(i);
@@ -142,15 +166,14 @@ public class MenuMercadoReino implements Listener {
             if (item == null) continue;
 
             int cantidad = venta.cantidad();
-            double precioTotal = venta.precio();
-            double precioUnitario = precioTotal / Math.max(1, cantidad);
+            double precioUnitario = (venta.precio() / Math.max(1, cantidad)) * valorMoneda;
+            double precioTotal = venta.precio() * valorMoneda;
 
             ItemMeta meta = item.getItemMeta();
-            List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
-            lore.add("");
+            List<String> lore = new ArrayList<>();
             lore.add(ChatColor.GRAY + "Cantidad: " + cantidad);
             lore.add(ChatColor.YELLOW + "Precio unitario: " + FormateadorNumeros.formatear(precioUnitario));
-            lore.add(ChatColor.GOLD + "Total: " + FormateadorNumeros.formatear(precioTotal) + " " + nombreMoneda);
+            lore.add(ChatColor.GOLD + "Total: " + FormateadorNumeros.formatear(precioTotal));
             lore.add(ChatColor.GRAY + "Click para comprar");
             lore.add(ChatColor.DARK_GRAY + "ID#" + venta.id());
 
@@ -163,6 +186,9 @@ public class MenuMercadoReino implements Listener {
         jugador.openInventory(menu);
     }
 
+    // -------------------------------
+    // Manejar click de compra
+    // -------------------------------
     public static void manejarClickCompra(InventoryClickEvent event) {
         if (!event.getView().getTitle().equals(TITULO_MERCADO)) return;
         event.setCancelled(true);
@@ -173,10 +199,7 @@ public class MenuMercadoReino implements Listener {
 
         // Extraer ID desde el lore
         ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasLore()) {
-            jugador.sendMessage(ChatColor.RED + "Este ítem no es válido.");
-            return;
-        }
+        if (meta == null || !meta.hasLore()) return;
 
         int id = -1;
         for (String line : meta.getLore()) {
@@ -201,20 +224,30 @@ public class MenuMercadoReino implements Listener {
             return;
         }
 
-        double saldo = MenuInteractivo.getInstancia().getBaseDeDatos().obtenerSaldoCuentaPersonal(jugador.getUniqueId(), venta.reino());
-        if (saldo < venta.precio()) {
+        // Calcular precio dinámico
+        String reino = venta.reino();
+        BancoManager bancoManager = MenuInteractivo.getInstancia().getBancoManager();
+        double valorMoneda = bancoManager.calcularValorMonedaReino(reino);
+        if (valorMoneda <= 0) valorMoneda = 0.01;
+
+        double precioFinal = venta.precio() * valorMoneda;
+
+        // Verificar saldo
+        double saldo = MenuInteractivo.getInstancia().getBaseDeDatos().obtenerSaldoCuentaPersonal(jugador.getUniqueId(), reino);
+        if (saldo < precioFinal) {
             jugador.sendMessage(ChatColor.RED + "No tienes suficientes monedas del reino.");
             return;
         }
 
+        // Procesar compra
         boolean exito = MenuInteractivo.getInstancia().getBaseDeDatos().procesarCompraEnMercado(
-                venta.id(), jugador.getUniqueId(), venta.precio()
+                venta.id(), jugador.getUniqueId(), precioFinal
         );
 
         if (exito) {
             jugador.getInventory().addItem(SerializadorItemStack.deserializar(venta.itemSerializado()));
             jugador.sendMessage(ChatColor.GREEN + "Has comprado el ítem correctamente.");
-            jugador.playSound(jugador.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.3f);
+            jugador.playSound(jugador.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.3f);
         } else {
             jugador.sendMessage(ChatColor.RED + "Error al procesar la compra.");
         }
@@ -225,7 +258,10 @@ public class MenuMercadoReino implements Listener {
     public static void abrirCuentaPersonal(Player jugador) {
         Inventory menu = Bukkit.createInventory(null, 27, TITULO_CUENTA);
 
-        Map<String, Double> saldos = MenuInteractivo.getInstancia().getBaseDeDatos().obtenerTodosLosSaldosJugador(jugador.getUniqueId());
+        Map<String, Double> saldos = MenuInteractivo.getInstancia()
+                .getBaseDeDatos()
+                .obtenerTodosLosSaldosJugador(jugador.getUniqueId());
+
         BancoManager bancoManager = MenuInteractivo.getInstancia().getBancoManager();
 
         int slot = 0;
@@ -233,13 +269,24 @@ public class MenuMercadoReino implements Listener {
             String reino = entrada.getKey();
             double cantidad = entrada.getValue();
 
+            // Obtener nombre y valor dinámico de la moneda
             String nombreMoneda = bancoManager.obtenerNombreMonedaDeReino(reino);
-            if (nombreMoneda == null || nombreMoneda.isEmpty()) nombreMoneda = "moneda";
+            if (nombreMoneda == null || nombreMoneda.isEmpty()) nombreMoneda = "Moneda";
+
+            double valorMoneda = bancoManager.calcularValorMonedaReino(reino);
+            if (valorMoneda <= 0) valorMoneda = 0.01;
+
+            // Calcular valor equivalente
+            double valorEquivalente = cantidad * valorMoneda;
 
             ItemStack moneda = new ItemStack(Material.GOLD_NUGGET);
             ItemMeta meta = moneda.getItemMeta();
             meta.setDisplayName(ChatColor.YELLOW + "Reino: [" + reino.toUpperCase() + "]");
-            meta.setLore(List.of(ChatColor.GRAY + "Saldo: $" + FormateadorNumeros.formatear(cantidad) + " " + nombreMoneda));
+            meta.setLore(List.of(
+                    ChatColor.GRAY + "Saldo: " + ChatColor.GOLD + FormateadorNumeros.formatear(cantidad) + " " + nombreMoneda,
+                    ChatColor.BLUE + "Valor actual: $" + FormateadorNumeros.formatear(valorEquivalente),
+                    ChatColor.DARK_GRAY + "(1 " + nombreMoneda + " = " + FormateadorNumeros.formatear(valorMoneda) + " monedas del servidor)"
+            ));
             moneda.setItemMeta(meta);
 
             menu.setItem(slot++, moneda);
@@ -249,6 +296,10 @@ public class MenuMercadoReino implements Listener {
         jugador.openInventory(menu);
     }
 
+
+    // -------------------------------
+    // Eventos de inventario
+    // -------------------------------
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         String titulo = event.getView().getTitle();
@@ -268,5 +319,4 @@ public class MenuMercadoReino implements Listener {
             event.setCancelled(true);
         }
     }
-
 }

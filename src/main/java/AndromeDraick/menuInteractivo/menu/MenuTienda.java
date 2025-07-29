@@ -260,7 +260,7 @@ public class MenuTienda {
             return;
         }
 
-        MenuConfirmacion.abrirSelectorCantidad(jugador, mat);
+        MenuSelectorCantidad.abrir(jugador, mat);
     }
 
     private static ItemStack crearBoton(Material material, String nombre) {

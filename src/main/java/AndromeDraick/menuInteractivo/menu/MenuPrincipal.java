@@ -73,7 +73,7 @@ public class MenuPrincipal implements Listener {
         if (jugador.hasPermission("bmi.comandos.aceptar.banco")) {
             ItemStack bancoItem = new ItemStack(Material.GOLD_INGOT);
             ItemMeta metaBanco = bancoItem.getItemMeta();
-            metaBanco.setDisplayName(ChatColor.GOLD + "Gestión de Bancos");
+            metaBanco.setDisplayName(ChatColor.GOLD + "Solicitudes de Bancos de tu Reino");
             metaBanco.setLore(Collections.singletonList(ChatColor.GRAY + "Haz clic para revisar solicitudes de bancos"));
             bancoItem.setItemMeta(metaBanco);
             menu.setItem(22, bancoItem);
@@ -88,8 +88,8 @@ public class MenuPrincipal implements Listener {
         // == Ítem de gestión del reino ==
         ItemStack reino = new ItemStack(Material.CREEPER_BANNER_PATTERN);
         ItemMeta metaReino = reino.getItemMeta();
-        metaReino.setDisplayName(ChatColor.GOLD + "Gestión del Reino");
-        metaReino.setLore(Collections.singletonList(ChatColor.GRAY + "Haz clic para administrar tu reino"));
+        metaReino.setDisplayName(ChatColor.GOLD + "Información del Reino");
+        metaReino.setLore(Collections.singletonList(ChatColor.GRAY + "Haz clic para ver tu reino"));
         reino.setItemMeta(metaReino);
         menu.setItem(31, reino);
 
@@ -102,7 +102,7 @@ public class MenuPrincipal implements Listener {
         menu.setItem(39, vender);
 
 // Ver el mercado del reino
-        ItemStack mercado = new ItemStack(Material.BUNDLE);
+        ItemStack mercado = new ItemStack(Material.GOLD_INGOT);
         ItemMeta metaMercado = mercado.getItemMeta();
         metaMercado.setDisplayName(ChatColor.AQUA + "Mercado del Reino");
         metaMercado.setLore(List.of(ChatColor.GRAY + "Haz clic para ver lo que venden", ChatColor.GRAY + "otros miembros del reino."));

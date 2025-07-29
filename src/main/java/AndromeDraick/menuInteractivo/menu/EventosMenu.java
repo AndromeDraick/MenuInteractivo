@@ -1,12 +1,10 @@
 package AndromeDraick.menuInteractivo.menu;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
-import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.utilidades.CalculadoraPrecios;
 import AndromeDraick.menuInteractivo.utilidades.FormateadorNumeros;
 import AndromeDraick.menuInteractivo.utilidades.HistorialComprasManager;
 import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -15,10 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.UUID;
 
 public class EventosMenu implements Listener {
 
@@ -29,7 +24,6 @@ public class EventosMenu implements Listener {
 
         // Manejar clics en los distintos menús personalizados
         MenuTienda.manejarClick(event);
-        MenuConfirmacion.manejarClick(event);
         MenuVentaVisual.manejarClick(event);
 
         // Menú de Compras Recientes

@@ -108,6 +108,8 @@ public final class MenuInteractivo extends JavaPlugin {
         this.menuCirculacionMonetaria = new MenuCirculacionMonetaria(this);
         this.menuMercadoReino = new MenuMercadoReino();
         getServer().getPluginManager().registerEvents(menuMercadoReino, this);
+        getServer().getPluginManager().registerEvents(new ListenerSelectorCantidad(), this);
+        getServer().getPluginManager().registerEvents(new ListenerConfirmarCompra(), this);
 
         getLogger().info("  MenuInteractivo activado correctamente.");
 

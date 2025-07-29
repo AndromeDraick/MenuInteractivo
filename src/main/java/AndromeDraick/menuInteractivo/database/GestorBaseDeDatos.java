@@ -192,6 +192,118 @@ public class GestorBaseDeDatos {
         }
     }
 
+    public boolean renombrarBancoCompleto(String etiquetaActual, String nuevoNombre, String nuevaEtiqueta) {
+        // Tablas relacionadas que contienen la etiqueta del banco
+        String[] tablasConEtiqueta = {
+                "bancos",
+                "jugadores_banco",
+                "monedas_banco",
+                "cuentas_moneda",
+                "historial_monedas_banco",
+                "solicitudes_monedas",
+                "contratos_banco_reino" // Incluimos la tabla de contratos
+        };
+
+        Connection conn = null;
+        PreparedStatement psBanco = null;
+        try {
+            conn = HikariProvider.getConnection();
+            conn.setAutoCommit(false); // Iniciamos transacción
+
+            // 1. Actualizar la tabla principal de bancos
+            String sqlBanco = "UPDATE bancos SET etiqueta = ?, nombre = ? WHERE etiqueta = ?";
+            psBanco = conn.prepareStatement(sqlBanco);
+            psBanco.setString(1, nuevaEtiqueta);
+            psBanco.setString(2, nuevoNombre);
+            psBanco.setString(3, etiquetaActual);
+            int filas = psBanco.executeUpdate();
+
+            if (filas == 0) {
+                conn.rollback();
+                return false;
+            }
+
+            // 2. Actualizar todas las tablas relacionadas que usan la etiqueta del banco
+            for (String tabla : tablasConEtiqueta) {
+                if (tabla.equals("bancos")) continue; // Ya actualizada
+
+                String columna;
+                switch (tabla) {
+                    case "historial_monedas_banco" -> columna = "banco_etiqueta";
+                    case "contratos_banco_reino" -> columna = "banco_etiqueta";
+                    default -> columna = "etiqueta_banco";
+                }
+
+                String sqlUpdate = "UPDATE " + tabla + " SET " + columna + " = ? WHERE " + columna + " = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sqlUpdate)) {
+                    ps.setString(1, nuevaEtiqueta);
+                    ps.setString(2, etiquetaActual);
+                    ps.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error renombrando banco completo: " + e.getMessage());
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                plugin.getLogger().warning("Error en rollback: " + ex.getMessage());
+            }
+            return false;
+        } finally {
+            try {
+                if (psBanco != null) psBanco.close();
+                if (conn != null) conn.setAutoCommit(true);
+                if (conn != null) conn.close();
+            } catch (SQLException ignored) {}
+        }
+    }
+
+    public List<Banco> obtenerBancosDeJugador(UUID jugador, boolean soloPropietario) {
+        List<Banco> bancos = new ArrayList<>();
+
+        String sql;
+        if (soloPropietario) {
+            sql = "SELECT * FROM bancos WHERE uuid_propietario = ?";
+        } else {
+            sql = """
+            SELECT DISTINCT b.* 
+            FROM bancos b
+            LEFT JOIN jugadores_banco jb ON b.etiqueta = jb.etiqueta_banco
+            WHERE b.uuid_propietario = ? OR jb.uuid = ?
+        """;
+        }
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, jugador.toString());
+            if (!soloPropietario) ps.setString(2, jugador.toString());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Banco banco = new Banco(
+                            rs.getString("etiqueta"),
+                            rs.getString("nombre"),
+                            rs.getString("reino_etiqueta"),
+                            UUID.fromString(rs.getString("uuid_propietario")),
+                            rs.getString("estado"),
+                            rs.getDouble("fondos")
+                    );
+                    bancos.add(banco);
+                }
+            }
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al obtener bancos de jugador: " + e.getMessage());
+        }
+
+        return bancos;
+    }
+
     public boolean existeBanco(String etiqueta) {
         String sql = "SELECT 1 FROM bancos WHERE etiqueta = ?";
         try (Connection conn = HikariProvider.getConnection();
@@ -421,6 +533,22 @@ public class GestorBaseDeDatos {
             }
         } catch (SQLException e) {
             plugin.getLogger().warning("Error obteniendo banco del jugador: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public String obtenerBancoPropietario(UUID uuid) {
+        String sql = "SELECT etiqueta FROM bancos WHERE uuid_propietario = ? AND estado = 'aprobado'";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("etiqueta");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error al obtener banco propietario: " + e.getMessage());
         }
         return null;
     }
@@ -656,43 +784,6 @@ public class GestorBaseDeDatos {
         }
     }
 
-    // MÉTODOS DE GESTIÓN DE BANCO
-    public boolean insertarBanco(String etiqueta, String nombre, String reinoEtiqueta, UUID propietario) {
-        String sql = """
-            INSERT INTO bancos
-              (etiqueta, nombre, reino_etiqueta, uuid_propietario, estado, fondos)
-            VALUES
-              (?, ?, ?, ?, 'pendiente', 0)
-            """;
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, etiqueta);
-            ps.setString(2, nombre);
-            ps.setString(3, reinoEtiqueta);
-            ps.setString(4, propietario.toString());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
-     * Cambia el estado de un banco ('aprobado', 'rechazado', etc.).
-     */
-    public boolean actualizarEstadoBanco(String etiquetaBanco, String nuevoEstado) {
-        String sql = "UPDATE bancos SET estado = ? WHERE etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, nuevoEstado);
-            ps.setString(2, etiquetaBanco);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     /**
      * Agrega un socio a un banco.
      */
@@ -726,13 +817,16 @@ public class GestorBaseDeDatos {
     }
 
     public boolean insertarContratoBancoReino(String banco, String reino, Timestamp inicio, Timestamp fin, String permisos) {
-        String sql = "INSERT OR REPLACE INTO contratos_banco_reino " +
-                "(banco_etiqueta, reino_etiqueta, fecha_inicio, fecha_fin, permisos) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        // Guardamos banco y reino en minúsculas para mantener consistencia
+        String sql = """
+        INSERT OR REPLACE INTO contratos_banco_reino
+        (banco_etiqueta, reino_etiqueta, fecha_inicio, fecha_fin, permisos)
+        VALUES (?, ?, ?, ?, ?)
+        """;
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, banco);
-            stmt.setString(2, reino);
+            stmt.setString(1, banco.toLowerCase());
+            stmt.setString(2, reino.toLowerCase());
             stmt.setTimestamp(3, inicio);
             stmt.setTimestamp(4, fin);
             stmt.setString(5, permisos.toLowerCase());
@@ -801,8 +895,14 @@ public class GestorBaseDeDatos {
     }
 
     public boolean tienePermisoContrato(String banco, String reino, String permisoBuscado) {
-        String sql = "SELECT permisos, fecha_fin FROM contratos_banco_reino " +
-                "WHERE banco_etiqueta = ? AND reino_etiqueta = ?";
+        String sql = """
+        SELECT permisos, fecha_fin
+        FROM contratos_banco_reino
+        WHERE LOWER(banco_etiqueta) = LOWER(?)
+          AND LOWER(reino_etiqueta) = LOWER(?)
+          AND estado = 'aceptado'
+        """;
+
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, banco);
@@ -811,7 +911,9 @@ public class GestorBaseDeDatos {
             if (rs.next()) {
                 Timestamp fin = rs.getTimestamp("fecha_fin");
                 if (fin.before(new Timestamp(System.currentTimeMillis()))) return false;
+
                 String permisos = rs.getString("permisos");
+                // Normalizamos espacios y comas
                 return Arrays.stream(permisos.split(","))
                         .map(String::trim)
                         .anyMatch(p -> p.equalsIgnoreCase(permisoBuscado));
@@ -1087,7 +1189,14 @@ public class GestorBaseDeDatos {
     }
 
     public boolean aceptarContratoBancoReino(String banco, String reino) {
-        String sql = "UPDATE contratos_banco_reino SET estado = 'aceptado', fecha_inicio = CURRENT_TIMESTAMP WHERE banco_etiqueta = ? AND reino_etiqueta = ? AND estado = 'pendiente'";
+        // Usamos LOWER() para evitar problemas de mayúsculas/minúsculas
+        String sql = """
+        UPDATE contratos_banco_reino
+        SET estado = 'aceptado', fecha_inicio = CURRENT_TIMESTAMP
+        WHERE LOWER(banco_etiqueta) = LOWER(?)
+          AND LOWER(reino_etiqueta) = LOWER(?)
+          AND estado = 'pendiente'
+        """;
 
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -1102,7 +1211,13 @@ public class GestorBaseDeDatos {
     }
 
     public boolean rechazarContratoBancoReino(String banco, String reino) {
-        String sql = "UPDATE contratos_banco_reino SET estado = 'rechazado' WHERE banco_etiqueta = ? AND reino_etiqueta = ? AND estado = 'pendiente'";
+        String sql = """
+        UPDATE contratos_banco_reino
+        SET estado = 'rechazado'
+        WHERE LOWER(banco_etiqueta) = LOWER(?)
+          AND LOWER(reino_etiqueta) = LOWER(?)
+          AND estado = 'pendiente'
+        """;
 
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -1943,5 +2058,49 @@ public class GestorBaseDeDatos {
         return null;
     }
 
+    public double obtenerTotalMonedasImpresas(String reino) {
+        double total = 0;
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT SUM(cantidad) FROM monedas_banco WHERE reino = ?")) {
+            stmt.setString(1, reino);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) total = rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return total;
+    }
+
+    public double obtenerTotalMonedasQuemadas(String reino) {
+        double total = 0;
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT SUM(quemadas) FROM monedas_banco WHERE reino = ?")) {
+            stmt.setString(1, reino);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) total = rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return total;
+    }
+
+    public double obtenerTotalDineroConvertido(String reino) {
+        double total = 0;
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT SUM(convertido) FROM monedas_banco WHERE reino = ?")) {
+            stmt.setString(1, reino);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) total = rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return total;
+    }
 
 }

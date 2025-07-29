@@ -1,6 +1,7 @@
 package AndromeDraick.menuInteractivo.comandos;
 
 import AndromeDraick.menuInteractivo.MenuInteractivo;
+import AndromeDraick.menuInteractivo.database.HikariProvider;
 import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.model.Banco;
 import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
@@ -10,7 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,6 +78,8 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         try {
             switch (sub) {
                 case "crear"      -> cmdCrearBanco(p, args);
+                case "renombrar" -> cmdRenombrarBanco(p, args);
+                case "limpiarhuerfanos" -> cmdLimpiarHuerfanos(sender);
                 case "pendientes" -> cmdListarPendientes(p);
                 case "aprobar"    -> cmdAprobarRechazar(p, args, true);
                 case "rechazar"   -> cmdAprobarRechazar(p, args, false);
@@ -159,6 +162,108 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         } else {
             p.sendMessage(ChatColor.RED + "Error al solicitar banco. Revisa la consola.");
+        }
+    }
+
+    private void cmdRenombrarBanco(Player p, String[] args) {
+        if (!p.hasPermission("menuinteractivo.banco.renombrar")) {
+            p.sendMessage(ChatColor.RED + "No tienes permiso para renombrar bancos.");
+            return;
+        }
+
+        // /bmi renombrar banco <etiquetaActual> <nuevoNombre> <nuevaEtiqueta>
+        if (args.length < 5 || !args[1].equalsIgnoreCase("banco")) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi renombrar banco <etiquetaActual> <nuevoNombre> <nuevaEtiqueta>");
+            return;
+        }
+
+        String etiquetaActual = args[2].toLowerCase();
+        String nuevoNombre = args[3];
+        String nuevaEtiqueta = args[4].toLowerCase();
+
+        if (!nuevaEtiqueta.matches("[a-z0-9_-]+")) {
+            p.sendMessage(ChatColor.RED + "La nueva etiqueta solo puede contener minúsculas, números, '-' o '_'.");
+            return;
+        }
+
+        if (!bancoManager.existeBanco(etiquetaActual)) {
+            p.sendMessage(ChatColor.RED + "No existe un banco con la etiqueta especificada.");
+            return;
+        }
+
+        if (bancoManager.existeBanco(nuevaEtiqueta)) {
+            p.sendMessage(ChatColor.RED + "Ya existe un banco con la nueva etiqueta.");
+            return;
+        }
+
+        // Validar que el jugador es propietario
+        if (!bancoManager.esPropietarioBanco(p.getUniqueId(), etiquetaActual)) {
+            p.sendMessage(ChatColor.RED + "Solo el propietario del banco puede renombrarlo.");
+            return;
+        }
+
+        boolean actualizado = bancoManager.renombrarBancoCompleto(etiquetaActual, nuevoNombre, nuevaEtiqueta);
+        if (actualizado) {
+            p.sendMessage(ChatColor.GREEN + "✅ El banco ha sido renombrado a '" + nuevoNombre + "' con la etiqueta '" + nuevaEtiqueta + "'.");
+        } else {
+            p.sendMessage(ChatColor.RED + "❌ No se pudo renombrar el banco. Revisa la consola.");
+        }
+    }
+
+    private void cmdLimpiarHuerfanos(CommandSender sender) {
+        if (!(sender instanceof ConsoleCommandSender || sender.isOp())) {
+            sender.sendMessage(ChatColor.RED + "Este comando solo puede ser usado por la consola o por administradores.");
+            return;
+        }
+
+        // Primero obtenemos las etiquetas huérfanas
+        String selectSql = "SELECT jb.etiqueta_banco FROM jugadores_banco jb " +
+                "LEFT JOIN bancos b ON jb.etiqueta_banco = b.etiqueta " +
+                "WHERE b.etiqueta IS NULL;";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+             ResultSet rs = selectStmt.executeQuery()) {
+
+            List<String> huerfanos = new ArrayList<>();
+            while (rs.next()) {
+                huerfanos.add(rs.getString("etiqueta_banco"));
+            }
+
+            if (huerfanos.isEmpty()) {
+                sender.sendMessage(ChatColor.YELLOW + "No se encontraron bancos huérfanos.");
+                plugin.getLogger().info("[MenuInteractivo] Limpieza ejecutada: 0 huérfanos encontrados.");
+                return;
+            }
+
+            // Mostramos los huérfanos encontrados
+            sender.sendMessage(ChatColor.GOLD + "Bancos huérfanos encontrados: " + huerfanos.size());
+            sender.sendMessage(ChatColor.GRAY + String.join(", ", huerfanos));
+
+            // Log detallado en consola
+            plugin.getLogger().warning("[MenuInteractivo] Se encontraron " + huerfanos.size() + " bancos huérfanos:");
+            for (String etiqueta : huerfanos) {
+                plugin.getLogger().warning(" - Banco huérfano: " + etiqueta);
+            }
+
+            // Ahora los eliminamos
+            String deleteSql = "DELETE FROM jugadores_banco WHERE etiqueta_banco IN (" +
+                    huerfanos.stream().map(s -> "?").collect(Collectors.joining(",")) + ");";
+
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                for (int i = 0; i < huerfanos.size(); i++) {
+                    deleteStmt.setString(i + 1, huerfanos.get(i));
+                }
+                int eliminados = deleteStmt.executeUpdate();
+                sender.sendMessage(ChatColor.GREEN + "Registros huérfanos eliminados: " + eliminados);
+
+                // Log final
+                plugin.getLogger().info("[MenuInteractivo] Eliminación completa: " + eliminados + " registros borrados.");
+            }
+
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al eliminar bancos huérfanos: " + e.getMessage());
+            sender.sendMessage(ChatColor.RED + "Ocurrió un error al eliminar los registros.");
         }
     }
 
@@ -293,7 +398,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String reino = args[1];
+        String reino = args[1].toLowerCase();
         String tiempo = args[2].toLowerCase();
         String permisosRaw = String.join(" ", Arrays.copyOfRange(args, 4, args.length));
         String permisos = permisosRaw.replace("\"", "").replace("'", "").toLowerCase();
@@ -310,7 +415,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
 
         UUID uuid = p.getUniqueId();
-        String banco = bancoManager.obtenerBancoPropietario(uuid);
+        String banco = bancoManager.obtenerBancoPropietario(uuid).toLowerCase();
         if (banco == null) {
             p.sendMessage(ChatColor.RED + "No eres dueño de ningún banco aprobado.");
             return;
@@ -767,6 +872,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         if (args.length == 2) {
             String etiqueta = args[1].toLowerCase();
 
+            // ✅ Verificar que el banco exista en la tabla 'bancos'
+            if (!bancoManager.existeBanco(etiqueta)) {
+                p.sendMessage(ChatColor.RED + "Este banco no existe o fue eliminado.");
+                return;
+            }
+
             // Solo el propietario del banco puede usar este menú
             if (!bancoManager.esPropietarioBanco(p.getUniqueId(), etiqueta)) {
                 p.sendMessage(ChatColor.RED + "Solo el propietario del banco puede acceder a este menú.");
@@ -777,6 +888,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         } else if (args.length == 3 && args[1].equalsIgnoreCase("cuenta")) {
             String etiqueta = args[2].toLowerCase();
+
+            // ✅ Verificar que el banco exista en la tabla 'bancos'
+            if (!bancoManager.existeBanco(etiqueta)) {
+                p.sendMessage(ChatColor.RED + "Este banco no existe o fue eliminado.");
+                return;
+            }
 
             if (!bancoManager.esMiembroOBancoPropietario(p.getUniqueId(), etiqueta)) {
                 p.sendMessage(ChatColor.RED + "No eres miembro ni dueño de este banco.");
@@ -790,7 +907,6 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                     "Uso: /bmi banco <Etiqueta> | /bmi banco cuenta <Etiqueta>");
         }
     }
-
 
     private void mostrarAyuda(Player p) {
         p.sendMessage(ChatColor.GOLD + "— Comandos de Banco —");
@@ -814,6 +930,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
 
         String reino = bancoManager.obtenerReinoJugador(p.getUniqueId());
 
+        // Primer argumento: lista de subcomandos
         if (args.length == 1) {
             return SUBS.stream()
                     .filter(s -> p.hasPermission("menuinteractivo.banco." + switch (s) {
@@ -828,6 +945,9 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                         case "depositar", "retirar" -> s;
                         case "banco" -> "banco";
                         case "historial" -> "historial";
+                        case "monedas" -> "monedas";
+                        case "renombrar" -> "renombrar";
+                        case "ayuda" -> "ayuda";
                         default -> "";
                     }) && s.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
@@ -847,14 +967,12 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 }
 
                 if (args.length == 3) {
-                    // Sugerencias de nombres comunes de bancos (puedes personalizar esta lista)
                     return List.of("BancoCentral", "BancoReal", "Fondo", "CajaAhorro").stream()
                             .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
                             .collect(Collectors.toList());
                 }
 
                 if (args.length == 4) {
-                    // Sugerencias de etiquetas válidas
                     return List.of("central", "real", "fondo", "ahorro", "economia", "tesoro").stream()
                             .filter(s -> s.startsWith(args[3].toLowerCase()))
                             .collect(Collectors.toList());
@@ -963,6 +1081,32 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                             .collect(Collectors.toList());
                 }
                 if (args.length == 4) return List.of("a");
+            }
+            case "renombrar" -> {
+                if (!p.hasPermission("menuinteractivo.banco.renombrar")) return Collections.emptyList();
+                // /bmi renombrar banco <etiquetaActual> <nuevoNombre> <nuevaEtiqueta>
+                if (args.length == 2) {
+                    return List.of("banco").stream()
+                            .filter(s -> s.startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 3 && args[1].equalsIgnoreCase("banco")) {
+                    // Sugerir bancos donde el jugador es propietario
+                    return bancoManager.obtenerBancosDeJugador(p.getUniqueId(), true).stream() // true = solo propietario
+                            .map(Banco::getEtiqueta)
+                            .filter(e -> e.startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 4 && args[1].equalsIgnoreCase("banco")) {
+                    return List.of("NuevoNombre", "BancoDelPueblo", "BancoVIP").stream()
+                            .filter(s -> s.toLowerCase().startsWith(args[3].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args.length == 5 && args[1].equalsIgnoreCase("banco")) {
+                    return List.of("nueva_etiqueta", "vip", "central", "oro").stream()
+                            .filter(s -> s.startsWith(args[4].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
             }
         }
 

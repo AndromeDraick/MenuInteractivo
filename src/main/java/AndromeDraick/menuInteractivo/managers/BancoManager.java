@@ -1,5 +1,6 @@
 package AndromeDraick.menuInteractivo.managers;
 
+import AndromeDraick.menuInteractivo.MenuInteractivo;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.database.HikariProvider;
 import AndromeDraick.menuInteractivo.model.Banco;
@@ -26,6 +27,28 @@ public class BancoManager {
         this.economia = economia;
     }
 
+    /**
+     * Calcula el valor dinámico de la moneda de un reino.
+     * El valor se basa en la fórmula: dineroConvertido / (impreso - quemado)
+     * Si no hay datos, retorna 1.0 por defecto.
+     */
+    public double calcularValorMonedaReino(String etiquetaReino) {
+        if (etiquetaReino == null || etiquetaReino.isEmpty()) return 1.0;
+
+        GestorBaseDeDatos db = MenuInteractivo.getInstancia().getBaseDeDatos();
+        double totalImpreso = db.obtenerTotalMonedasImpresas(etiquetaReino);
+        double totalQuemado = db.obtenerTotalMonedasQuemadas(etiquetaReino);
+        double dineroConvertido = db.obtenerTotalDineroConvertido(etiquetaReino);
+
+        double circulante = totalImpreso - totalQuemado;
+        if (circulante <= 0) circulante = 1; // Evitar división por 0
+
+        double valor = dineroConvertido / circulante;
+        if (valor <= 0) valor = 0.01; // Evitar 0 absoluto
+
+        return valor;
+    }
+
     public boolean crearContrato(String bancoEtiqueta, String reinoEtiqueta, Timestamp fechaInicio, Timestamp fechaFin, String permisos) {
         return db.insertarContratoBancoReino(bancoEtiqueta, reinoEtiqueta, fechaInicio, fechaFin, permisos);
     }
@@ -34,9 +57,18 @@ public class BancoManager {
         return db.aumentarMonedaQuemada(etiquetaReino, cantidad);
     }
 
-    public String obtenerBancoPropietario(UUID jugadorUUID) {
-        return db.obtenerBancoDeJugador(jugadorUUID);
+    public boolean renombrarBancoCompleto(String etiquetaActual, String nuevoNombre, String nuevaEtiqueta) {
+        return db.renombrarBancoCompleto(etiquetaActual, nuevoNombre, nuevaEtiqueta);
     }
+
+    public List<Banco> obtenerBancosDeJugador(UUID jugador, boolean soloPropietario) {
+        return db.obtenerBancosDeJugador(jugador, soloPropietario);
+    }
+
+    public String obtenerBancoPropietario(UUID jugadorUUID) {
+        return db.obtenerBancoPropietario(jugadorUUID); // ahora usa el nuevo método real
+    }
+
 
     public boolean bancoEstaAprobado(String etiquetaBanco) {
         String sql = "SELECT estado FROM bancos WHERE etiqueta = ?";

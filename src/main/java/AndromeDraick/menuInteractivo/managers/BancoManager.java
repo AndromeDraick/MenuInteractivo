@@ -285,18 +285,79 @@ public class BancoManager {
         return db.obtenerSaldoJugador(jugador, etiquetaReino);
     }
 
+    /**
+     * Deposita dinero en la cuenta global y en el banco principal del jugador.
+     *
+     * @param uuidJugador UUID del jugador
+     * @param reino Etiqueta del reino
+     * @param cantidad Cantidad a depositar
+     * @param conn Conexión activa a la base de datos
+     */
     public void depositarAMiCuenta(UUID uuidJugador, String reino, double cantidad, Connection conn) throws SQLException {
-        String sql = "INSERT INTO cuentas_monedas (uuid_jugador, etiqueta_reino, saldo) " +
-                "VALUES (?, ?, ?) " +
-                "ON CONFLICT(uuid_jugador, etiqueta_reino) DO UPDATE SET saldo = saldo + ?";
+        // 1️⃣ Obtener el banco principal del jugador en este reino
+        String bancoPrincipal = obtenerBancoPrincipalJugador(uuidJugador, reino, conn);
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        // 2️⃣ Insertar o actualizar saldo en cuentas_monedas (global)
+        String sqlGlobal = """
+        INSERT INTO cuentas_monedas (uuid_jugador, etiqueta_reino, saldo)
+        VALUES (?, ?, ?)
+        ON CONFLICT(uuid_jugador, etiqueta_reino) DO UPDATE SET saldo = saldo + ?
+    """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sqlGlobal)) {
             stmt.setString(1, uuidJugador.toString());
             stmt.setString(2, reino);
             stmt.setDouble(3, cantidad);
             stmt.setDouble(4, cantidad);
             stmt.executeUpdate();
         }
+
+        // 3️⃣ Si tiene un banco principal, actualizar su saldo allí también
+        if (bancoPrincipal != null) {
+            String sqlBanco = """
+            INSERT INTO cuentas_moneda (uuid_jugador, etiqueta_banco, saldo)
+            VALUES (?, ?, ?)
+            ON CONFLICT(uuid_jugador, etiqueta_banco) DO UPDATE SET saldo = saldo + ?
+        """;
+            try (PreparedStatement stmt = conn.prepareStatement(sqlBanco)) {
+                stmt.setString(1, uuidJugador.toString());
+                stmt.setString(2, bancoPrincipal);
+                stmt.setDouble(3, cantidad);
+                stmt.setDouble(4, cantidad);
+                stmt.executeUpdate();
+            }
+        }
+    }
+
+    /**
+     * Devuelve el banco principal del jugador (el de mayor saldo) en un reino.
+     *
+     * @param jugador UUID del jugador
+     * @param reino Etiqueta del reino
+     * @param conn Conexión activa
+     * @return Etiqueta del banco principal o null si no tiene bancos aprobados
+     */
+    private String obtenerBancoPrincipalJugador(UUID jugador, String reino, Connection conn) throws SQLException {
+        String sql = """
+        SELECT b.etiqueta, IFNULL(cmb.saldo, 0) AS saldo
+        FROM bancos b
+        LEFT JOIN cuentas_moneda cmb 
+            ON cmb.etiqueta_banco = b.etiqueta 
+            AND cmb.uuid_jugador = ?
+        WHERE b.reino_etiqueta = ? 
+          AND b.estado = 'aprobado'
+        ORDER BY saldo DESC
+        LIMIT 1
+    """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, jugador.toString());
+            stmt.setString(2, reino);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getString("etiqueta");
+            }
+        }
+        return null;
     }
 
     public boolean esPropietarioBanco(UUID jugadorUUID, String etiquetaBanco) {
@@ -341,37 +402,48 @@ public class BancoManager {
              PreparedStatement stmtSelect = conn.prepareStatement(select);
              PreparedStatement stmtUpdate = conn.prepareStatement(update)) {
 
-            conn.setAutoCommit(false); // 🟡 Iniciar transacción
+            conn.setAutoCommit(false); // 🔹 Iniciar transacción
 
+            // 1️⃣ Consultar solicitud
             stmtSelect.setInt(1, idSolicitud);
             ResultSet rs = stmtSelect.executeQuery();
             if (!rs.next()) return false;
 
             String estadoActual = rs.getString("estado");
-            if (!estadoActual.equalsIgnoreCase("pendiente")) return false;
+            if (!"pendiente".equalsIgnoreCase(estadoActual)) return false;
 
             UUID jugador = UUID.fromString(rs.getString("uuid_jugador"));
             String etiquetaBanco = rs.getString("etiqueta_banco");
             double cantidad = rs.getDouble("cantidad");
 
+            // 2️⃣ Actualizar estado de la solicitud
             stmtUpdate.setString(1, aceptar ? "aceptada" : "rechazada");
             stmtUpdate.setInt(2, idSolicitud);
             stmtUpdate.executeUpdate();
 
+            // 3️⃣ Procesar si fue aceptada
             if (aceptar) {
+                // Verificar disponibilidad de monedas
                 double disponible = obtenerCantidadImpresaDisponible(etiquetaBanco, conn);
                 if (disponible < cantidad) {
                     conn.rollback();
                     return false;
                 }
 
+                // Descontar la cantidad impresa de la moneda
                 descontarCantidadImpresaDisponible(etiquetaBanco, cantidad, conn);
+
+                // Obtener reino del banco
                 String reino = obtenerReinoDeBanco(etiquetaBanco, conn);
-                db.descontarCantidadImpresaMoneda(etiquetaBanco, reino, cantidad, conn); // 🟢 nuevo: también actualiza monedas_banco
+
+                // Descontar del registro global de monedas
+                db.descontarCantidadImpresaMoneda(etiquetaBanco, reino, cantidad, conn);
+
+                // Depositar en cuenta global y banco principal del jugador
                 depositarAMiCuenta(jugador, reino, cantidad, conn);
             }
 
-            conn.commit(); // ✅ Confirmar cambios
+            conn.commit(); // 🔹 Confirmar cambios
             return true;
 
         } catch (SQLException e) {
@@ -448,14 +520,6 @@ public class BancoManager {
 
     public boolean aumentarMonedaConvertidaBanco(String banco, String reino, double cantidad) {
         return db.aumentarMonedaConvertidaBanco(banco, reino, cantidad);
-    }
-
-    public double getSaldoCuentaJugador(UUID jugador, String etiquetaBanco) {
-        return db.obtenerSaldoCuentaBanco(jugador, etiquetaBanco);
-    }
-
-    public void setSaldoCuentaJugador(UUID jugador, String etiquetaBanco, double saldo) {
-        db.establecerSaldoCuentaBanco(jugador, etiquetaBanco, saldo);
     }
 
     public void modificarSaldoCuentaJugador(UUID jugador, String etiquetaBanco, double delta) {

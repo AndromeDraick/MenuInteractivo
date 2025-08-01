@@ -25,7 +25,6 @@ public class MenuPrincipal implements Listener {
 
     public MenuPrincipal(MenuInteractivo plugin) {
         this.plugin = plugin;
-        // Al construirse, se registra como listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -34,18 +33,14 @@ public class MenuPrincipal implements Listener {
         double dinero = plugin.getEconomia().getBalance(jugador);
         String titulo = TITULO_BASE + " §7($ " + FormateadorNumeros.formatear(dinero) + ")";
         Inventory menu = Bukkit.createInventory(null, 54, titulo);
+
         // == BORDES decorativos ==
         ItemStack borde = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta metaBorde = borde.getItemMeta();
         metaBorde.setDisplayName(" ");
         borde.setItemMeta(metaBorde);
 
-        int[] slotsBorde = {
-                0, 1, 7, 8,
-                9, 17,
-                36,44,
-                45 ,46, 52, 53
-        };
+        int[] slotsBorde = {0, 1, 7, 8, 9, 17, 36, 44, 45, 46, 52, 53};
         for (int slot : slotsBorde) {
             menu.setItem(slot, borde);
         }
@@ -62,14 +57,14 @@ public class MenuPrincipal implements Listener {
         ItemStack trabajoItem = new ItemStack(Material.IRON_PICKAXE);
         ItemMeta metaTrabajo = trabajoItem.getItemMeta();
         metaTrabajo.setDisplayName(ChatColor.YELLOW + "Unirte a un trabajo");
-        List<String> loreTrabajo = new ArrayList<>();
-        loreTrabajo.add(ChatColor.GRAY + "Haz clic para ver los trabajos disponibles.");
-        loreTrabajo.add(ChatColor.GRAY + "¡Cada trabajo desbloquea ítems únicos!");
-        metaTrabajo.setLore(loreTrabajo);
+        metaTrabajo.setLore(Arrays.asList(
+                ChatColor.GRAY + "Haz clic para ver los trabajos disponibles.",
+                ChatColor.GRAY + "¡Cada trabajo desbloquea ítems únicos!"
+        ));
         trabajoItem.setItemMeta(metaTrabajo);
         menu.setItem(23, trabajoItem);
 
-        // == Ítem de bancos (slot 22) ==
+        // == Ítem de bancos ==
         if (jugador.hasPermission("bmi.comandos.aceptar.banco")) {
             ItemStack bancoItem = new ItemStack(Material.GOLD_INGOT);
             ItemMeta metaBanco = bancoItem.getItemMeta();
@@ -93,27 +88,41 @@ public class MenuPrincipal implements Listener {
         reino.setItemMeta(metaReino);
         menu.setItem(31, reino);
 
-        // Vender ítems al mercado
+        // Vender ítems
         ItemStack vender = new ItemStack(Material.CHEST);
         ItemMeta metaVender = vender.getItemMeta();
         metaVender.setDisplayName(ChatColor.GREEN + "Vender al Mercado del Reino");
-        metaVender.setLore(List.of(ChatColor.GRAY + "Haz clic para poner tus ítems en venta", ChatColor.GRAY + "por monedas del reino."));
+        metaVender.setLore(Arrays.asList(
+                ChatColor.GRAY + "Haz clic para poner tus ítems en venta",
+                ChatColor.GRAY + "por monedas del reino.",
+                ChatColor.LIGHT_PURPLE + "Se agrego el valor conforme",
+                ChatColor.LIGHT_PURPLE + "este tu moneda del reino"
+        ));
         vender.setItemMeta(metaVender);
         menu.setItem(39, vender);
 
-// Ver el mercado del reino
-        ItemStack mercado = new ItemStack(Material.GOLD_INGOT);
+        // Mercado
+        ItemStack mercado = new ItemStack(Material.JUNGLE_SIGN);
         ItemMeta metaMercado = mercado.getItemMeta();
         metaMercado.setDisplayName(ChatColor.AQUA + "Mercado del Reino");
-        metaMercado.setLore(List.of(ChatColor.GRAY + "Haz clic para ver lo que venden", ChatColor.GRAY + "otros miembros del reino."));
+        metaMercado.setLore(Arrays.asList(
+                ChatColor.GRAY + "Haz clic para ver lo que venden",
+                ChatColor.GRAY + "otros miembros del reino.",
+                ChatColor.LIGHT_PURPLE + "Se agrego el valor conforme",
+                ChatColor.LIGHT_PURPLE + "este tu moneda del reino"
+
+        ));
         mercado.setItemMeta(metaMercado);
         menu.setItem(40, mercado);
 
-// Ver tu cuenta personal del reino
-        ItemStack cuenta = new ItemStack(Material.GOLD_NUGGET);
+        // Monedero
+        ItemStack cuenta = new ItemStack(Material.FLOWER_BANNER_PATTERN);
         ItemMeta metaCuenta = cuenta.getItemMeta();
         metaCuenta.setDisplayName(ChatColor.GOLD + "Tu Monedero Real");
-        metaCuenta.setLore(List.of(ChatColor.GRAY + "Haz clic para ver tu saldo", ChatColor.GRAY + "en cada reino donde participas."));
+        metaCuenta.setLore(Arrays.asList(
+                ChatColor.GRAY + "Haz clic para ver tu saldo",
+                ChatColor.GRAY + "en cada reino donde participas."
+        ));
         cuenta.setItemMeta(metaCuenta);
         menu.setItem(41, cuenta);
 
@@ -134,40 +143,40 @@ public class MenuPrincipal implements Listener {
         // Base de datos
         GestorBaseDeDatos db = plugin.getBaseDeDatos();
 
-        // Rarezas desbloqueadas por grupo
-        List<String> rarezas = config.getRarezasDesbloqueadas(grupo);
-        String rarezasTexto = rarezas.isEmpty()
-                ? "Ninguna"
-                : String.join(", ", rarezas);
+        // Obtener datos de personaje desde la base de datos
+        String nombreRol = "Desconocido";
+        String apellidoPaterno = "";
+        String apellidoMaterno = "";
+        String genero = "Sin género";
+        String raza = "Sin raza";
 
-        // Ítems permitidos por el trabajo
-        Set<String> itemsPermitidos = new HashSet<>();
-        for (String itemName : config.getItemsCustom()) {
-            Map<String, Object> datos = config.getDatosItemCustom(itemName);
-            if (!datos.containsKey("trabajo")) continue;
+        Map<String, Object> datos = db.consultarFila(
+                "SELECT nombre_rol, apellido_paterno_rol, apellido_materno_rol, genero, raza_rol " +
+                        "FROM genero_jugador WHERE uuid = ?",
+                jugador.getUniqueId().toString()
+        );
 
-            String trabajos = String.valueOf(datos.get("trabajo")).toLowerCase();
-            for (String t : trabajos.split(",")) {
-                if (t.trim().equalsIgnoreCase(trabajo)) {
-                    itemsPermitidos.add(itemName.toUpperCase(Locale.ROOT));
-                    break;
-                }
-            }
+        if (datos != null && !datos.isEmpty()) {
+            nombreRol = String.valueOf(datos.get("nombre_rol"));
+            apellidoPaterno = String.valueOf(datos.get("apellido_paterno_rol"));
+            apellidoMaterno = String.valueOf(datos.get("apellido_materno_rol"));
+            genero = String.valueOf(datos.get("genero"));
+            raza = String.valueOf(datos.get("raza_rol"));
         }
 
+// Lore del perfil
         List<String> lore = new ArrayList<>();
-        lore.add(ChatColor.GRAY + "Jugador: " + ChatColor.YELLOW + jugador.getName());
-        lore.add(ChatColor.GRAY + "Dinero: " + ChatColor.GREEN + "$" + FormateadorNumeros.formatear(dinero));
-//        lore.add(ChatColor.GRAY + "Grupo: " + ChatColor.LIGHT_PURPLE + grupo);
+        lore.add(ChatColor.GRAY + "N.DeUsuario: " + ChatColor.GRAY + jugador.getName());
+        lore.add(ChatColor.GRAY + "Nombre: " + ChatColor.DARK_PURPLE + nombreRol);
+        lore.add(ChatColor.GRAY + "Apellidos: " + ChatColor.DARK_PURPLE + apellidoPaterno + " " + apellidoMaterno);
+        lore.add(ChatColor.GRAY + "Género: " + ChatColor.DARK_PURPLE + genero);
         lore.add(ChatColor.GRAY + "Trabajo: " + ChatColor.BLUE + trabajo);
-//        lore.add(ChatColor.GRAY + "Rarezas desbloqueadas: " + ChatColor.GOLD + rarezasTexto);
-//        lore.add(ChatColor.GRAY + "Ítems de trabajo: " + ChatColor.AQUA +
-//                (itemsPermitidos.isEmpty() ? "Ninguno" : String.join(", ", itemsPermitidos)));
-//        lore.add(ChatColor.DARK_GRAY + "UUID: " + jugador.getUniqueId().toString().substring(0, 8));
-        lore.add("");
-        lore.add(ChatColor.GOLD + "¡PARTE 1 DE 6: PROXIMA PARTE TRAE");
-        lore.add(ChatColor.GOLD + "'TIENDA DE LOS JUGADORES CON MONEDAS");
-        lore.add(ChatColor.GOLD + " DE LOS REINOS'!");
+        lore.add(ChatColor.GRAY + "Raza: " + ChatColor.YELLOW + raza);
+        lore.add(ChatColor.GRAY + "Reinas: " + ChatColor.GREEN + "$" + FormateadorNumeros.formatear(dinero));
+        lore.add(ChatColor.GOLD + "");
+        lore.add(ChatColor.GOLD + "¡PARTE 1 DE 6: " + ChatColor.GRAY + " PROXIMA PARTE TRAE");
+        lore.add(ChatColor.GRAY + "'TIENDA DE LOS JUGADORES CON MONEDAS");
+        lore.add(ChatColor.GRAY + " DE LOS REINOS'!");
 
         skullMeta.setLore(lore);
         cabeza.setItemMeta(skullMeta);
@@ -179,12 +188,10 @@ public class MenuPrincipal implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        // Solo reaccionamos si el título coincide
         if (!event.getView().getTitle().startsWith(TITULO_BASE)) return;
         event.setCancelled(true);
 
-        if (event.getCurrentItem() == null ||
-                event.getCurrentItem().getType() == Material.AIR) return;
+        if (event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) return;
 
         Player jugador = (Player) event.getWhoClicked();
         int slot = event.getRawSlot();
@@ -199,7 +206,7 @@ public class MenuPrincipal implements Listener {
                 } else {
                     jugador.sendMessage(ChatColor.RED + "No tienes permiso para gestionar bancos.");
                 }
-                 break;
+                break;
             case 23:
                 plugin.getMenuTrabajos().abrir(jugador);
                 break;
@@ -215,7 +222,6 @@ public class MenuPrincipal implements Listener {
             case 41:
                 MenuMercadoReino.abrirCuentaPersonal(jugador);
                 break;
-
         }
     }
 }

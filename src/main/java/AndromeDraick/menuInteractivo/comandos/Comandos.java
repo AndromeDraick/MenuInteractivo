@@ -41,11 +41,19 @@ public class Comandos implements CommandExecutor, TabCompleter {
         if (!etiqueta.equalsIgnoreCase("tmi")) return false;
 
         if (args.length == 1 && args[0].equalsIgnoreCase("vender")) {
+            if (!jugador.hasPermission("menuinteractivo.usar.vender")) {
+                jugador.sendMessage(ChatColor.RED + "No tienes permiso para vender ítems en la tienda.");
+                return true;
+            }
             MenuVentaVisual.abrir(jugador);
             return true;
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("recientes")) {
+            if (!jugador.hasPermission("menuinteractivo.usar.recientes")) {
+                jugador.sendMessage(ChatColor.RED + "No tienes permiso para ver el historial de compras.");
+                return true;
+            }
             MenuRecientes.abrir(jugador);
             return true;
         }
@@ -84,6 +92,11 @@ public class Comandos implements CommandExecutor, TabCompleter {
         }
 
         if (subcomando.equals("comprar")) {
+            if (!jugador.hasPermission("menuinteractivo.usar.comprar")) {
+                jugador.sendMessage(ChatColor.RED + "No tienes permiso para comprar ítems en la tienda.");
+                return true;
+            }
+
             double precioUnitario = CalculadoraPrecios.calcularPrecioCompra(material, jugador);
             if (precioUnitario < 0) {
                 jugador.sendMessage(ChatColor.RED + "Ese ítem no tiene un precio configurado.");
@@ -110,6 +123,11 @@ public class Comandos implements CommandExecutor, TabCompleter {
             return true;
 
         } else if (subcomando.equals("vender")) {
+            if (!jugador.hasPermission("menuinteractivo.usar.vender")) {
+                jugador.sendMessage(ChatColor.RED + "No tienes permiso para vender ítems en la tienda.");
+                return true;
+            }
+
             double precioUnitario = CalculadoraPrecios.calcularPrecioVenta(material, jugador);
             if (precioUnitario < 0) {
                 jugador.sendMessage(ChatColor.RED + "Ese ítem no se puede vender.");

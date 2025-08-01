@@ -32,6 +32,16 @@ public class MenuMonedas implements Listener {
     public void abrirMenu(Player jugador) {
         List<MonedasReinoInfo> monedas = bancoManager.obtenerMonedasReinoInfo();
 
+        monedas.sort((m1, m2) -> {
+            double enCirculacion1 = Math.max(1, m1.getCantidadImpresa() - m1.getCantidadQuemada());
+            double enCirculacion2 = Math.max(1, m2.getCantidadImpresa() - m2.getCantidadQuemada());
+
+            double valor1 = m1.getDineroConvertido() / enCirculacion1;
+            double valor2 = m2.getDineroConvertido() / enCirculacion2;
+
+            return Double.compare(valor2, valor1); // Descendente
+        });
+
         int size = Math.max(9, ((monedas.size() / 9) + 1) * 9);
         Inventory menu = Bukkit.createInventory(null, size, ChatColor.DARK_GREEN + "Monedas de los Reinos");
 

@@ -1905,13 +1905,8 @@ public class GestorBaseDeDatos {
     }
 
     public boolean procesarCompraEnMercado(int id, UUID comprador, double precio) {
-        String sqlEliminar = "DELETE FROM mercado_reino WHERE id = ?";
         String sqlGetItem = "SELECT uuid_vendedor, etiqueta_reino FROM mercado_reino WHERE id = ?";
-        String sqlSumarSaldo = "UPDATE cuentas_monedas SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_reino = ?";
-        String sqlRestarSaldo = "UPDATE cuentas_monedas SET saldo = saldo - ? WHERE uuid_jugador = ? AND etiqueta_reino = ?";
-        String sqlBuscarBanco = "SELECT etiqueta FROM bancos WHERE reino_etiqueta = ? AND estado = 'aprobado'";
-        String sqlTieneCuentaBanco = "SELECT saldo FROM cuentas_moneda WHERE uuid_jugador = ? AND etiqueta_banco = ?";
-        String sqlRestarBanco = "UPDATE cuentas_moneda SET saldo = saldo - ? WHERE uuid_jugador = ? AND etiqueta_banco = ?";
+        String sqlEliminar = "DELETE FROM mercado_reino WHERE id = ?";
 
         try (Connection conn = HikariProvider.getConnection()) {
             conn.setAutoCommit(false);
@@ -1919,7 +1914,7 @@ public class GestorBaseDeDatos {
             String vendedor;
             String reino;
 
-            // 1. Obtener datos del ítem en venta
+            // 1️⃣ Obtener datos del ítem en venta
             try (PreparedStatement stmt = conn.prepareStatement(sqlGetItem)) {
                 stmt.setInt(1, id);
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -1929,50 +1924,62 @@ public class GestorBaseDeDatos {
                 }
             }
 
-            // 2. Descontar saldo del comprador (cuentas_monedas)
-            try (PreparedStatement restar = conn.prepareStatement(sqlRestarSaldo)) {
-                restar.setDouble(1, precio);
-                restar.setString(2, comprador.toString());
-                restar.setString(3, reino);
-                restar.executeUpdate();
+            // 2️⃣ Obtener banco principal del comprador
+            String bancoComprador = obtenerBancoPrincipal(comprador, reino, conn);
+            if (bancoComprador == null) {
+                plugin.getLogger().warning("[MI] Comprador no tiene bancos en este reino.");
+                conn.rollback();
+                return false;
             }
 
-            // 3. Buscar si el jugador tiene cuenta en algún banco de ese reino y restar
-            try (PreparedStatement buscarBanco = conn.prepareStatement(sqlBuscarBanco)) {
-                buscarBanco.setString(1, reino);
-                ResultSet rsBanco = buscarBanco.executeQuery();
+            // 3️⃣ (Eliminado) ✅ Ya no verificamos saldo del banco principal
 
-                while (rsBanco.next()) {
-                    String etiquetaBanco = rsBanco.getString("etiqueta");
-
-                    try (PreparedStatement tieneCuenta = conn.prepareStatement(sqlTieneCuentaBanco)) {
-                        tieneCuenta.setString(1, comprador.toString());
-                        tieneCuenta.setString(2, etiquetaBanco);
-                        ResultSet rsCuenta = tieneCuenta.executeQuery();
-
-                        if (rsCuenta.next()) {
-                            // Sí tiene cuenta → descontar del banco
-                            try (PreparedStatement restarBanco = conn.prepareStatement(sqlRestarBanco)) {
-                                restarBanco.setDouble(1, precio);
-                                restarBanco.setString(2, comprador.toString());
-                                restarBanco.setString(3, etiquetaBanco);
-                                restarBanco.executeUpdate();
-                            }
-                            break; // solo descontar de un banco
-                        }
-                    }
+            // 4️⃣ Verificar saldo suficiente en la cuenta global
+            double saldoGlobal = 0;
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT saldo FROM cuentas_monedas WHERE uuid_jugador = ? AND etiqueta_reino = ?")) {
+                ps.setString(1, comprador.toString());
+                ps.setString(2, reino);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) saldoGlobal = rs.getDouble("saldo");
                 }
             }
-
-            // 4. Sumar saldo al vendedor (cuentas_monedas)
-            try (PreparedStatement sumar = conn.prepareStatement(sqlSumarSaldo)) {
-                sumar.setDouble(1, precio);
-                sumar.setString(2, vendedor);
-                sumar.setString(3, reino);
-                sumar.executeUpdate();
+            if (saldoGlobal < precio) {
+                plugin.getLogger().warning("[MI] Comprador sin saldo suficiente en la cuenta global.");
+                conn.rollback();
+                return false;
             }
 
-            // 5. Eliminar ítem del mercado
+            // 5️⃣ Obtener banco principal del vendedor
+            String bancoVendedor = obtenerBancoPrincipal(UUID.fromString(vendedor), reino, conn);
+
+            // 6️⃣ Descontar al comprador en el banco principal
+//            restarSaldoBanco(comprador, bancoComprador, precio, conn);
+
+            // 🔹 También reflejar en cuentas_monedas globales
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE cuentas_monedas SET saldo = saldo - ? WHERE uuid_jugador = ? AND etiqueta_reino = ?")) {
+                ps.setDouble(1, precio);
+                ps.setString(2, comprador.toString());
+                ps.setString(3, reino);
+                ps.executeUpdate();
+            }
+
+            // 7️⃣ Sumar al vendedor
+            if (bancoVendedor != null) {
+                sumarSaldoBanco(UUID.fromString(vendedor), bancoVendedor, precio, conn);
+            }
+
+            // 🔹 También reflejar en cuentas_monedas globales del vendedor
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE cuentas_monedas SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_reino = ?")) {
+                ps.setDouble(1, precio);
+                ps.setString(2, vendedor);
+                ps.setString(3, reino);
+                ps.executeUpdate();
+            }
+
+            // 8️⃣ Eliminar ítem del mercado
             try (PreparedStatement eliminar = conn.prepareStatement(sqlEliminar)) {
                 eliminar.setInt(1, id);
                 eliminar.executeUpdate();
@@ -1987,19 +1994,82 @@ public class GestorBaseDeDatos {
         }
     }
 
-    public double obtenerSaldoCuentaPersonal(UUID jugador, String reino) {
-        String sql = "SELECT saldo FROM cuentas_monedas WHERE uuid_jugador = ? AND etiqueta_reino = ?";
+    private String obtenerBancoPrincipal(UUID jugador, String reino, Connection conn) throws SQLException {
+        String sql = """
+        SELECT b.etiqueta, IFNULL(cmb.saldo, 0) AS saldo
+        FROM bancos b
+        LEFT JOIN cuentas_moneda cmb ON cmb.etiqueta_banco = b.etiqueta AND cmb.uuid_jugador = ?
+        WHERE b.reino_etiqueta = ? AND b.estado = 'aprobado'
+        ORDER BY saldo DESC
+        """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, jugador.toString());
+            stmt.setString(2, reino);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getString("etiqueta"); // Mayor saldo o primero
+            }
+        }
+        return null;
+    }
+
+    private double obtenerSaldoBanco(UUID jugador, String banco, Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT saldo FROM cuentas_moneda WHERE uuid_jugador = ? AND etiqueta_banco = ?")) {
+            stmt.setString(1, jugador.toString());
+            stmt.setString(2, banco);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getDouble("saldo") : 0;
+            }
+        }
+    }
+
+    private void restarSaldoBanco(UUID jugador, String banco, double monto, Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE cuentas_moneda SET saldo = saldo - ? WHERE uuid_jugador = ? AND etiqueta_banco = ?")) {
+            stmt.setDouble(1, monto);
+            stmt.setString(2, jugador.toString());
+            stmt.setString(3, banco);
+            stmt.executeUpdate();
+        }
+    }
+
+    private void sumarSaldoBanco(UUID jugador, String banco, double monto, Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE cuentas_moneda SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_banco = ?")) {
+            stmt.setDouble(1, monto);
+            stmt.setString(2, jugador.toString());
+            stmt.setString(3, banco);
+            stmt.executeUpdate();
+        }
+    }
+
+    public boolean tieneSaldoSuficienteEnBancos(UUID jugador, String reino, double montoNecesario) {
+        String sql = """
+        SELECT IFNULL(cmb.saldo, 0) AS saldo
+        FROM bancos b
+        LEFT JOIN cuentas_moneda cmb 
+            ON cmb.etiqueta_banco = b.etiqueta 
+            AND cmb.uuid_jugador = ?
+        WHERE b.reino_etiqueta = ? AND b.estado = 'aprobado'
+        ORDER BY saldo DESC
+        """;
+
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, jugador.toString());
             stmt.setString(2, reino);
+
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) return rs.getDouble("saldo");
+                if (rs.next()) {
+                    double saldoMaximo = rs.getDouble("saldo");
+                    return saldoMaximo >= montoNecesario;
+                }
             }
         } catch (SQLException e) {
-            plugin.getLogger().warning("[MI] Error al consultar saldo personal: " + e.getMessage());
+            plugin.getLogger().warning("[MI] Error al verificar saldo en bancos: " + e.getMessage());
         }
-        return 0.0;
+        return false;
     }
 
     public Map<String, Double> obtenerTodosLosSaldosJugador(UUID jugador) {
@@ -2058,49 +2128,95 @@ public class GestorBaseDeDatos {
         return null;
     }
 
-    public double obtenerTotalMonedasImpresas(String reino) {
+    // Total de monedas impresas en el reino
+    public double obtenerTotalMonedasImpresas(String etiquetaReino) {
         double total = 0;
+        String sql = "SELECT SUM(cantidad_impresa) FROM monedas_banco WHERE reino_etiqueta = ?";
         try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT SUM(cantidad) FROM monedas_banco WHERE reino = ?")) {
-            stmt.setString(1, reino);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaReino);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) total = rs.getDouble(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener total impresas: " + e.getMessage());
         }
         return total;
     }
 
-    public double obtenerTotalMonedasQuemadas(String reino) {
+    // Total de monedas quemadas en el reino
+    public double obtenerTotalMonedasQuemadas(String etiquetaReino) {
         double total = 0;
+        String sql = "SELECT SUM(cantidad_quemada) FROM monedas_banco WHERE reino_etiqueta = ?";
         try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT SUM(quemadas) FROM monedas_banco WHERE reino = ?")) {
-            stmt.setString(1, reino);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaReino);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) total = rs.getDouble(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener total quemadas: " + e.getMessage());
         }
         return total;
     }
 
-    public double obtenerTotalDineroConvertido(String reino) {
+    // Total de dinero convertido en el reino
+    public double obtenerTotalDineroConvertido(String etiquetaReino) {
         double total = 0;
+        String sql = "SELECT SUM(cantidad_convertida) FROM monedas_banco WHERE reino_etiqueta = ?";
         try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT SUM(convertido) FROM monedas_banco WHERE reino = ?")) {
-            stmt.setString(1, reino);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, etiquetaReino);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) total = rs.getDouble(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener total convertido: " + e.getMessage());
         }
         return total;
     }
+
+    /**
+     * Consulta una fila completa de la base de datos y la devuelve como Map<String, Object>.
+     *
+     * @param sql    Consulta SQL con un WHERE, ejemplo: "SELECT * FROM genero_jugador WHERE uuid = ?"
+     * @param params Parámetros que reemplazarán los ? en el SQL
+     * @return Map con nombre de columna -> valor, o null si no hay resultados
+     */
+    public Map<String, Object> consultarFila(String sql, Object... params) {
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                if (rs.next()) {
+                    Map<String, Object> fila = new HashMap<>();
+                    for (int i = 1; i <= meta.getColumnCount(); i++) {
+                        fila.put(meta.getColumnName(i), rs.getObject(i));
+                    }
+                    return fila;
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error en consultarFila: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+//    /**
+//     * Consulta un solo valor (primera columna, primera fila)
+//     */
+//    public Object consultarValor(String sql, Object... params) {
+//        Map<String, Object> fila = consultarFila(sql, params);
+//        if (fila != null && !fila.isEmpty()) {
+//            return fila.values().iterator().next();
+//        }
+//        return null;
+//    }
 
 }

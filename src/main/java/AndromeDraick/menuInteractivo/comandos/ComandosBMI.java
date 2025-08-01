@@ -8,6 +8,7 @@ import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
@@ -25,7 +26,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             "crear", "pendientes", "aprobar", "rechazar",
             "listar", "unir", "salir", "saldo",
             "depositar", "retirar", "banco", "ayuda", "monedas", "historial",
-            "imprimir", "quemar", "convertir", "contrato", "intercambiar"
+            "imprimir", "quemar", "convertir", "contrato", "intercambiar", "desconvertir"
     );
 
     public ComandosBMI(MenuInteractivo plugin) {
@@ -69,6 +70,7 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         permisosPorSub.put("retirar", "retirar");
         permisosPorSub.put("banco", "banco");
         permisosPorSub.put("historial", "historial");
+        permisosPorSub.put("desconvertir", "desconvertir");
 
         if (permisosPorSub.containsKey(sub) && !p.hasPermission(permisoBase + permisosPorSub.get(sub))) {
             p.sendMessage(ChatColor.RED + "No tienes permiso para usar este comando.");
@@ -96,6 +98,10 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                 case "monedas"    -> plugin.getMenuMonedas().abrirMenu(p);
                 case "historial"  -> cmdHistorialBanco(p, args);
                 case "intercambiar" -> cmdIntercambiarMonedas(p, args);
+                case "desconvertir" -> cmdDesconvertirMoneda(p, args);
+//                case "sincronizar" -> cmdSincronizarCuentas(sender, args);
+                // ✅ Subcomando de sincronización
+
                 default -> {
                     p.sendMessage(ChatColor.RED + "Subcomando desconocido.");
                     mostrarAyuda(p);
@@ -108,6 +114,108 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         }
         return true;
     }
+
+//    private void cmdSincronizarCuentas(CommandSender sender, String[] args) {
+//        if (!sender.isOp()) {
+//            sender.sendMessage("§cSolo un operador puede usar este comando.");
+//            return;
+//        }
+//
+//        sender.sendMessage("§eIniciando sincronización de todas las cuentas...");
+//
+//        int cuentasSincronizadas = 0;
+//        int jugadoresProcesados = 0;
+//
+//        try (Connection conn = HikariProvider.getConnection()) {
+//            conn.setAutoCommit(false);
+//
+//            // 1️⃣ Obtener todos los jugadores que tengan cuentas registradas
+//            String sqlJugadores = "SELECT DISTINCT uuid_jugador FROM cuentas_monedas";
+//            try (PreparedStatement psJugadores = conn.prepareStatement(sqlJugadores);
+//                 ResultSet rsJugadores = psJugadores.executeQuery()) {
+//
+//                while (rsJugadores.next()) {
+//                    String uuidStr = rsJugadores.getString("uuid_jugador");
+//                    UUID uuid = UUID.fromString(uuidStr);
+//                    jugadoresProcesados++;
+//
+//                    // 2️⃣ Obtener todas las cuentas globales de este jugador
+//                    String sqlReinos = "SELECT etiqueta_reino, saldo FROM cuentas_monedas WHERE uuid_jugador = ?";
+//                    try (PreparedStatement psReinos = conn.prepareStatement(sqlReinos)) {
+//                        psReinos.setString(1, uuid.toString());
+//                        ResultSet rsReinos = psReinos.executeQuery();
+//
+//                        while (rsReinos.next()) {
+//                            String reino = rsReinos.getString("etiqueta_reino");
+//                            double saldoGlobal = rsReinos.getDouble("saldo");
+//
+//                            // 3️⃣ Obtener todas las cuentas de bancos de ese reino
+//                            String sqlBancos = """
+//                            SELECT b.etiqueta, IFNULL(cmb.saldo, 0) AS saldo
+//                            FROM bancos b
+//                            LEFT JOIN cuentas_moneda cmb
+//                                ON cmb.etiqueta_banco = b.etiqueta AND cmb.uuid_jugador = ?
+//                            WHERE b.reino_etiqueta = ? AND b.estado = 'aprobado'
+//                        """;
+//
+//                            try (PreparedStatement psBancos = conn.prepareStatement(sqlBancos)) {
+//                                psBancos.setString(1, uuid.toString());
+//                                psBancos.setString(2, reino);
+//
+//                                ResultSet rsBancos = psBancos.executeQuery();
+//                                while (rsBancos.next()) {
+//                                    String banco = rsBancos.getString("etiqueta");
+//                                    double saldoBanco = rsBancos.getDouble("saldo");
+//
+//                                    // 4️⃣ Sincronizar hacia el saldo más alto
+//                                    if (saldoGlobal > saldoBanco) {
+//                                        double diferencia = saldoGlobal - saldoBanco;
+//                                        try (PreparedStatement psUpdate = conn.prepareStatement(
+//                                                "UPDATE cuentas_moneda SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_banco = ?")) {
+//                                            psUpdate.setDouble(1, diferencia);
+//                                            psUpdate.setString(2, uuid.toString());
+//                                            psUpdate.setString(3, banco);
+//                                            int updated = psUpdate.executeUpdate();
+//
+//                                            if (updated == 0) {
+//                                                try (PreparedStatement psInsert = conn.prepareStatement(
+//                                                        "INSERT INTO cuentas_moneda (uuid_jugador, etiqueta_banco, saldo) VALUES (?, ?, ?)")) {
+//                                                    psInsert.setString(1, uuid.toString());
+//                                                    psInsert.setString(2, banco);
+//                                                    psInsert.setDouble(3, saldoGlobal);
+//                                                    psInsert.executeUpdate();
+//                                                }
+//                                            }
+//                                        }
+//                                        cuentasSincronizadas++;
+//                                    } else if (saldoBanco > saldoGlobal) {
+//                                        double diferencia = saldoBanco - saldoGlobal;
+//                                        try (PreparedStatement psUpdate = conn.prepareStatement(
+//                                                "UPDATE cuentas_monedas SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_reino = ?")) {
+//                                            psUpdate.setDouble(1, diferencia);
+//                                            psUpdate.setString(2, uuid.toString());
+//                                            psUpdate.setString(3, reino);
+//                                            psUpdate.executeUpdate();
+//                                        }
+//                                        cuentasSincronizadas++;
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            conn.commit();
+//            sender.sendMessage("§aSincronización completada.");
+//            sender.sendMessage("§eJugadores procesados: §b" + jugadoresProcesados);
+//            sender.sendMessage("§eCuentas sincronizadas: §b" + cuentasSincronizadas);
+//
+//        } catch (SQLException e) {
+//            sender.sendMessage("§cError al sincronizar: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
 
     private void cmdCrearBanco(Player p, String[] args) {
 
@@ -924,6 +1032,114 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         p.sendMessage(ChatColor.YELLOW + "/bmi ayuda");
     }
 
+    //-----------------------------------------------------------------------------------------
+
+    //----------------------------------Comandos OP---------------------------------------------
+
+    private void cmdDesconvertirMoneda(Player p, String[] args) {
+        if (!p.isOp()) {
+            p.sendMessage(ChatColor.RED + "Este comando es solo para administradores.");
+            return;
+        }
+
+        if (args.length < 3) {
+            p.sendMessage(ChatColor.YELLOW + "Uso: /bmi desconvertir <etiqueta_reino> <cantidad>");
+            return;
+        }
+
+        String etiquetaReino = args[1].toLowerCase();
+
+        double cantidad;
+        try {
+            cantidad = Double.parseDouble(args[2]);
+            if (cantidad <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            p.sendMessage(ChatColor.RED + "Cantidad inválida.");
+            return;
+        }
+
+        // Método integrado para restar en monedas_reino
+        boolean desconvertidoReino = desconvertirMonedasReino(etiquetaReino, cantidad);
+        // Método integrado para restar en todas las monedas_banco de ese reino
+        boolean desconvertidoBancos = desconvertirMonedasBancos(etiquetaReino, cantidad);
+
+        if (desconvertidoReino && desconvertidoBancos) {
+            p.sendMessage(ChatColor.GREEN + "Se desconvirtió $" + cantidad + " en el reino " + etiquetaReino);
+        } else {
+            p.sendMessage(ChatColor.RED + "No se pudo desconvertir el dinero. Revisa la consola.");
+        }
+    }
+
+    /**
+     * Resta la cantidad a dinero_convertido en la tabla monedas_reino
+     */
+    private boolean desconvertirMonedasReino(String etiquetaReino, double cantidad) {
+        String sql = "UPDATE monedas_reino SET dinero_convertido = MAX(dinero_convertido - ?, 0) WHERE LOWER(reino_etiqueta) = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, cantidad);
+            stmt.setString(2, etiquetaReino);
+            int filas = stmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al desconvertir en monedas_reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Resta la cantidad proporcional a todas las monedas_banco del reino
+     */
+    private boolean desconvertirMonedasBancos(String etiquetaReino, double cantidad) {
+        // Obtener la suma total para calcular proporcionalidad
+        String selectSum = "SELECT SUM(cantidad_convertida) FROM monedas_banco WHERE LOWER(reino_etiqueta) = ?";
+        String updateBanco = "UPDATE monedas_banco SET cantidad_convertida = MAX(cantidad_convertida - ?, 0) WHERE LOWER(etiqueta_banco) = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement select = conn.prepareStatement(selectSum)) {
+
+            select.setString(1, etiquetaReino);
+            ResultSet rs = select.executeQuery();
+            if (!rs.next() || rs.getDouble(1) <= 0) {
+                return false;
+            }
+
+            double totalConvertido = rs.getDouble(1);
+            double cantidadRestante = cantidad;
+
+            // Obtener todos los bancos del reino para repartir la resta
+            String selectBancos = "SELECT etiqueta_banco, cantidad_convertida FROM monedas_banco WHERE LOWER(reino_etiqueta) = ?";
+            try (PreparedStatement bancosStmt = conn.prepareStatement(selectBancos)) {
+                bancosStmt.setString(1, etiquetaReino);
+                ResultSet bancosRS = bancosStmt.executeQuery();
+
+                while (bancosRS.next() && cantidadRestante > 0) {
+                    String banco = bancosRS.getString("etiqueta_banco");
+                    double convertidoBanco = bancosRS.getDouble("cantidad_convertida");
+
+                    // Calcula la proporción que le corresponde restar a este banco
+                    double proporcion = convertidoBanco / totalConvertido;
+                    double aRestar = Math.min(convertidoBanco, cantidad * proporcion);
+
+                    try (PreparedStatement updateStmt = conn.prepareStatement(updateBanco)) {
+                        updateStmt.setDouble(1, aRestar);
+                        updateStmt.setString(2, banco);
+                        updateStmt.executeUpdate();
+                    }
+
+                    cantidadRestante -= aRestar;
+                }
+            }
+
+            return true;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al desconvertir en monedas_banco: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    //-----------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------------
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
         if (!(sender instanceof Player p)) return Collections.emptyList();
@@ -1000,6 +1216,24 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
                             .collect(Collectors.toList());
                 }
             }
+            case "desconvertir" -> {
+                if (!p.isOp()) return Collections.emptyList();
+
+                // Primer argumento después del subcomando: sugerir reinos
+                if (args.length == 2) {
+                    return bancoManager.obtenerReinosDisponibles().stream()
+                            .filter(r -> r.startsWith(args[1].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+
+                // Segundo argumento: sugerir cantidades típicas
+                if (args.length == 3) {
+                    return List.of("100", "500", "1000", "5000").stream()
+                            .filter(c -> c.startsWith(args[2]))
+                            .collect(Collectors.toList());
+                }
+            }
+
             case "listar" -> {
                 if (!p.hasPermission("menuinteractivo.banco.lista")) return Collections.emptyList();
             }

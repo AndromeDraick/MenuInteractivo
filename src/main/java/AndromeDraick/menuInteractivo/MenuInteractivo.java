@@ -1,5 +1,6 @@
 package AndromeDraick.menuInteractivo;
 
+import AndromeDraick.menuInteractivo.chat.ChatFormatListener;
 import AndromeDraick.menuInteractivo.comandos.ComandoRMI;
 import AndromeDraick.menuInteractivo.comandos.Comandos;
 import AndromeDraick.menuInteractivo.comandos.ComandosBMI;
@@ -7,6 +8,7 @@ import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.database.HikariProvider;
+import AndromeDraick.menuInteractivo.listeners.ReinoFriendlyFireListener;
 import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.menu.*;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
@@ -67,10 +69,10 @@ public final class MenuInteractivo extends JavaPlugin {
         File cfgDir = new File(getDataFolder(), "configuracion");
         if (!cfgDir.exists()) cfgDir.mkdirs();
         saveResource("config_tienda.yml", false);
+        saveResource("config_chat.yml", false);
         File cfgIV = new File(cfgDir, "config_items_venta.yml");
         if (!cfgIV.exists()) saveResource("configuracion/config_items_venta.yml", false);
         configTienda = new ConfigTiendaManager(this);
-        baseDeDatos = new GestorBaseDeDatos(this);
 
         // 5) Configuración y conexión a BBDD
         File cfgBD = new File(cfgDir, "config_basededatos.yml");
@@ -110,6 +112,11 @@ public final class MenuInteractivo extends JavaPlugin {
         getServer().getPluginManager().registerEvents(menuMercadoReino, this);
         getServer().getPluginManager().registerEvents(new ListenerSelectorCantidad(), this);
         getServer().getPluginManager().registerEvents(new ListenerConfirmarCompra(), this);
+        getServer().getPluginManager().registerEvents(new ChatFormatListener(this), this);
+        getServer().getPluginManager().registerEvents(new ReinoFriendlyFireListener(this, baseDeDatos), this);
+
+
+
 
         getLogger().info("  MenuInteractivo activado correctamente.");
 

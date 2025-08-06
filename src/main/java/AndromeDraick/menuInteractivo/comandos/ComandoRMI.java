@@ -56,6 +56,42 @@ public class ComandoRMI implements CommandExecutor, TabCompleter {
                 }
                 return procesarEdicionRol(jugador, args);
             }
+            // --- SUBCOMANDO: editar nombre <nuevo_nombre> ---
+            if (args[0].equalsIgnoreCase("editar") && args[1].equalsIgnoreCase("nombre") && args.length >= 3) {
+                String nuevoNombre = args[2].replace("_", " ");
+                boolean exito = db.actualizarNombre(jugador.getUniqueId(), nuevoNombre);
+                if (exito) {
+                    jugador.sendMessage(ChatColor.GREEN + "¡Tu nombre de rol ha sido actualizado a: " + nuevoNombre + "!");
+                } else {
+                    jugador.sendMessage(ChatColor.RED + "Ocurrió un error al actualizar tu nombre de rol.");
+                }
+                return true;
+            }
+
+// --- SUBCOMANDO: editar genero <nuevo_genero> ---
+            if (args[0].equalsIgnoreCase("editar") && args[1].equalsIgnoreCase("genero") && args.length >= 3) {
+                String nuevoGenero = args[2];
+                boolean exito = db.actualizarGenero(jugador.getUniqueId(), nuevoGenero);
+                if (exito) {
+                    jugador.sendMessage(ChatColor.GREEN + "¡Tu género de rol ha sido actualizado a: " + nuevoGenero + "!");
+                } else {
+                    jugador.sendMessage(ChatColor.RED + "Ocurrió un error al actualizar tu género de rol.");
+                }
+                return true;
+            }
+
+// --- SUBCOMANDO: editar raza <nueva_raza> ---
+            if (args[0].equalsIgnoreCase("editar") && args[1].equalsIgnoreCase("raza") && args.length >= 3) {
+                String nuevaRaza = args[2];
+                boolean exito = db.actualizarRaza(jugador.getUniqueId(), nuevaRaza);
+                if (exito) {
+                    jugador.sendMessage(ChatColor.GREEN + "¡Tu raza de rol ha sido actualizada a: " + nuevaRaza + "!");
+                } else {
+                    jugador.sendMessage(ChatColor.RED + "Ocurrió un error al actualizar tu raza de rol.");
+                }
+                return true;
+            }
+
 
         }
 
@@ -271,6 +307,25 @@ public class ComandoRMI implements CommandExecutor, TabCompleter {
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("rechazar") && args[1].equalsIgnoreCase("familiar")) {
             return null; // Lista de jugadores
+        }
+
+        // /rmi editar nombre|genero|raza
+        if (args[0].equalsIgnoreCase("editar") && args.length == 2) {
+            return List.of("rol", "nombre", "genero", "raza").stream()
+                    .filter(s -> s.startsWith(args[1].toLowerCase()))
+                    .toList();
+        }
+
+        if (args[0].equalsIgnoreCase("editar") && args[1].equalsIgnoreCase("genero") && args.length == 3) {
+            return List.of("masculino", "femenino", "otro").stream()
+                    .filter(s -> s.startsWith(args[2].toLowerCase()))
+                    .toList();
+        }
+
+        if (args[0].equalsIgnoreCase("editar") && args[1].equalsIgnoreCase("raza") && args.length == 3) {
+            return List.of("humano", "elfo", "vampiro", "semienderman", "semidragon", "aracnohuman", "atlantiano").stream()
+                    .filter(s -> s.startsWith(args[2].toLowerCase()))
+                    .toList();
         }
 
         // /rmi editar rol <jugador> ...

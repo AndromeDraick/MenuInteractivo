@@ -132,11 +132,6 @@ public class BancoManager {
         db.actualizarSaldoMoneda(uuid, reinoEtiqueta, cantidad);
     }
 
-    public double obtenerSaldoMonedasJugador(String uuidJugador, String etiquetaReino) {
-        return db.obtenerSaldoMonedasJugador(uuidJugador, etiquetaReino);
-    }
-
-
     public boolean esMiembroOBancoPropietario(UUID jugador, String etiquetaBanco) {
         return db.esPropietarioBanco(jugador, etiquetaBanco) ||
                 db.esMiembroDeBanco(jugador, etiquetaBanco);

@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class MenuMiembrosReino implements Listener {
@@ -54,18 +55,31 @@ public class MenuMiembrosReino implements Listener {
         int slot = 0;
         for (UUID uuid : miembros) {
             OfflinePlayer miembro = Bukkit.getOfflinePlayer(uuid);
-            String rol    = db.obtenerRolJugadorEnReino(uuid);
-            String titulo = db.getTituloJugador(uuid);
+            String rol     = db.obtenerRolJugadorEnReino(uuid);
+            String titulo  = db.getTituloJugador(uuid);
             String trabajo = db.obtenerTrabajoJugador(uuid);
             ChatColor colorTrabajo = obtenerColorTrabajo(trabajo);
 
+            // Obtener datos de genero_jugador en una sola consulta
+            Map<String, String> datos = db.obtenerDatosGeneroJugador(uuid);
+            String nombreRol = limpiarCampo(datos.get("nombre_rol"));
+            String apellidoP = limpiarCampo(datos.get("apellido_paterno_rol"));
+            String apellidoM = limpiarCampo(datos.get("apellido_materno_rol"));
+            String genero    = limpiarCampo(datos.get("genero"));
+            String razaRol   = limpiarCampo(datos.get("raza_rol"));
+
+            // Crear cabeza de jugador
             ItemStack cabeza = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta   = (SkullMeta) cabeza.getItemMeta();
             meta.setOwningPlayer(miembro);
-            meta.setDisplayName(ChatColor.YELLOW + miembro.getName());
+            meta.setDisplayName(ChatColor.YELLOW + nombreRol);
             meta.setLore(List.of(
-                    ChatColor.GRAY + "Rol: "    + ChatColor.GOLD + rol,
-                    ChatColor.GRAY + "Título: " + ChatColor.AQUA + titulo,
+                    ChatColor.GRAY + "Titulo: "    + ChatColor.GOLD + rol,
+                    ChatColor.GRAY + "Estatus: " + ChatColor.AQUA + titulo,
+                    ChatColor.GRAY + "Nombre: " + ChatColor.WHITE + nombreRol,
+                    ChatColor.GRAY + "Apellidos: " + ChatColor.WHITE + apellidoP + " " + apellidoM,
+                    ChatColor.GRAY + "Género: " + ChatColor.YELLOW + genero,
+                    ChatColor.GRAY + "Raza: " + ChatColor.GREEN + razaRol,
                     ChatColor.GRAY + "Trabajo: " + colorTrabajo + trabajo
             ));
             cabeza.setItemMeta(meta);
@@ -75,6 +89,16 @@ public class MenuMiembrosReino implements Listener {
 
         jugador.openInventory(menu);
         jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
+    }
+
+    /**
+     * Limpia valores nulos, vacíos o con caracteres no deseados.
+     */
+    private String limpiarCampo(String valor) {
+        if (valor == null || valor.trim().isEmpty() || valor.contains("<") || valor.equals(">")) {
+            return "Desconocido";
+        }
+        return valor;
     }
 
     /**
@@ -100,12 +124,33 @@ public class MenuMiembrosReino implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (!(e.getWhoClicked() instanceof Player)) return;
+        if (!(e.getWhoClicked() instanceof Player jugador)) return;
         String raw = e.getView().getTitle();
         String title = ChatColor.stripColor(raw);
         if (!title.startsWith("Miembros del Reino")) return;
         e.setCancelled(true);
+
+        ItemStack clicked = e.getCurrentItem();
+        if (clicked == null || clicked.getType() != Material.PLAYER_HEAD) return;
+
+        GestorBaseDeDatos db = plugin.getBaseDeDatos();
+        String rolJugador = db.obtenerRolJugadorEnReino(jugador.getUniqueId());
+        if (!(rolJugador.equalsIgnoreCase("Rey") ||
+                rolJugador.equalsIgnoreCase("Reina") ||
+                rolJugador.equalsIgnoreCase("Emperador") ||
+                rolJugador.equalsIgnoreCase("Emperatriz"))) {
+
+//            jugador.sendMessage(ChatColor.RED + "Solo el Rey, la Reina, el Emperador o la Emperatriz pueden gestionar miembros.");
+            return;
+        }
+
+        SkullMeta meta = (SkullMeta) clicked.getItemMeta();
+        if (meta != null && meta.getOwningPlayer() != null) {
+            UUID miembroUUID = meta.getOwningPlayer().getUniqueId();
+            new MenuGestionMiembroReino(plugin).abrir(jugador, miembroUUID);
+        }
     }
+
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent e) {

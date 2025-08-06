@@ -7,11 +7,14 @@ import AndromeDraick.menuInteractivo.model.MonedasReinoInfo;
 import AndromeDraick.menuInteractivo.model.Reino;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class GestorBaseDeDatos {
@@ -170,9 +173,42 @@ public class GestorBaseDeDatos {
                     "precio REAL NOT NULL, " +
                     "fecha_publicacion DATETIME DEFAULT CURRENT_TIMESTAMP" +
                     ")");
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS recompensas_diarias (" +
+                    "uuid TEXT PRIMARY KEY, " +
+                    "ultimo_reclamo BIGINT NOT NULL" +
+                    ")");
+
 
         } catch (SQLException e) {
             plugin.getLogger().severe("Error creando tablas: " + e.getMessage());
+        }
+    }
+
+    public long obtenerUltimoReclamo(UUID uuid) {
+        String sql = "SELECT ultimo_reclamo FROM recompensas_diarias WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getLong("ultimo_reclamo");
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al obtener último reclamo: " + e.getMessage());
+        }
+        return 0L; // Nunca ha reclamado
+    }
+
+    public void actualizarUltimoReclamo(UUID uuid, long tiempo) {
+        // Para SQLite usamos INSERT OR REPLACE
+        String sql = "INSERT INTO recompensas_diarias(uuid, ultimo_reclamo) VALUES(?, ?) " +
+                "ON CONFLICT(uuid) DO UPDATE SET ultimo_reclamo = excluded.ultimo_reclamo";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            ps.setLong(2, tiempo);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning("[MenuInteractivo] Error al actualizar último reclamo: " + e.getMessage());
         }
     }
 
@@ -499,6 +535,43 @@ public class GestorBaseDeDatos {
         return lista;
     }
 
+    public Map<String, String> obtenerDatosGeneroJugador(UUID uuid) {
+        Map<String, String> datos = new HashMap<>();
+        String sql = "SELECT nombre_rol, apellido_paterno_rol, apellido_materno_rol, genero, raza_rol " +
+                "FROM genero_jugador WHERE uuid = ? LIMIT 1";
+
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, uuid.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    datos.put("nombre_rol", rs.getString("nombre_rol"));
+                    datos.put("apellido_paterno_rol", rs.getString("apellido_paterno_rol"));
+                    datos.put("apellido_materno_rol", rs.getString("apellido_materno_rol"));
+                    datos.put("genero", rs.getString("genero"));
+                    datos.put("raza_rol", rs.getString("raza_rol"));
+                } else {
+                    // Si no existe el jugador, rellenamos con valores por defecto
+                    datos.put("nombre_rol", "Desconocido");
+                    datos.put("apellido_paterno_rol", "");
+                    datos.put("apellido_materno_rol", "");
+                    datos.put("genero", "Desconocido");
+                    datos.put("raza_rol", "Desconocida");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Si ocurre un error, devolvemos datos por defecto
+            datos.put("nombre_rol", "Error");
+            datos.put("apellido_paterno_rol", "");
+            datos.put("apellido_materno_rol", "");
+            datos.put("genero", "Error");
+            datos.put("raza_rol", "Error");
+        }
+        return datos;
+    }
+
     public List<Banco> obtenerBancosPendientes(String etiquetaReino) {
         List<Banco> lista = new ArrayList<>();
         String sql = "SELECT * FROM bancos WHERE reino_etiqueta = ? AND estado = 'pendiente'";
@@ -581,20 +654,16 @@ public class GestorBaseDeDatos {
         }
         return null;
     }
-    public boolean guardarDatosRol(UUID uuid, String genero, String nombre, String apellidoP, String apellidoM, String descendencia, String raza) {
-        String sql = "REPLACE INTO genero_jugador (uuid, genero, nombre_rol, apellido_paterno_rol, apellido_materno_rol, descendiente_de, raza_rol) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    public boolean actualizarRolJugador(UUID uuidJugador, String nuevoRol) {
+        String sql = "UPDATE jugadores_reino SET rol = ? WHERE uuid = ?";
         try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, uuid.toString());
-            ps.setString(2, genero);
-            ps.setString(3, nombre);
-            ps.setString(4, apellidoP);
-            ps.setString(5, apellidoM);
-            ps.setString(6, descendencia);
-            ps.setString(7, raza);
-            return ps.executeUpdate() > 0;
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevoRol);
+            stmt.setString(2, uuidJugador.toString());
+            return stmt.executeUpdate() == 1;
         } catch (SQLException e) {
-            plugin.getLogger().warning("Error al guardar datos de rol: " + e.getMessage());
+            plugin.getLogger().severe("Error al actualizar el rol del jugador: " + e.getMessage());
             return false;
         }
     }
@@ -648,6 +717,43 @@ public class GestorBaseDeDatos {
             return false;
         }
     }
+
+    public boolean actualizarNombre(UUID uuid, String nuevoNombre) {
+        String sql = "UPDATE genero_jugador SET nombre_rol=? WHERE uuid=?";
+        try (Connection conn = HikariProvider.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevoNombre);
+            stmt.setString(2, uuid.toString());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean actualizarGenero(UUID uuid, String nuevoGenero) {
+        String sql = "UPDATE genero_jugador SET genero=? WHERE uuid=?";
+        try (Connection conn = HikariProvider.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevoGenero);
+            stmt.setString(2, uuid.toString());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean actualizarRaza(UUID uuid, String nuevaRaza) {
+        String sql = "UPDATE genero_jugador SET raza_rol=? WHERE uuid=?";
+        try (Connection conn = HikariProvider.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevaRaza);
+            stmt.setString(2, uuid.toString());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     private String capitalizarPalabras(String input) {
         if (input == null || input.isBlank()) return "";
@@ -766,22 +872,6 @@ public class GestorBaseDeDatos {
         }
 
         return reinos;
-    }
-
-    /**
-     * Elimina la pertenencia de un jugador a un reino.
-     */
-    public boolean salirJugadorReino(UUID jugadorUUID, String etiquetaReino) {
-        String sql = "DELETE FROM jugadores_reino WHERE uuid = ? AND etiqueta_reino = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, jugadorUUID.toString());
-            ps.setString(2, etiquetaReino);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     /**
@@ -1437,12 +1527,62 @@ public class GestorBaseDeDatos {
         try (Connection conn = HikariProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, jugadorUUID.toString());
-            return ps.executeUpdate() > 0;
+            int filas = ps.executeUpdate();
+
+            if (filas > 0) {
+                // Actualizar caché inmediatamente
+                setReinoCached(jugadorUUID, null);
+                return true;
+            }
+            return false;
+
         } catch (SQLException e) {
             plugin.getLogger().warning("Error eliminando jugador de reino: " + e.getMessage());
             return false;
         }
     }
+
+    /**
+     * Expulsa a un jugador de su reino eliminando toda su asociación.
+     *
+     * @param uuidJugador UUID del jugador a expulsar.
+     * @return true si fue expulsado correctamente, false si no tenía reino.
+     */
+    public boolean expulsarMiembroReino(UUID uuidJugador) {
+        String reino = obtenerReinoJugador(uuidJugador);
+        if (reino == null) return false;
+
+        String sql = "UPDATE jugadores SET reino = NULL, rol_reino = NULL WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, uuidJugador.toString());
+            int filas = stmt.executeUpdate();
+            if (filas > 0) {
+                setReinoCached(uuidJugador, null);
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al expulsar miembro del reino: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean actualizarTituloJugador(UUID uuidJugador, String nuevoTitulo) {
+        String sql = "UPDATE jugadores_reino SET titulo = ? WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevoTitulo);
+            stmt.setString(2, uuidJugador.toString());
+            int filas = stmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al actualizar título del jugador: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 
     //--------------------------------------------------------------------------------------------------------
 
@@ -2013,27 +2153,6 @@ public class GestorBaseDeDatos {
         return null;
     }
 
-    private double obtenerSaldoBanco(UUID jugador, String banco, Connection conn) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT saldo FROM cuentas_moneda WHERE uuid_jugador = ? AND etiqueta_banco = ?")) {
-            stmt.setString(1, jugador.toString());
-            stmt.setString(2, banco);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? rs.getDouble("saldo") : 0;
-            }
-        }
-    }
-
-    private void restarSaldoBanco(UUID jugador, String banco, double monto, Connection conn) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE cuentas_moneda SET saldo = saldo - ? WHERE uuid_jugador = ? AND etiqueta_banco = ?")) {
-            stmt.setDouble(1, monto);
-            stmt.setString(2, jugador.toString());
-            stmt.setString(3, banco);
-            stmt.executeUpdate();
-        }
-    }
-
     private void sumarSaldoBanco(UUID jugador, String banco, double monto, Connection conn) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "UPDATE cuentas_moneda SET saldo = saldo + ? WHERE uuid_jugador = ? AND etiqueta_banco = ?")) {
@@ -2208,15 +2327,67 @@ public class GestorBaseDeDatos {
         return null;
     }
 
-//    /**
-//     * Consulta un solo valor (primera columna, primera fila)
-//     */
-//    public Object consultarValor(String sql, Object... params) {
-//        Map<String, Object> fila = consultarFila(sql, params);
-//        if (fila != null && !fila.isEmpty()) {
-//            return fila.values().iterator().next();
-//        }
-//        return null;
-//    }
+//    ----------------------------------------------------------------------------------------
+//
+//    ---------------------------------Daño a aliados---------------------------------------------------
+
+
+    // Dentro de GestorBaseDeDatos
+    private final Map<UUID, String> cacheReinos = new ConcurrentHashMap<>();
+
+    public String getReinoCached(UUID uuid) {
+        return cacheReinos.get(uuid);
+    }
+
+    public void setReinoCached(UUID uuid, String reino) {
+        if (reino == null) {
+            cacheReinos.remove(uuid);
+        } else {
+            cacheReinos.put(uuid, reino);
+        }
+    }
+
+    public void limpiarCacheJugador(UUID uuid) {
+        cacheReinos.remove(uuid);
+    }
+
+    public void limpiarTodaCache() {
+        cacheReinos.clear();
+    }
+
+    public String getReinoDeJugador(String uuidStr) {
+        UUID uuid = UUID.fromString(uuidStr);
+
+        // 1) Revisar caché
+        String cached = getReinoCached(uuid);
+        if (cached != null) return cached;
+
+        // 2) Consultar en la base de datos si no está en caché
+        String reino = null;
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT etiqueta_reino FROM jugadores_reino WHERE uuid = ? LIMIT 1")) {
+            ps.setString(1, uuidStr);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    reino = rs.getString("etiqueta_reino");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Error consultando el reino del jugador " + uuidStr + ": " + e.getMessage());
+        }
+
+        // 3) Guardar en caché si existe
+        if (reino != null) {
+            setReinoCached(uuid, reino);
+        }
+        return reino;
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        plugin.getBaseDeDatos().limpiarCacheJugador(event.getPlayer().getUniqueId());
+    }
+
+
 
 }

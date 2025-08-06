@@ -95,8 +95,8 @@ public class MenuPrincipal implements Listener {
         metaVender.setLore(Arrays.asList(
                 ChatColor.GRAY + "Haz clic para poner tus ítems en venta",
                 ChatColor.GRAY + "por monedas del reino.",
-                ChatColor.LIGHT_PURPLE + "Se agrego el valor conforme",
-                ChatColor.LIGHT_PURPLE + "este tu moneda del reino"
+                ChatColor.LIGHT_PURPLE + "Se agregó el valor conforme",
+                ChatColor.LIGHT_PURPLE + "esté tu moneda del reino"
         ));
         vender.setItemMeta(metaVender);
         menu.setItem(39, vender);
@@ -108,9 +108,8 @@ public class MenuPrincipal implements Listener {
         metaMercado.setLore(Arrays.asList(
                 ChatColor.GRAY + "Haz clic para ver lo que venden",
                 ChatColor.GRAY + "otros miembros del reino.",
-                ChatColor.LIGHT_PURPLE + "Se agrego el valor conforme",
-                ChatColor.LIGHT_PURPLE + "este tu moneda del reino"
-
+                ChatColor.LIGHT_PURPLE + "Se agregó el valor conforme",
+                ChatColor.LIGHT_PURPLE + "esté tu moneda del reino"
         ));
         mercado.setItemMeta(metaMercado);
         menu.setItem(40, mercado);
@@ -143,7 +142,7 @@ public class MenuPrincipal implements Listener {
         // Base de datos
         GestorBaseDeDatos db = plugin.getBaseDeDatos();
 
-        // Obtener datos de personaje desde la base de datos
+        // Obtener datos de personaje
         String nombreRol = "Desconocido";
         String apellidoPaterno = "";
         String apellidoMaterno = "";
@@ -164,7 +163,7 @@ public class MenuPrincipal implements Listener {
             raza = String.valueOf(datos.get("raza_rol"));
         }
 
-// Lore del perfil
+        // Lore del perfil
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.GRAY + "N.DeUsuario: " + ChatColor.GRAY + jugador.getName());
         lore.add(ChatColor.GRAY + "Nombre: " + ChatColor.DARK_PURPLE + nombreRol);
@@ -174,14 +173,54 @@ public class MenuPrincipal implements Listener {
         lore.add(ChatColor.GRAY + "Raza: " + ChatColor.YELLOW + raza);
         lore.add(ChatColor.GRAY + "Reinas: " + ChatColor.GREEN + "$" + FormateadorNumeros.formatear(dinero));
         lore.add(ChatColor.GOLD + "");
-        lore.add(ChatColor.GOLD + "¡PARTE 1 DE 6: " + ChatColor.GRAY + " PROXIMA PARTE TRAE");
-        lore.add(ChatColor.GRAY + "'TIENDA DE LOS JUGADORES CON MONEDAS");
-        lore.add(ChatColor.GRAY + " DE LOS REINOS'!");
+        lore.add(ChatColor.GOLD + "¡PARTE 1.8 DE 6: " + ChatColor.GRAY + "");
+        lore.add(ChatColor.GRAY + "Actualización " + ChatColor.AQUA + " 1.8 " + ChatColor.GRAY + " trajo:");
+        lore.add(ChatColor.GRAY + " -Recompensa Diaria!");
+        lore.add(ChatColor.GRAY + " -Más de 32 Roles!");
+        lore.add(ChatColor.GRAY + " -Correcciones Menores");
 
         skullMeta.setLore(lore);
         cabeza.setItemMeta(skullMeta);
         menu.setItem(13, cabeza);
 
+        // == Recompensa diaria ==
+        long ahora = System.currentTimeMillis();
+        long ultimoReclamo = db.obtenerUltimoReclamo(jugador.getUniqueId());
+
+        boolean disponible = (ultimoReclamo == 0L || (ahora - ultimoReclamo) >= 86400000L);
+
+        ItemStack recompensa = new ItemStack(disponible ? Material.DIAMOND : Material.COAL);
+        ItemMeta metaRecompensa = recompensa.getItemMeta();
+        metaRecompensa.setDisplayName(disponible
+                ? ChatColor.AQUA + "¡Recompensa Diaria Disponible!"
+                : ChatColor.GRAY + "Recompensa Diaria");
+
+        List<String> loreRecompensa = new ArrayList<>();
+        if (disponible) {
+            loreRecompensa.add(ChatColor.GREEN + "¡Haz clic para reclamar tu recompensa!");
+            loreRecompensa.add(ChatColor.YELLOW + "Recompensa base: $285.71");
+            loreRecompensa.add(ChatColor.GOLD + "Rangos obtienen más dinero.");
+        } else {
+            long faltante = 86400000L - (ahora - ultimoReclamo);
+            long horas = faltante / 3600000L;
+            long minutos = (faltante % 3600000L) / 60000L;
+
+            loreRecompensa.add(ChatColor.RED + "Ya reclamaste tu recompensa diaria.");
+            loreRecompensa.add(ChatColor.GRAY + "Próxima en: " +
+                    ChatColor.YELLOW + horas + "h " + minutos + "m");
+        }
+
+        metaRecompensa.setLore(loreRecompensa);
+        recompensa.setItemMeta(metaRecompensa);
+        menu.setItem(30, recompensa);
+
+        // Aviso si está disponible
+        if (disponible) {
+            jugador.sendMessage(ChatColor.GOLD + "¡Tu recompensa diaria está lista para reclamar!");
+            jugador.playSound(jugador.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1.5f);
+        }
+
+        // Abrir menú
         jugador.openInventory(menu);
         jugador.playSound(jugador.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
     }
@@ -197,31 +236,93 @@ public class MenuPrincipal implements Listener {
         int slot = event.getRawSlot();
 
         switch (slot) {
-            case 21:
-                MenuTienda.abrir(jugador, 0);
-                break;
-            case 22:
+            case 21 -> MenuTienda.abrir(jugador, 0);
+            case 22 -> {
                 if (jugador.hasPermission("bmi.comandos.aceptar.banco")) {
                     plugin.getMenuBancos().abrirSolicitudes(jugador);
                 } else {
                     jugador.sendMessage(ChatColor.RED + "No tienes permiso para gestionar bancos.");
                 }
-                break;
-            case 23:
-                plugin.getMenuTrabajos().abrir(jugador);
-                break;
-            case 31:
-                plugin.getMenuReino().abrir(jugador);
-                break;
-            case 39:
-                MenuMercadoReino.abrirMenuVenta(jugador);
-                break;
-            case 40:
-                MenuMercadoReino.abrirMercadoDelReino(jugador);
-                break;
-            case 41:
-                MenuMercadoReino.abrirCuentaPersonal(jugador);
-                break;
+            }
+            case 23 -> plugin.getMenuTrabajos().abrir(jugador);
+            case 30 -> manejarRecompensaDiaria(jugador, event);
+            case 31 -> plugin.getMenuReino().abrir(jugador);
+            case 39 -> MenuMercadoReino.abrirMenuVenta(jugador);
+            case 40 -> MenuMercadoReino.abrirMercadoDelReino(jugador);
+            case 41 -> MenuMercadoReino.abrirCuentaPersonal(jugador);
         }
+    }
+
+    private void manejarRecompensaDiaria(Player jugador, InventoryClickEvent event) {
+        GestorBaseDeDatos db = plugin.getBaseDeDatos();
+        long ahora = System.currentTimeMillis();
+        long ultimoReclamo = db.obtenerUltimoReclamo(jugador.getUniqueId());
+
+        if (ultimoReclamo > 0 && (ahora - ultimoReclamo) < 86400000L) {
+            long faltante = 86400000L - (ahora - ultimoReclamo);
+            long horas = faltante / 3600000L;
+            jugador.sendMessage(ChatColor.RED + "¡Ya reclamaste tu recompensa diaria!");
+            jugador.sendMessage(ChatColor.GRAY + "Podrás reclamar de nuevo en aproximadamente " + horas + " horas.");
+            jugador.playSound(jugador.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.8f);
+            return;
+        }
+
+        // --- Cálculo de recompensa ---
+        double recompensaBase = 285.71;
+        double recompensa = recompensaBase;
+
+        String grupoJugador = "default";
+        LuckPerms lp = plugin.getPermisos();
+        if (lp != null) {
+            User user = lp.getUserManager().getUser(jugador.getUniqueId());
+            if (user != null) {
+                grupoJugador = user.getPrimaryGroup().toLowerCase();
+            }
+        }
+
+        switch (grupoJugador) {
+            case "piedra" -> recompensa = 295.0;
+            case "platino" -> recompensa = 328.56;
+            case "diamante" -> recompensa = 399.99;
+            case "esmeralda" -> recompensa = 499.99;
+            case "netherita" -> recompensa = 999.99;
+            default -> recompensa = recompensaBase;
+        }
+
+        // Entregar dinero
+        plugin.getEconomia().depositPlayer(jugador, recompensa);
+        double extra = recompensa - recompensaBase;
+
+        // Mensaje al jugador
+        if (extra > 0) {
+            jugador.sendMessage(ChatColor.GREEN + "¡Has reclamado tu recompensa diaria de $" +
+                    FormateadorNumeros.formatear(recompensa) +
+                    ChatColor.YELLOW + " (+" + FormateadorNumeros.formatear(extra) +
+                    " extra por tu rango)!");
+        } else {
+            jugador.sendMessage(ChatColor.GREEN + "¡Has reclamado tu recompensa diaria de $" +
+                    FormateadorNumeros.formatear(recompensa) + "!");
+        }
+
+        // Broadcast anónimo con monto
+        if (grupoJugador.equals("diamante") || grupoJugador.equals("esmeralda") || grupoJugador.equals("netherita")) {
+            Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "[Reinos Y Naciones] " +
+                    ChatColor.YELLOW + "¡Se ha reclamado una recompensa diaria de " +
+                    ChatColor.GOLD + "$" + FormateadorNumeros.formatear(recompensa) + ChatColor.YELLOW + "!");
+        }
+
+        jugador.playSound(jugador.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+
+        // Guardar el nuevo tiempo de reclamo
+        db.actualizarUltimoReclamo(jugador.getUniqueId(), ahora);
+
+        // Actualizar el ítem en el inventario
+        ItemStack espera = new ItemStack(Material.COAL);
+        ItemMeta metaEspera = espera.getItemMeta();
+        metaEspera.setDisplayName(ChatColor.GRAY + "Recompensa Diaria");
+        metaEspera.setLore(Collections.singletonList(ChatColor.RED + "Ya fue reclamada. Vuelve mañana."));
+        espera.setItemMeta(metaEspera);
+
+        event.getInventory().setItem(30, espera);
     }
 }

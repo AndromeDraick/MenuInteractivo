@@ -72,7 +72,6 @@ public class MenuGestionMiembroReino implements Listener {
         if (!title.equalsIgnoreCase("Gestionar miembro")) return;
         e.setCancelled(true);
 
-        // Metadata única por jugador
         String metaKey = "gestion_miembro_" + jugador.getUniqueId();
         if (!jugador.hasMetadata(metaKey)) return;
 
@@ -81,23 +80,28 @@ public class MenuGestionMiembroReino implements Listener {
 
         switch (e.getSlot()) {
             case 11 -> { // Cambiar Rol
-                new MenuCambiarRolReino(plugin, miembroUUID).abrir(jugador);
+                new MenuCambiarRolReino(plugin).abrir(jugador, miembroUUID);
             }
-            case 12 -> { // Degradar
-                jugador.sendMessage(ChatColor.RED + "Proximamente");
+            case 12 -> { // Degradar (pendiente)
+                jugador.sendMessage(ChatColor.RED + "Próximamente");
             }
             case 13 -> { // Expulsar
-                jugador.sendMessage(ChatColor.DARK_RED + "Acción Irreversible");
-                boolean ok = db.expulsarMiembroReino(miembroUUID);
+                boolean ok = db.expulsarMiembroReino(miembroUUID, true);
                 if (ok) {
                     jugador.sendMessage(ChatColor.GREEN + "Miembro expulsado correctamente.");
+                    jugador.playSound(jugador.getLocation(), Sound.ENTITY_VILLAGER_YES, 1f, 1f);
                 } else {
-                    jugador.sendMessage(ChatColor.RED + "No se pudo expulsar al miembro.");
+                    jugador.sendMessage(ChatColor.RED + "No se pudo expulsar al miembro (no estaba en ningún reino).");
+                    jugador.playSound(jugador.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
                 }
+                limpiarMetadata(jugador, metaKey);
                 jugador.closeInventory();
             }
             case 15 -> { // Cambiar título
-                new MenuCambiarTituloReino(plugin, miembroUUID).abrir(jugador);
+                new MenuCambiarTituloReino(plugin).abrir(jugador, miembroUUID);
+            }
+            default -> {
+                // nada
             }
         }
     }
@@ -107,5 +111,9 @@ public class MenuGestionMiembroReino implements Listener {
         if (ChatColor.stripColor(e.getView().getTitle()).equalsIgnoreCase("Gestionar miembro")) {
             e.setCancelled(true);
         }
+    }
+
+    private void limpiarMetadata(Player p, String key) {
+        if (p.hasMetadata(key)) p.removeMetadata(key, plugin);
     }
 }

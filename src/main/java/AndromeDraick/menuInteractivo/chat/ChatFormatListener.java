@@ -4,7 +4,9 @@ import AndromeDraick.menuInteractivo.MenuInteractivo;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.LuckPermsProvider;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -47,12 +49,22 @@ public class ChatFormatListener implements Listener {
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
-        ChatDataManager.ChatPlayerData data = dataManager.getPlayerData(player.getUniqueId());
+        Location locJugador = player.getLocation();
 
-        // Obtener grupo principal
+        ChatDataManager.ChatPlayerData data = dataManager.getPlayerData(player.getUniqueId());
         String grupo = getPrimaryGroup(player);
 
-        // Obtener formato según grupo desde config_chat.yml
+        // ¿Mensaje de grito?
+        String originalMessage = event.getMessage();
+        boolean esGrito = originalMessage.startsWith("¡") && originalMessage.endsWith("!");
+        int radio = esGrito
+                ? chatConfig.getInt("chat.radios.grito", 130)
+                : chatConfig.getInt("chat.radios.normal", 40);
+        String mensajeSinExclamaciones = esGrito
+                ? originalMessage.substring(1, originalMessage.length() - 1).trim()
+                : originalMessage;
+
+        // Obtener formato según grupo
         String formato = chatConfig.getString("chat.formatos." + grupo);
         if (formato == null) {
             formato = chatConfig.getString("chat.formatos.default", "&7%nombre_rol%: &f%mensaje%");
@@ -63,7 +75,7 @@ public class ChatFormatListener implements Listener {
 
         // Reemplazar placeholders
         String mensaje = formato
-                .replace("%mensaje%", event.getMessage())
+                .replace("%mensaje%", mensajeSinExclamaciones)
                 .replace("%grupo%", grupo)
                 .replace("%trabajo%", data.tieneTrabajo() ? data.trabajo : sinTrabajo)
                 .replace("%titulo%", data.tieneReino() ? data.titulo : sinReino)
@@ -73,13 +85,18 @@ public class ChatFormatListener implements Listener {
                 .replace("%apellido_paterno_rol%", data.apellidoPaternoRol != null ? data.apellidoPaternoRol : "")
                 .replace("%apellido_materno_rol%", data.apellidoMaternoRol != null ? data.apellidoMaternoRol : "");
 
-        // Traducir colores
         mensaje = ChatColor.translateAlternateColorCodes('&', mensaje);
 
-        // Cancelar chat por defecto y enviar personalizado
+        // Enviar a jugadores cercanos
         event.setCancelled(true);
-        for (Player online : plugin.getServer().getOnlinePlayers()) {
-            online.sendMessage(mensaje);
+        for (Player target : Bukkit.getOnlinePlayers()) {
+            if (!target.getWorld().equals(player.getWorld())) continue;
+            if (target.getLocation().distanceSquared(locJugador) <= (radio * radio)) {
+                target.sendMessage(mensaje);
+            }
         }
+
+        // Enviar a consola
+        plugin.getLogger().info(ChatColor.stripColor(mensaje));
     }
 }

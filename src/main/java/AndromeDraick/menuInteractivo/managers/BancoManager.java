@@ -53,6 +53,7 @@ public class BancoManager {
         return db.insertarContratoBancoReino(bancoEtiqueta, reinoEtiqueta, fechaInicio, fechaFin, permisos);
     }
 
+
     public boolean incrementarCantidadQuemada(String etiquetaReino, double cantidad) {
         return db.aumentarMonedaQuemada(etiquetaReino, cantidad);
     }

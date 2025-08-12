@@ -8,13 +8,16 @@ import AndromeDraick.menuInteractivo.comandos.ComandosReino;
 import AndromeDraick.menuInteractivo.configuracion.ConfigTiendaManager;
 import AndromeDraick.menuInteractivo.database.GestorBaseDeDatos;
 import AndromeDraick.menuInteractivo.database.HikariProvider;
+import AndromeDraick.menuInteractivo.eventos.NametagListener;
 import AndromeDraick.menuInteractivo.listeners.ReinoFriendlyFireListener;
 import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.menu.*;
+import AndromeDraick.menuInteractivo.utilidades.NametagManager;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -82,6 +85,7 @@ public final class MenuInteractivo extends JavaPlugin {
         // 6) Comandos de menú/tienda
         Comandos comandos = new Comandos();
         getCommand("menu").setExecutor(comandos);
+        getCommand("mi").setExecutor(new Comandos());
         getCommand("tmi").setExecutor(comandos);
 
         // 7) Comando de reinos (/rnmi)
@@ -114,6 +118,10 @@ public final class MenuInteractivo extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ListenerConfirmarCompra(), this);
         getServer().getPluginManager().registerEvents(new ChatFormatListener(this), this);
         getServer().getPluginManager().registerEvents(new ReinoFriendlyFireListener(this, baseDeDatos), this);
+        NametagManager nametagManager = new NametagManager(this);
+        Bukkit.getPluginManager().registerEvents(new NametagListener(nametagManager), this);
+        nametagManager.ocultarTodos();
+
 
 
 

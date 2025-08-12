@@ -22,21 +22,22 @@ import java.util.UUID;
 public class MenuCambiarRolReino implements Listener {
 
     private final MenuInteractivo plugin;
-    private final UUID uuidObjetivo;
     private final Map<Integer, String> opcionesRol = new LinkedHashMap<>();
 
-    public MenuCambiarRolReino(MenuInteractivo plugin, UUID uuidObjetivo) {
+    public MenuCambiarRolReino(MenuInteractivo plugin) {
         this.plugin = plugin;
-        this.uuidObjetivo = uuidObjetivo;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public void abrir(Player ejecutor) {
+    public void abrir(Player ejecutor, UUID uuidObjetivo) {
         GestorBaseDeDatos db = plugin.getBaseDeDatos();
         String genero = db.getGenero(uuidObjetivo);
         if (genero == null) genero = "Desconocido";
 
-        Inventory menu = Bukkit.createInventory(null, 54, ChatColor.DARK_GREEN + "Cambiar Rol del Miembro");
+        // Guardamos temporalmente el UUID del objetivo en metadata
+        ejecutor.setMetadata("gestion_miembro_" + ejecutor.getUniqueId(), new org.bukkit.metadata.FixedMetadataValue(plugin, uuidObjetivo.toString()));
+
+        Inventory menu = Bukkit.createInventory(null, 54, ChatColor.DARK_GREEN + "Cambiar Titulo del ciudadano");
 
         int slot = 0;
 
@@ -63,6 +64,7 @@ public class MenuCambiarRolReino implements Listener {
         agregarOpcion(menu, slot++, "Arquero", "Arquera", genero, Material.LEATHER_CHESTPLATE);
         agregarOpcion(menu, slot++, "Miliciano", "Miliciana", genero, Material.LEATHER_CHESTPLATE);
 
+        // Otros
         agregarOpcion(menu, slot++, "Heraldo", "Heralda", genero, Material.GOLD_NUGGET);
         agregarOpcion(menu, slot++, "Trompetero", "Trompetera", genero, Material.GOLD_NUGGET);
         agregarOpcion(menu, slot++, "Sanador", "Sanadora", genero, Material.GOLD_NUGGET);
@@ -72,7 +74,7 @@ public class MenuCambiarRolReino implements Listener {
         agregarOpcion(menu, slot++, "Burgués", "Burguesa", genero, Material.GOLD_NUGGET);
         agregarOpcion(menu, slot++, "Campesino", "Campesina", genero, Material.WHEAT);
         agregarOpcion(menu, slot++, "Siervo", "Sierva", genero, Material.CHAIN);
-        agregarOpcion(menu, slot++, "Esclavo", "Esclava", genero, Material.CHAIN_COMMAND_BLOCK);
+//      agregarOpcion(menu, slot++, "Esclavo", "Esclava", genero, Material.CHAIN_COMMAND_BLOCK);
         agregarOpcion(menu, slot++, "Obrero", "Obrera", genero, Material.BRICKS);
         agregarOpcion(menu, slot++, "Artesano", "Artesana", genero, Material.CRAFTING_TABLE);
 
@@ -93,9 +95,16 @@ public class MenuCambiarRolReino implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player jugador)) return;
+
         String title = ChatColor.stripColor(e.getView().getTitle());
-        if (!title.equalsIgnoreCase("Cambiar Rol del Miembro")) return;
+        if (!title.equalsIgnoreCase("Cambiar Titulo del ciudadano")) return;
+
         e.setCancelled(true);
+
+        String metaKey = "gestion_miembro_" + jugador.getUniqueId();
+        if (!jugador.hasMetadata(metaKey)) return;
+
+        UUID uuidObjetivo = UUID.fromString(jugador.getMetadata(metaKey).get(0).asString());
 
         int slot = e.getRawSlot();
         if (!opcionesRol.containsKey(slot)) return;
@@ -103,7 +112,6 @@ public class MenuCambiarRolReino implements Listener {
         String nuevoRol = opcionesRol.get(slot);
         GestorBaseDeDatos db = plugin.getBaseDeDatos();
 
-        // Verificación para evitar re-asignación innecesaria
         String rolActual = db.obtenerRolJugadorEnReino(uuidObjetivo);
         if (rolActual != null && rolActual.equalsIgnoreCase(nuevoRol)) {
             jugador.sendMessage(ChatColor.YELLOW + "Este jugador ya tiene ese rol.");
@@ -125,6 +133,6 @@ public class MenuCambiarRolReino implements Listener {
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent e) {
         String title = ChatColor.stripColor(e.getView().getTitle());
-        if (title.equalsIgnoreCase("Cambiar Rol del Miembro")) e.setCancelled(true);
+        if (title.equalsIgnoreCase("Cambiar Titulo del ciudadano")) e.setCancelled(true);
     }
 }

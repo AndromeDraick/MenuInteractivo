@@ -1,13 +1,19 @@
 name: MI
-version: '1.0.8.12-SNAPSHOT'
+version: '1.0.8.32-SNAPSHOT'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
 api-version: '1.21.1'
-softdepend: [Vault]
+depend: [Vault, LuckPerms, ProtocolLib]
+softdepend: [Vault, ProtocolLib]
 folia-supported: true
 
 
 
 commands:
+  mi:
+    description: Comando para administración de MenuInteractivo
+    usage: /mi editar rol <usuario> <nuevo rol>
+    permission: menuinteractivo.comando.registro.admin
+    permission-message: No tienes permiso para usar este comando.
   menu:
     description: Abre el menú interactivo
     usage: /menu

@@ -14,22 +14,24 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import java.util.UUID;
 
 public class MenuCambiarTituloReino implements Listener {
 
     private final MenuInteractivo plugin;
-    private final UUID objetivo;
 
-    public MenuCambiarTituloReino(MenuInteractivo plugin, UUID objetivo) {
+    public MenuCambiarTituloReino(MenuInteractivo plugin) {
         this.plugin = plugin;
-        this.objetivo = objetivo;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public void abrir(Player administrador) {
-        Inventory menu = Bukkit.createInventory(null, 9, ChatColor.GOLD + "Cambiar Título del Miembro");
+    public void abrir(Player administrador, UUID objetivo) {
+        // Guardamos el UUID objetivo en metadata
+        administrador.setMetadata("gestion_miembro_" + administrador.getUniqueId(), new FixedMetadataValue(plugin, objetivo.toString()));
+
+        Inventory menu = Bukkit.createInventory(null, 9, ChatColor.GOLD + "Cambiar Estatus del ciudadano");
 
         menu.setItem(2, crearItem(Material.GOLDEN_HELMET, ChatColor.LIGHT_PURPLE + "Realeza"));
         menu.setItem(3, crearItem(Material.CHAINMAIL_CHESTPLATE, ChatColor.BLUE + "Nobleza"));
@@ -54,17 +56,23 @@ public class MenuCambiarTituloReino implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player jugador)) return;
+
         String titulo = ChatColor.stripColor(e.getView().getTitle());
-        if (!titulo.equals("Cambiar Título del Miembro")) return;
+        if (!titulo.equalsIgnoreCase("Cambiar Estatus del ciudadano")) return;
 
         e.setCancelled(true);
+
+        String metaKey = "gestion_miembro_" + jugador.getUniqueId();
+        if (!jugador.hasMetadata(metaKey)) return;
+
+        UUID objetivo = UUID.fromString(jugador.getMetadata(metaKey).get(0).asString());
+
         ItemStack item = e.getCurrentItem();
         if (item == null || !item.hasItemMeta()) return;
 
         String nuevoTitulo = ChatColor.stripColor(item.getItemMeta().getDisplayName());
         GestorBaseDeDatos db = plugin.getBaseDeDatos();
 
-        // Verificar si ya tiene ese título
         String tituloActual = db.getTituloJugador(objetivo);
         if (tituloActual != null && tituloActual.equalsIgnoreCase(nuevoTitulo)) {
             jugador.sendMessage(ChatColor.YELLOW + "Este jugador ya tiene este título.");
@@ -86,7 +94,7 @@ public class MenuCambiarTituloReino implements Listener {
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent e) {
         String titulo = ChatColor.stripColor(e.getView().getTitle());
-        if (!titulo.equals("Cambiar Título del Miembro")) return;
+        if (!titulo.equalsIgnoreCase("Cambiar Estatus del ciudadano")) return;
         e.setCancelled(true);
     }
 }

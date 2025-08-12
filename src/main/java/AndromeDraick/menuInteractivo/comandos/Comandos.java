@@ -7,8 +7,10 @@ import AndromeDraick.menuInteractivo.utilidades.CalculadoraPrecios;
 import AndromeDraick.menuInteractivo.utilidades.FormateadorNumeros;
 import AndromeDraick.menuInteractivo.utilidades.HistorialComprasManager;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -35,6 +37,35 @@ public class Comandos implements CommandExecutor, TabCompleter {
             }
 
             MenuInteractivo.getInstancia().getMenuPrincipal().abrir(jugador);
+            return true;
+        }
+
+        if (etiqueta.equalsIgnoreCase("mi")) {
+            if (!sender.isOp()) {
+                sender.sendMessage(ChatColor.RED + "Este comando solo puede ser usado por operadores.");
+                return true;
+            }
+
+            if (args.length == 4 && args[0].equalsIgnoreCase("editar") && args[1].equalsIgnoreCase("rol")) {
+                String nombreJugador = args[2];
+                String nuevoRol = args[3];
+
+                OfflinePlayer objetivo = Bukkit.getOfflinePlayer(nombreJugador);
+                UUID uuidObjetivo = objetivo.getUniqueId();
+
+                boolean actualizado = MenuInteractivo.getInstancia().getBaseDeDatos().editarRolJugador(uuidObjetivo, nuevoRol);
+                if (actualizado) {
+                    sender.sendMessage(ChatColor.GREEN + "Se editó el rol de " + nombreJugador + " a: " + nuevoRol);
+                    Bukkit.getLogger().info("[MI] " + sender.getName() + " cambió el rol de " + nombreJugador + " a '" + nuevoRol + "'");
+                } else {
+                    sender.sendMessage(ChatColor.RED + "No se pudo editar el rol. ¿El jugador pertenece a un reino?");
+                    Bukkit.getLogger().warning("[MI] Fallo al editar el rol de " + nombreJugador + ". No pertenece a un reino.");
+                }
+
+                return true;
+            }
+
+            sender.sendMessage(ChatColor.YELLOW + "Uso: /mi editar rol <jugador> <nuevo_rol>");
             return true;
         }
 
@@ -183,6 +214,8 @@ public class Comandos implements CommandExecutor, TabCompleter {
             if (cantidad <= 0) break;
         }
     }
+
+
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command comando, String alias, String[] args) {

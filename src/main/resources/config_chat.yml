@@ -1,20 +1,23 @@
 chat:
   formatos:
-    default:   "&8&l[&e%rol%&8&l] &8&l[&d%trabajo%&8&l] &7%nombre_rol%: &7%mensaje%"
-    piedra:    "&8&l[&e%rol%&8&l] &8&l[&d%trabajo%&8&l] &7%nombre_rol%: &7%mensaje%"
-    platino:   "&8&l[&e%rol%&8&l] &8&l[&d%trabajo%&8&l] &7%nombre_rol%: &8%mensaje%"
-    diamante:  "&8&l[&e%rol%&8&l] &8&l[&d%trabajo%&8&l] &7%nombre_rol%: &b%mensaje%"
-    esmeralda: "&8&l[&e%rol%&8&l] &8&l[&d%trabajo%&8&l] &7%nombre_rol%: &a%mensaje%"
-    netherita: "&8&l[&e%rol%&8&l] &8&l[&d%trabajo%&8&l] &7%nombre_rol%: &5%mensaje%"
+    default:   "&8&l[&e%rol%&8&l] &7%nombre_rol%: &7%mensaje%"
+    piedra:    "&8&l[&e%rol%&8&l] &7%nombre_rol%: &7%mensaje%"
+    platino:   "&8&l[&e%rol%&8&l] &7%nombre_rol%: &8%mensaje%"
+    diamante:  "&8&l[&e%rol%&8&l] &7%nombre_rol%: &b%mensaje%"
+    esmeralda: "&8&l[&e%rol%&8&l] &7%nombre_rol%: &a%mensaje%"
+    netherita: "&8&l[&e%rol%&8&l] &7%nombre_rol%: &5%mensaje%"
     admin:     "&8&l[&7ADMINISTRACIÓN&8&l]: &a%mensaje%"
     restringido:     "&8&l[&c%nombre_Rol%&8&l]:&c&l X"
+  radios:
+    normal: 40
+    grito: 130
 
   sin_trabajo: "&7Sin trabajo"
   sin_reino: "&7Sin reino"
 
 
 
-
-
 #  formato: "&b[%titulo% %rol%] &d[%trabajo%] &f%nombre_rol% %apellido_paterno_rol%: &7%mensaje%"
+#    netherita: "&8&l[&e%rol%&8&l] &8&l[&d%trabajo%&8&l] &7%nombre_rol%: &5%mensaje%"
+
 

@@ -655,6 +655,33 @@ public class GestorBaseDeDatos {
         return null;
     }
 
+    public boolean editarRolJugador(UUID uuid, String nuevoRol) {
+        String sql = "UPDATE jugadores_reino SET rol = ? WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nuevoRol);
+            ps.setString(2, uuid.toString());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[MI] Error al editar rol del jugador: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean actualizarTituloJugador(UUID uuidJugador, String nuevoTitulo) {
+        String sql = "UPDATE jugadores_reino SET titulo = ? WHERE uuid = ?";
+        try (Connection conn = HikariProvider.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevoTitulo);
+            stmt.setString(2, uuidJugador.toString());
+            int filas = stmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Error al actualizar título del jugador: " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean actualizarRolJugador(UUID uuidJugador, String nuevoRol) {
         String sql = "UPDATE jugadores_reino SET rol = ? WHERE uuid = ?";
         try (Connection conn = HikariProvider.getConnection();
@@ -721,7 +748,7 @@ public class GestorBaseDeDatos {
     public boolean actualizarNombre(UUID uuid, String nuevoNombre) {
         String sql = "UPDATE genero_jugador SET nombre_rol=? WHERE uuid=?";
         try (Connection conn = HikariProvider.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nuevoNombre);
+            stmt.setString(1, capitalizarPalabras(nuevoNombre));
             stmt.setString(2, uuid.toString());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -733,7 +760,7 @@ public class GestorBaseDeDatos {
     public boolean actualizarGenero(UUID uuid, String nuevoGenero) {
         String sql = "UPDATE genero_jugador SET genero=? WHERE uuid=?";
         try (Connection conn = HikariProvider.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nuevoGenero);
+            stmt.setString(1, capitalizarPalabras(nuevoGenero));
             stmt.setString(2, uuid.toString());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -745,7 +772,7 @@ public class GestorBaseDeDatos {
     public boolean actualizarRaza(UUID uuid, String nuevaRaza) {
         String sql = "UPDATE genero_jugador SET raza_rol=? WHERE uuid=?";
         try (Connection conn = HikariProvider.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nuevaRaza);
+            stmt.setString(1, capitalizarPalabras(nuevaRaza));
             stmt.setString(2, uuid.toString());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -757,8 +784,24 @@ public class GestorBaseDeDatos {
 
     private String capitalizarPalabras(String input) {
         if (input == null || input.isBlank()) return "";
-        return Arrays.stream(input.split(" "))
-                .map(p -> p.isEmpty() ? "" : Character.toUpperCase(p.charAt(0)) + p.substring(1).toLowerCase())
+
+        return Arrays.stream(input.trim().split("\\s+"))
+                .map(palabra -> {
+                    // Manejo de guiones o apóstrofos dentro de la palabra
+                    String[] partesEspeciales = palabra.split("(?<=-)|(?=-)|(?<=')|(?=')");
+                    StringBuilder palabraFinal = new StringBuilder();
+
+                    for (String parte : partesEspeciales) {
+                        if (parte.equals("-") || parte.equals("'")) {
+                            palabraFinal.append(parte); // Mantener símbolos
+                        } else if (!parte.isEmpty()) {
+                            palabraFinal.append(Character.toUpperCase(parte.charAt(0)))
+                                    .append(parte.substring(1).toLowerCase());
+                        }
+                    }
+
+                    return palabraFinal.toString();
+                })
                 .collect(Collectors.joining(" "));
     }
 
@@ -907,23 +950,102 @@ public class GestorBaseDeDatos {
     }
 
     public boolean insertarContratoBancoReino(String banco, String reino, Timestamp inicio, Timestamp fin, String permisos) {
-        // Guardamos banco y reino en minúsculas para mantener consistencia
-        String sql = """
-        INSERT OR REPLACE INTO contratos_banco_reino
-        (banco_etiqueta, reino_etiqueta, fecha_inicio, fecha_fin, permisos)
-        VALUES (?, ?, ?, ?, ?)
+        // Normalizaciones
+        final java.util.Locale L = java.util.Locale.ROOT;
+        final String bancoNorm = banco == null ? "" : banco.trim().toLowerCase(L);
+        final String reinoNorm = reino == null ? "" : reino.trim().toLowerCase(L);
+
+        // Permisos canon: admite , o ;, recorta espacios y unifica "permiso, permiso2"
+        final String permisosCanon = java.util.Arrays.stream(
+                        (permisos == null ? "" : permisos.toLowerCase(L)).split("[,;]"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        final String sqlSel = """
+        SELECT estado, fecha_fin
+        FROM contratos_banco_reino
+        WHERE TRIM(LOWER(banco_etiqueta)) = TRIM(LOWER(?))
+          AND TRIM(LOWER(reino_etiqueta)) = TRIM(LOWER(?))
         """;
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, banco.toLowerCase());
-            stmt.setString(2, reino.toLowerCase());
-            stmt.setTimestamp(3, inicio);
-            stmt.setTimestamp(4, fin);
-            stmt.setString(5, permisos.toLowerCase());
-            stmt.executeUpdate();
+
+        final String sqlUpd = """
+        UPDATE contratos_banco_reino
+        SET fecha_inicio = ?, fecha_fin = ?, permisos = ?, estado = ?
+        WHERE TRIM(LOWER(banco_etiqueta)) = TRIM(LOWER(?))
+          AND TRIM(LOWER(reino_etiqueta)) = TRIM(LOWER(?))
+        """;
+
+        final String sqlIns = """
+        INSERT INTO contratos_banco_reino
+        (banco_etiqueta, reino_etiqueta, fecha_inicio, fecha_fin, permisos, estado)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """;
+
+        try (Connection conn = HikariProvider.getConnection()) {
+            conn.setAutoCommit(false);
+
+            String estadoActual = null;
+            Timestamp finActual = null;
+
+            // 1) ¿Existe el contrato?
+            try (PreparedStatement ps = conn.prepareStatement(sqlSel)) {
+                ps.setString(1, bancoNorm);
+                ps.setString(2, reinoNorm);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        estadoActual = rs.getString("estado");
+                        finActual = rs.getTimestamp("fecha_fin");
+                    }
+                }
+            }
+
+            final long now = System.currentTimeMillis();
+            boolean existe = (estadoActual != null);
+
+            // Regla de estado:
+            // - Si existe y está ACEPTADO y AÚN VIGENTE -> conservar 'aceptado'
+            // - En cualquier otro caso -> 'pendiente'
+            String estadoNuevo = "pendiente";
+            if (existe && "aceptado".equalsIgnoreCase(estadoActual)
+                    && finActual != null && finActual.getTime() > now) {
+                estadoNuevo = "aceptado";
+            }
+
+            if (existe) {
+                // 2) Update (renovación)
+                try (PreparedStatement up = conn.prepareStatement(sqlUpd)) {
+                    up.setTimestamp(1, inicio);
+                    up.setTimestamp(2, fin);
+                    up.setString(3, permisosCanon);
+                    up.setString(4, estadoNuevo);
+                    up.setString(5, bancoNorm);
+                    up.setString(6, reinoNorm);
+                    up.executeUpdate();
+                }
+                plugin.getLogger().info("[Contrato] Renovado " + bancoNorm + "↔" + reinoNorm + " estado=" + estadoNuevo);
+            } else {
+                // 3) Insert (nuevo)
+                try (PreparedStatement ins = conn.prepareStatement(sqlIns)) {
+                    ins.setString(1, bancoNorm);
+                    ins.setString(2, reinoNorm);
+                    ins.setTimestamp(3, inicio);
+                    ins.setTimestamp(4, fin);
+                    ins.setString(5, permisosCanon);
+                    ins.setString(6, "pendiente"); // nuevo siempre inicia como pendiente
+                    ins.executeUpdate();
+                }
+                plugin.getLogger().info("[Contrato] Creado " + bancoNorm + "↔" + reinoNorm + " estado=pendiente");
+            }
+
+            conn.commit();
             return true;
+
         } catch (SQLException e) {
-            plugin.getLogger().severe("Error al insertar contrato banco-reino: " + e.getMessage());
+            plugin.getLogger().severe("Error al insertar/renovar contrato banco-reino: " + e.getMessage());
+            // Si quieres, intenta rollback explícito si tu pool lo permite:
+            // try { conn.rollback(); } catch (Exception ignore) {}
             return false;
         }
     }
@@ -1132,23 +1254,6 @@ public class GestorBaseDeDatos {
         return lista;
     }
 
-    public double obtenerSaldoMonedasJugador(String uuidJugador, String etiquetaReino) {
-        String sql = "SELECT cantidad FROM monederos_jugador WHERE uuid = ? AND reino_etiqueta = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, uuidJugador);
-            ps.setString(2, etiquetaReino);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getDouble("cantidad");
-                }
-            }
-        } catch (SQLException e) {
-            Bukkit.getLogger().warning("Error al obtener saldo: " + e.getMessage());
-        }
-        return 0.0;
-    }
-
     public void registrarMovimiento(String bancoEtiqueta, String tipo, String uuidJugador, double cantidad) {
         String sql = "INSERT INTO historial_monedas_banco (banco_etiqueta, tipo, cantidad, uuid_jugador) VALUES (?, ?, ?, ?)";
         try (Connection conn = HikariProvider.getConnection();
@@ -1162,8 +1267,6 @@ public class GestorBaseDeDatos {
             Bukkit.getLogger().warning("Error al registrar movimiento: " + e.getMessage());
         }
     }
-
-
 
     public MonedasReinoInfo obtenerMonedaPorNombre(String nombreMoneda) {
         String sql = "SELECT * FROM monedas_reino WHERE moneda = ?";
@@ -1548,36 +1651,35 @@ public class GestorBaseDeDatos {
      * @param uuidJugador UUID del jugador a expulsar.
      * @return true si fue expulsado correctamente, false si no tenía reino.
      */
-    public boolean expulsarMiembroReino(UUID uuidJugador) {
-        String reino = obtenerReinoJugador(uuidJugador);
-        if (reino == null) return false;
+    public boolean expulsarMiembroReino(UUID uuidJugador, boolean avisarSiNoEstaba) {
+        try (Connection conn = HikariProvider.getConnection()) {
+            conn.setAutoCommit(false);
 
-        String sql = "UPDATE jugadores SET reino = NULL, rol_reino = NULL WHERE uuid = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, uuidJugador.toString());
-            int filas = stmt.executeUpdate();
-            if (filas > 0) {
-                setReinoCached(uuidJugador, null);
-                return true;
+            // 1) Borrar la membresía
+            try (PreparedStatement del = conn.prepareStatement(
+                    "DELETE FROM jugadores_reino WHERE uuid = ?")) {
+                del.setString(1, uuidJugador.toString());
+                int filas = del.executeUpdate();
+
+                conn.commit();
+
+                if (filas > 0) {
+                    setReinoCached(uuidJugador, null);
+                    return true;
+                } else {
+                    if (avisarSiNoEstaba) {
+                        plugin.getLogger().info("[MI] Jugador " + uuidJugador + " no estaba en ningún reino.");
+                    }
+                    return false;
+                }
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
             }
-            return false;
         } catch (SQLException e) {
-            plugin.getLogger().severe("Error al expulsar miembro del reino: " + e.getMessage());
-            return false;
-        }
-    }
-
-    public boolean actualizarTituloJugador(UUID uuidJugador, String nuevoTitulo) {
-        String sql = "UPDATE jugadores_reino SET titulo = ? WHERE uuid = ?";
-        try (Connection conn = HikariProvider.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nuevoTitulo);
-            stmt.setString(2, uuidJugador.toString());
-            int filas = stmt.executeUpdate();
-            return filas > 0;
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Error al actualizar título del jugador: " + e.getMessage());
+            plugin.getLogger().severe("[MI] Error al expulsar miembro del reino (tx): " + e.getMessage());
             return false;
         }
     }

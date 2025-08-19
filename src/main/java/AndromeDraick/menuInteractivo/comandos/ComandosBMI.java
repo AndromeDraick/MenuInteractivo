@@ -404,32 +404,58 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String reino = args[1].toLowerCase();
-        String tiempo = args[2].toLowerCase();
+        final java.util.Locale L = java.util.Locale.ROOT;
+
+        String reino = args[1] == null ? "" : args[1].trim().toLowerCase(L);
+        String tiempo = args[2] == null ? "" : args[2].trim().toLowerCase(L);
+
+        // Canonizar permisos: admite comas o punto y coma, recorta espacios y a minúsculas
         String permisosRaw = String.join(" ", Arrays.copyOfRange(args, 4, args.length));
-        String permisos = permisosRaw.replace("\"", "").replace("'", "").toLowerCase();
+        String permisosCanon = Arrays.stream(
+                        permisosRaw.replace("\"", "").replace("'", "")
+                                .toLowerCase(L)
+                                .split("[,;]"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .collect(java.util.stream.Collectors.joining(", "));
 
         // Validar tiempo
         long duracionMs;
-        if (tiempo.endsWith("d")) duracionMs = Integer.parseInt(tiempo.replace("d", "")) * 86400000L;
-        else if (tiempo.endsWith("w")) duracionMs = Integer.parseInt(tiempo.replace("w", "")) * 7 * 86400000L;
-        else if (tiempo.endsWith("m")) duracionMs = Integer.parseInt(tiempo.replace("m", "")) * 30L * 86400000L;
-        else if (tiempo.endsWith("y")) duracionMs = Integer.parseInt(tiempo.replace("y", "")) * 365L * 86400000L;
-        else {
-            p.sendMessage(ChatColor.RED + "Formato de tiempo inválido. Usa d (día), w (semana), m (mes), y (año).");
+        try {
+            if (tiempo.endsWith("d")) {
+                int n = Integer.parseInt(tiempo.substring(0, tiempo.length() - 1));
+                duracionMs = n * 86400000L;
+            } else if (tiempo.endsWith("w")) {
+                int n = Integer.parseInt(tiempo.substring(0, tiempo.length() - 1));
+                duracionMs = n * 7L * 86400000L;
+            } else if (tiempo.endsWith("m")) {
+                int n = Integer.parseInt(tiempo.substring(0, tiempo.length() - 1));
+                duracionMs = n * 30L * 86400000L;
+            } else if (tiempo.endsWith("y")) {
+                int n = Integer.parseInt(tiempo.substring(0, tiempo.length() - 1));
+                duracionMs = n * 365L * 86400000L;
+            } else {
+                p.sendMessage(ChatColor.RED + "Formato de tiempo inválido. Usa d (día), w (semana), m (mes), y (año).");
+                return;
+            }
+            if (duracionMs <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException ex) {
+            p.sendMessage(ChatColor.RED + "Tiempo inválido. Ejemplos: 3d, 2w, 1m, 1y.");
             return;
         }
 
         UUID uuid = p.getUniqueId();
-        String banco = bancoManager.obtenerBancoPropietario(uuid).toLowerCase();
-        if (banco == null) {
+        String bancoRaw = bancoManager.obtenerBancoPropietario(uuid);
+        if (bancoRaw == null) {
             p.sendMessage(ChatColor.RED + "No eres dueño de ningún banco aprobado.");
             return;
         }
+        String banco = bancoRaw.toLowerCase(L);
 
         if (!bancoManager.bancoEstaAprobado(banco)) {
             p.sendMessage(ChatColor.YELLOW + "⏳ Tu banco aún está pendiente de aprobación.");
-            p.sendMessage(ChatColor.GRAY + "Debes esperar a que un rey o líder apruebe tu banco antes de enviar contratos.");
+            p.sendMessage(ChatColor.GRAY + "Debes esperar a que un aprobador del reino valide tu banco antes de enviar contratos.");
             p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f);
             return;
         }
@@ -442,27 +468,44 @@ public class ComandosBMI implements CommandExecutor, TabCompleter {
         long ahora = System.currentTimeMillis();
         long fechaFin = ahora + duracionMs;
 
-        boolean ok = bancoManager.crearContrato(banco, reino, new Timestamp(ahora), new Timestamp(fechaFin), permisos);
-        if (ok) {
-            p.sendMessage(ChatColor.GREEN + "Contrato enviado al reino " + reino +
-                    " por " + tiempo + " con permisos: " + permisos);
+        // Crear/renovar (tu crearContrato ahora hace upsert y normaliza en DB)
+        boolean ok = bancoManager.crearContrato(banco, reino, new java.sql.Timestamp(ahora), new java.sql.Timestamp(fechaFin), permisosCanon);
+        if (!ok) {
+            p.sendMessage(ChatColor.RED + "Error al crear/renovar contrato. Revisa consola.");
+            return;
+        }
 
-            // Notificar a jugadores del reino con rol de rey o líder
-            for (Player online : Bukkit.getOnlinePlayers()) {
-                String reinoJugador = bancoManager.obtenerReinoJugador(online.getUniqueId());
-                if (reino.equalsIgnoreCase(reinoJugador)) {
-                    String rol = bancoManager.obtenerRolJugadorEnReino(online.getUniqueId());
-                    if (rol != null && (rol.equalsIgnoreCase("rey") || rol.equalsIgnoreCase("lider"))) {
-                        online.sendMessage(ChatColor.LIGHT_PURPLE + "📜 " + ChatColor.YELLOW + "Un banco te ha enviado un contrato.");
-                        online.sendMessage(ChatColor.GRAY + "Usa " + ChatColor.GREEN + "/bmi aprobar contrato " + banco + ChatColor.GRAY + " para aprobarlo.");
-                        online.playSound(online.getLocation(), org.bukkit.Sound.UI_BUTTON_CLICK, 1.0f, 1.2f); // volumen y pitch
+        p.sendMessage(ChatColor.GREEN + "Contrato enviado al reino " + reino +
+                " por " + tiempo + " con permisos: " + permisosCanon);
 
-                    }
-                }
+        // --- NOTIFICACIÓN A APROBADORES ---
+        // Roles admitidos para aprobar (normalizados, sin acentos, minúsculas, con espacios simples)
+        final java.util.Set<String> ROLES_APROBADORES_NORM = new java.util.HashSet<>(java.util.Arrays.asList(
+                "rey", "reina",
+                "lider", "gran duque", "gran duquesa",
+                "emperador", "emperatriz"
+        ));
+
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            String reinoJugador = bancoManager.obtenerReinoJugador(online.getUniqueId());
+            if (!reino.equalsIgnoreCase(reinoJugador)) continue;
+
+            String rol = bancoManager.obtenerRolJugadorEnReino(online.getUniqueId());
+            if (rol == null || rol.isEmpty()) continue;
+
+            // Normalizar rol del jugador: minúsculas, quitar acentos, espacios simples
+            String rolNorm = java.text.Normalizer.normalize(rol, java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                    .trim()
+                    .toLowerCase(L)
+                    .replaceAll("\\s+", " ");
+
+            if (ROLES_APROBADORES_NORM.contains(rolNorm)) {
+                online.sendMessage(ChatColor.LIGHT_PURPLE + "📜 " + ChatColor.YELLOW + "Un banco te ha enviado un contrato.");
+                online.sendMessage(ChatColor.GRAY + "Usa " + ChatColor.GREEN + "/bmi aprobar contrato " + bancoRaw
+                        + ChatColor.GRAY + " para revisarlo.");
+                online.playSound(online.getLocation(), org.bukkit.Sound.UI_BUTTON_CLICK, 1.0f, 1.2f);
             }
-
-        } else {
-            p.sendMessage(ChatColor.RED + "Error al crear contrato. ¿Ya existe uno activo?");
         }
     }
 

@@ -1,5 +1,5 @@
 name: MI
-version: '1.0.8.32-SNAPSHOT'
+version: '1.0.8.33-SNAPSHOT'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
 api-version: '1.21.1'
 depend: [Vault, LuckPerms, ProtocolLib]

@@ -1,0 +1,24 @@
+habilitado: true
+
+# Servidor HTTP embebido
+puerto: 26072
+bind: "0.0.0.0"         # usa 127.0.0.1 si pondrás reverse proxy
+ruta_web: "plugins/MenuInteractivo/webmap/web"
+ruta_tiles: "plugins/MenuInteractivo/webmap/tiles"
+
+# Mundos a renderizar
+mundos:
+  - world
+
+# Zooms: nativo (cada bloque = 1 píxel) => z_nativo
+zoom_min: 0
+zoom_max: 4
+
+# Render
+tile_size: 256          # píxeles y bloques por tile en zoom nativo
+sombreado_altura: true  # sombreado suave por altura
+actualizar_por_eventos: true
+limite_rps_render: 2    # tiles/seg para no cargar el server (aprox.)
+
+# Seguridad (no cambia nada si sirves por reverse proxy)
+enable_index: true      # Servir index.html en "/"

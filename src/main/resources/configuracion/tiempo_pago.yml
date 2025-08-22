@@ -1,0 +1,14 @@
+habilitado: true
+
+mensajes:
+  minuto: false
+  hora: true
+  doce_horas: true
+
+grupos:
+  default:   { minuto: 0.3, hora: 10,  doce_horas: 100 }
+  piedra:    { minuto: 0.4, hora: 15,  doce_horas: 150 }
+  platino:   { minuto: 0.6, hora: 22,  doce_horas: 220 }
+  diamante:  { minuto: 0.8, hora: 30,  doce_horas: 300 }
+  esmeralda: { minuto: 1.0, hora: 50,  doce_horas: 500 }
+  netherita: { minuto: 1.8, hora: 100, doce_horas: 850 }

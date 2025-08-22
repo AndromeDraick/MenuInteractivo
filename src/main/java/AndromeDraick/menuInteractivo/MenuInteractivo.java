@@ -14,6 +14,9 @@ import AndromeDraick.menuInteractivo.managers.BancoManager;
 import AndromeDraick.menuInteractivo.menu.*;
 import AndromeDraick.menuInteractivo.utilidades.NametagManager;
 import AndromeDraick.menuInteractivo.utilidades.SistemaTrabajos;
+import AndromeDraick.menuInteractivo.economia.PagoPorTiempoManager;
+import AndromeDraick.menuInteractivo.webmap.WebMapManager;
+import AndromeDraick.menuInteractivo.webmap.CommandWebMap;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.milkbowl.vault.economy.Economy;
@@ -40,6 +43,9 @@ public final class MenuInteractivo extends JavaPlugin {
     private BancoManager bancoManager;
     private MenuCirculacionMonetaria menuCirculacionMonetaria;
     private MenuMercadoReino menuMercadoReino;
+    private PagoPorTiempoManager pagoTiempo;
+    private WebMapManager webMapManager;
+
 
 
     @Override
@@ -82,6 +88,14 @@ public final class MenuInteractivo extends JavaPlugin {
         if (!cfgBD.exists()) saveResource("configuracion/config_basededatos.yml", false);
         baseDeDatos = new GestorBaseDeDatos(this);
 
+        // WebMap
+        webMapManager = new WebMapManager(this);
+        webMapManager.enable(); // arranca según config
+
+        // Comando
+        getCommand("miwebmap").setExecutor(new CommandWebMap(this, webMapManager));
+        getCommand("miwebmap").setTabCompleter(new CommandWebMap(this, webMapManager));
+
         // 6) Comandos de menú/tienda
         Comandos comandos = new Comandos();
         getCommand("menu").setExecutor(comandos);
@@ -102,6 +116,9 @@ public final class MenuInteractivo extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new EventosMenu(), this);
 
         new MenuEconomia(this);
+
+        pagoTiempo = new PagoPorTiempoManager(this);
+        pagoTiempo.start();
 
         this.menuMiembrosReino = new MenuMiembrosReino(this);
         this.menuBancos = new MenuBancos(this);
@@ -142,7 +159,11 @@ public final class MenuInteractivo extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (webMapManager != null) {
+            webMapManager.disable();
+        }
         getLogger().info("MenuInteractivo desactivado.");
+        if (pagoTiempo != null) pagoTiempo.stop();
         HikariProvider.closePool();
     }
 

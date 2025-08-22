@@ -1,5 +1,5 @@
 name: MI
-version: '1.0.8.33-SNAPSHOT'
+version: '1.0.8.35-SNAPSHOT'
 main: AndromeDraick.menuInteractivo.MenuInteractivo
 api-version: '1.21.1'
 depend: [Vault, LuckPerms, ProtocolLib]
@@ -44,9 +44,15 @@ commands:
     usage: /bmi <subcomando> [args]
     permission: menuinteractivo.banco
     permission-message: No tienes permiso para gestionar bancos.
-
+  miwebmap:
+    description: Comandos del WebMap integrado en MenuInteractivo
+    usage: /miwebmap <iniciar|parar|recargar|render|limpiar>
+    permission: menuinteractivo.webmap.admin
 
 permissions:
+
+  menuinteractivo.webmap.admin:
+    default: op
   # — Menú principal
   menuinteractivo.menu:
     description: Permite abrir el menú principal.
